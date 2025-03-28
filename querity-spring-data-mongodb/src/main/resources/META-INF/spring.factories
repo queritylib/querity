@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  net.brunomendola.querity.spring.data.mongodb.QuerityMongodbAutoConfiguration
+  io.github.queritylib.querity.spring.data.mongodb.QuerityMongodbAutoConfiguration

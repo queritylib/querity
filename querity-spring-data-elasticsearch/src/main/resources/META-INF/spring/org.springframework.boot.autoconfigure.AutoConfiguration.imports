@@ -1,1 +1,1 @@
-net.brunomendola.querity.spring.data.elasticsearch.QuerityElasticsearchAutoConfiguration
+io.github.queritylib.querity.spring.data.elasticsearch.QuerityElasticsearchAutoConfiguration

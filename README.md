@@ -2,10 +2,10 @@
 =======
 
 [![Build](https://github.com/queritylib/querity/actions/workflows/maven.yml/badge.svg)](https://github.com/queritylib/querity/actions/workflows/maven.yml)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=brunomendola_querity&metric=bugs)](https://sonarcloud.io/summary/new_code?id=brunomendola_querity)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=brunomendola_querity&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=brunomendola_querity)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=brunomendola_querity&metric=coverage)](https://sonarcloud.io/summary/new_code?id=brunomendola_querity)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=brunomendola_querity&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=brunomendola_querity)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=queritylib_querity&metric=bugs)](https://sonarcloud.io/summary/new_code?id=queritylib_querity)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=queritylib_querity&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=queritylib_querity)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=queritylib_querity&metric=coverage)](https://sonarcloud.io/summary/new_code?id=queritylib_querity)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=queritylib_querity&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=queritylib_querity)
 [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/QuerityLib.svg?style=social&label=Follow%20%40QuerityLib)](https://twitter.com/QuerityLib)
 
 Open-source Java query builder for SQL and NoSQL.
@@ -55,7 +55,7 @@ Check out the simplest demo application using Querity at [querity-demo](https://
 ### Installing
 
 All releases are published to the Maven Central repository (
-see [here](https://search.maven.org/search?q=net.brunomendola.querity)).
+see [here](https://search.maven.org/search?q=io.github.queritylib)).
 
 Available modules:
 
@@ -72,7 +72,7 @@ Maven:
 
 ```xml
 <dependency>
-  <groupId>net.brunomendola.querity</groupId>
+  <groupId>io.github.queritylib</groupId>
   <artifactId>querity-spring-data-jpa</artifactId>
   <version>${querity.version}</version>
 </dependency>
@@ -81,15 +81,13 @@ Maven:
 Gradle:
 
 ```groovy
-implementation "net.brunomendola.querity:querity-spring-data-jpa:${querityVersion}"
+implementation "io.github.queritylib:querity-spring-data-jpa:${querityVersion}"
 ```
 
 ### Usage
 
 ```java
-import static net.brunomendola.querity.api.Querity.*;
-import static net.brunomendola.querity.api.Operator.*;
-import static net.brunomendola.querity.api.Sort.Direction.*;
+
 
 @Service
 public class MyService {
@@ -136,8 +134,8 @@ It is an alternative approach to the one provided by the module `querity-spring-
 The following snippet rewrites the previous example using the query language:
 
 ```java
-import net.brunomendola.querity.api.Query;
-import net.brunomendola.querity.parser.QuerityParser;
+import io.github.queritylib.querity.api.Query;
+import io.github.queritylib.querity.parser.QuerityParser;
 
 //...
 
@@ -216,7 +214,7 @@ schema [here](https://mockaroo.com/ec155390).
 
 Contributors names and contact info
 
-* Bruno Mendola [@brunomendola](https://twitter.com/brunomendola)
+* Bruno Mendola [@brunomendola](https://x.com/brunomendola)
 
 **PRs are welcome!**
 

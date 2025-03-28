@@ -66,7 +66,7 @@
     <central-publishing-maven-plugin.version>0.7.0</central-publishing-maven-plugin.version>
 
     <sonar.projectName>Querity</sonar.projectName>
-    <sonar.organization>brunomendola</sonar.organization>
+    <sonar.organization>queritylib</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.exclusions>querity-test/**</sonar.exclusions>
   </properties>

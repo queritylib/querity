@@ -1,1 +1,1 @@
-net.brunomendola.querity.spring.web.QueritySpringWebAutoConfiguration
+io.github.queritylib.querity.spring.web.QueritySpringWebAutoConfiguration
