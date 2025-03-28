@@ -5,7 +5,7 @@
 
   <groupId>io.github.queritylib</groupId>
   <artifactId>querity-parent</artifactId>
-  <version>2.3.3-SNAPSHOT</version>
+  <version>3.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>querity</name>
@@ -87,22 +87,22 @@
       <dependency>
         <groupId>io.github.queritylib</groupId>
         <artifactId>querity-api</artifactId>
-        <version>2.3.3-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>io.github.queritylib</groupId>
         <artifactId>querity-common</artifactId>
-        <version>2.3.3-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>io.github.queritylib</groupId>
         <artifactId>querity-parser</artifactId>
-        <version>2.3.3-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>io.github.queritylib</groupId>
         <artifactId>querity-test</artifactId>
-        <version>2.3.3-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
       </dependency>
 
       <dependency>
