@@ -151,7 +151,7 @@ public List<Person> getPeople() {
 
 ## Access to SNAPSHOT builds
 
-Commits to the `main` branch are automatically built and deployed to OSSRH SNAPSHOTs Maven repository.
+Commits to the `main` branch are automatically built and deployed to Central Portal Snapshots Maven repository.
 
 To use the SNAPSHOTs in your project, add the SNAPSHOTs repository as follows.
 
@@ -161,12 +161,17 @@ Maven:
 
 ```xml
 <repositories>
-    <repository>
-      <id>ossrh-snapshots-repo</id>
-      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-      <releases><enabled>false</enabled></releases>
-      <snapshots><enabled>true</enabled></snapshots>
-    </repository>
+  <repository>
+    <name>Central Portal Snapshots</name>
+    <id>central-portal-snapshots</id>
+    <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+    <releases>
+      <enabled>false</enabled>
+    </releases>
+    <snapshots>
+      <enabled>true</enabled>
+    </snapshots>
+  </repository>
 </repositories>
 ```
 
@@ -174,15 +179,18 @@ Gradle:
 
 ```groovy
 repositories {
+  // ...
   maven {
-    url "https://s01.oss.sonatype.org/content/repositories/snapshots"
+    name = 'Central Portal Snapshots'
+    url = 'https://central.sonatype.com/repository/maven-snapshots/'
     mavenContent { snapshotsOnly() }
   }
+  // ...
 }
 ```
 
 Browse the
-repository [here](https://s01.oss.sonatype.org/content/repositories/snapshots/net/brunomendola/querity/querity-parent/)
+repository [here](https://central.sonatype.com/service/rest/repository/browse/maven-snapshots/io/github/queritylib/querity-parent/)
 to find the latest SNAPSHOT version.
 
 ## Development

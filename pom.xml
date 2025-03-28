@@ -3,7 +3,7 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>net.brunomendola.querity</groupId>
+  <groupId>io.github.queritylib</groupId>
   <artifactId>querity-parent</artifactId>
   <version>2.3.3-SNAPSHOT</version>
   <packaging>pom</packaging>
@@ -63,6 +63,7 @@
     <maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
     <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
     <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
+    <central-publishing-maven-plugin.version>0.7.0</central-publishing-maven-plugin.version>
 
     <sonar.projectName>Querity</sonar.projectName>
     <sonar.organization>brunomendola</sonar.organization>
@@ -84,22 +85,22 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>net.brunomendola.querity</groupId>
+        <groupId>io.github.queritylib</groupId>
         <artifactId>querity-api</artifactId>
         <version>2.3.3-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>net.brunomendola.querity</groupId>
+        <groupId>io.github.queritylib</groupId>
         <artifactId>querity-common</artifactId>
         <version>2.3.3-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>net.brunomendola.querity</groupId>
+        <groupId>io.github.queritylib</groupId>
         <artifactId>querity-parser</artifactId>
         <version>2.3.3-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>net.brunomendola.querity</groupId>
+        <groupId>io.github.queritylib</groupId>
         <artifactId>querity-test</artifactId>
         <version>2.3.3-SNAPSHOT</version>
       </dependency>
@@ -204,19 +205,7 @@
 
   <profiles>
     <profile>
-      <id>deploy-ossrh</id>
-      <distributionManagement>
-        <snapshotRepository>
-          <id>ossrh</id>
-          <name>Central Repository OSSRH - Snapshots</name>
-          <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-          <id>ossrh</id>
-          <name>Central Repository OSSRH - Releases</name>
-          <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-      </distributionManagement>
+      <id>deploy-central</id>
       <build>
         <plugins>
           <plugin>
@@ -238,6 +227,17 @@
                 </goals>
               </execution>
             </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>${central-publishing-maven-plugin.version}</version>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+              <!--<autoPublish>true</autoPublish>
+              <waitUntil>published</waitUntil>-->
+            </configuration>
           </plugin>
         </plugins>
       </build>
