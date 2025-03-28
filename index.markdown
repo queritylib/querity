@@ -31,7 +31,7 @@ Why you should use Querity?
 # Installing
 
 All releases are published to the Maven Central repository
-(see [here](https://search.maven.org/search?q=net.brunomendola.querity)).
+(see [here](https://search.maven.org/search?q=io.github.queritylib)).
 
 Install one of the modules in your project as follows (see [Available modules](#available-modules)).
 
@@ -40,7 +40,7 @@ Maven:
 ```xml
 
 <dependency>
-  <groupId>net.brunomendola.querity</groupId>
+  <groupId>io.github.queritylib</groupId>
   <artifactId>querity-spring-data-jpa</artifactId>
   <version>{{ site.querity_version }}</version>
 </dependency>
@@ -49,7 +49,7 @@ Maven:
 Gradle:
 
 ```groovy
-implementation "net.brunomendola.querity:querity-spring-data-jpa:{{ site.querity_version }}"
+implementation "io.github.queritylib:querity-spring-data-jpa:{{ site.querity_version }}"
 ```
 
 See [Releases](https://github.com/queritylib/querity/releases) to check the latest version and see the changelogs.
@@ -101,9 +101,9 @@ In your Spring Boot project, add the dependency as shown in [Installing](#instal
 follows:
 
 ```java
-import static net.brunomendola.querity.api.Querity.*;
-import static net.brunomendola.querity.api.Operator.*;
-import static net.brunomendola.querity.api.Sort.Direction.*;
+import static io.github.queritylib.querity.api.Querity.*;
+import static io.github.queritylib.querity.api.Operator.*;
+import static io.github.queritylib.querity.api.Sort.Direction.*;
 
 @Service
 public class MyService {
@@ -340,7 +340,7 @@ These configurations are automatically done by importing the `querity-spring-web
 After that, you'll be able to use a `Query` or `Condition` as a controller parameter and build REST APIs like this:
 
 ```java
-import net.brunomendola.querity.api.Query;
+import io.github.queritylib.querity.api.Query;
 
 @RestController
 public class MyRestController {
@@ -373,8 +373,8 @@ To enable the query language, import the `querity-parser` module (see [Installin
 The following snippet rewrites the previous example using the support for the query language:
 
 ```java
-import net.brunomendola.querity.api.Query;
-import net.brunomendola.querity.parser.QuerityParser;
+import io.github.queritylib.querity.api.Query;
+import io.github.queritylib.querity.parser.QuerityParser;
 
 @RestController
 public class MyRestController {
