@@ -73,6 +73,7 @@
 
   <modules>
     <module>querity-api</module>
+    <module>querity-jpa</module>
     <module>querity-spring-data-jpa</module>
     <module>querity-spring-data-elasticsearch</module>
     <module>querity-spring-data-mongodb</module>
