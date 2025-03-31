@@ -1,6 +1,6 @@
 package io.github.queritylib.querity.spring.data.jpa;
 
-import io.github.queritylib.querity.jpa.AbstractJpaConditionTests;
+import io.github.queritylib.querity.jpa.JpaConditionTests;
 
-public class SpringJpaConditionTests extends AbstractJpaConditionTests {
+public class SpringJpaConditionTests extends JpaConditionTests {
 }

@@ -11,7 +11,7 @@ import static io.github.queritylib.querity.common.util.ReflectionUtils.findSubcl
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public abstract class AbstractJpaConditionTests {
+public class JpaConditionTests {
   @Test
   void testAllConditionClassesImplemented() {
     Set<Class<? extends Condition>> conditionClasses = findSubclasses(Condition.class);
