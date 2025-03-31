@@ -2,7 +2,7 @@ package io.github.queritylib.querity.spring.data.jpa;
 
 import io.github.queritylib.querity.api.Querity;
 import io.github.queritylib.querity.api.Query;
-import io.github.queritylib.querity.spring.data.jpa.domain.Person;
+import io.github.queritylib.querity.jpa.domain.Person;
 import io.github.queritylib.querity.test.QuerityGenericSpringTestSuite;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,7 +14,7 @@ import static io.github.queritylib.querity.api.Querity.filterByNative;
 import static io.github.queritylib.querity.api.Querity.not;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = QuerityJpaTestApplication.class)
+@SpringBootTest(classes = QueritySpringJpaTestApplication.class)
 public abstract class QuerityJpaImplTests extends QuerityGenericSpringTestSuite<Person, Long> {
   @Override
   protected Class<Person> getEntityClass() {

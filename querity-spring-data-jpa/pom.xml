@@ -23,6 +23,15 @@
       <groupId>io.github.queritylib</groupId>
       <artifactId>querity-common</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.github.queritylib</groupId>
+      <artifactId>querity-jpa-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.github.queritylib</groupId>
+      <artifactId>querity-jpa-common-test</artifactId>
+      <scope>test</scope>
+    </dependency>
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -35,11 +44,6 @@
     <dependency>
       <groupId>jakarta.persistence</groupId>
       <artifactId>jakarta.persistence-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.hibernate.orm</groupId>
-      <artifactId>hibernate-core</artifactId>
-      <scope>provided</scope>
     </dependency>
 
     <dependency>

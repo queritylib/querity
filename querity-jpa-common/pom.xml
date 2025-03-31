@@ -8,16 +8,13 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>querity-jpa</artifactId>
+  <artifactId>querity-jpa-common</artifactId>
 
   <properties>
     <jakarta.persistence.version>3.1.0</jakarta.persistence.version>
     <hibernate.version>6.6.11.Final</hibernate.version>
     <junit-jupiter.version>5.12.1</junit-jupiter.version>
     <assertj.version>3.27.3</assertj.version>
-    <mockito.version>5.16.1</mockito.version>
-    <h2.version>2.3.232</h2.version>
-    <slf4j.version>2.0.17</slf4j.version>
   </properties>
 
   <dependencies>
@@ -28,15 +25,6 @@
     <dependency>
       <groupId>io.github.queritylib</groupId>
       <artifactId>querity-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.github.queritylib</groupId>
-      <artifactId>querity-jpa-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.github.queritylib</groupId>
-      <artifactId>querity-jpa-common-test</artifactId>
-      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -67,35 +55,6 @@
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
       <version>${assertj.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-junit-jupiter</artifactId>
-      <version>${mockito.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.github.queritylib</groupId>
-      <artifactId>querity-test</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <version>${h2.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>${slf4j.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-nop</artifactId>
-      <version>${slf4j.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

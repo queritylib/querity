@@ -73,6 +73,8 @@
 
   <modules>
     <module>querity-api</module>
+    <module>querity-jpa-common</module>
+    <module>querity-jpa-common-test</module>
     <module>querity-jpa</module>
     <module>querity-spring-data-jpa</module>
     <module>querity-spring-data-elasticsearch</module>
@@ -93,6 +95,16 @@
       <dependency>
         <groupId>io.github.queritylib</groupId>
         <artifactId>querity-common</artifactId>
+        <version>3.0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>io.github.queritylib</groupId>
+        <artifactId>querity-jpa-common</artifactId>
+        <version>3.0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>io.github.queritylib</groupId>
+        <artifactId>querity-jpa-common-test</artifactId>
         <version>3.0.1-SNAPSHOT</version>
       </dependency>
       <dependency>
