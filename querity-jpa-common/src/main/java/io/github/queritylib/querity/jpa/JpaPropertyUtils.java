@@ -48,7 +48,11 @@ class JpaPropertyUtils {
     return attribute.isAssociation() || attribute.isCollection();
   }
 
+  @SuppressWarnings("unchecked")
   private static <T, P> Join<T, P> getJoin(From<?, T> from, String joinProperty) {
-    return from.join(joinProperty, JoinType.LEFT);
+    return (Join<T, P>) from.getJoins().stream()
+        .filter(j -> j.getParentPath().equals(from) && j.getAttribute().getName().equals(joinProperty))
+        .findFirst()
+        .orElseGet(() -> from.join(joinProperty, JoinType.LEFT));
   }
 }
