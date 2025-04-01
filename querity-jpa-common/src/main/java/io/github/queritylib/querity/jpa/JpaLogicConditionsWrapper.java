@@ -6,6 +6,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.persistence.metamodel.Metamodel;
 import lombok.experimental.Delegate;
 
 abstract class JpaLogicConditionsWrapper extends JpaCondition {
@@ -17,14 +18,14 @@ abstract class JpaLogicConditionsWrapper extends JpaCondition {
   }
 
   @Override
-  public <T> Predicate toPredicate(Class<T> entityClass, Root<T> root, CriteriaQuery<?> cq, CriteriaBuilder cb) {
-    return getLogicPredicate(getConditionPredicates(entityClass, root, cq, cb), cb);
+  public <T> Predicate toPredicate(Class<T> entityClass, Metamodel metamodel, Root<T> root, CriteriaQuery<?> cq, CriteriaBuilder cb) {
+    return getLogicPredicate(getConditionPredicates(entityClass, metamodel, root, cq, cb), cb);
   }
 
-  private <T> Predicate[] getConditionPredicates(Class<T> entityClass, Root<T> root, CriteriaQuery<?> cq, CriteriaBuilder cb) {
+  private <T> Predicate[] getConditionPredicates(Class<T> entityClass, Metamodel metamodel, Root<T> root, CriteriaQuery<?> cq, CriteriaBuilder cb) {
     return getConditions().stream()
         .map(JpaCondition::of)
-        .map(c -> c.toPredicate(entityClass, root, cq, cb))
+        .map(c -> c.toPredicate(entityClass, metamodel, root, cq, cb))
         .toArray(Predicate[]::new);
   }
 

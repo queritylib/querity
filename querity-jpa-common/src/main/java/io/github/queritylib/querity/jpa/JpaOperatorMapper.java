@@ -4,6 +4,7 @@ import io.github.queritylib.querity.api.Operator;
 import io.github.queritylib.querity.api.SimpleCondition;
 import io.github.queritylib.querity.common.util.PropertyUtils;
 import jakarta.persistence.criteria.*;
+import jakarta.persistence.metamodel.Metamodel;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -85,10 +86,10 @@ class JpaOperatorMapper {
     Predicate getPredicate(Path<?> path, Object value, CriteriaBuilder cb);
   }
 
-  public static <T> Predicate getPredicate(Class<T> entityClass, SimpleCondition condition, Root<?> root, CriteriaBuilder cb) {
+  public static <T> Predicate getPredicate(Class<T> entityClass, SimpleCondition condition, Metamodel metamodel, Root<?> root, CriteriaBuilder cb) {
     String propertyPath = condition.getPropertyName();
     Object value = PropertyUtils.getActualPropertyValue(entityClass, propertyPath, condition.getValue());
     return OPERATOR_PREDICATE_MAP.get(condition.getOperator())
-        .getPredicate(JpaPropertyUtils.getPath(root, propertyPath), value, cb);
+        .getPredicate(JpaPropertyUtils.getPath(root, propertyPath, metamodel), value, cb);
   }
 }

@@ -7,6 +7,7 @@ import io.github.queritylib.querity.api.Sort;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
+import jakarta.persistence.metamodel.Metamodel;
 
 import java.util.List;
 
@@ -26,9 +27,11 @@ class JpaQueryFactory<T> {
     CriteriaQuery<T> cq = cb.createQuery(entityClass);
     Root<T> root = cq.from(entityClass);
 
+    Metamodel metamodel = entityManager.getMetamodel();
+
     applyDistinct(cq);
-    applyFilters(root, cq, cb);
-    applySorting(root, cq, cb);
+    applyFilters(metamodel, root, cq, cb);
+    applySorting(metamodel, root, cq, cb);
 
     TypedQuery<T> tq = createTypedQuery(cq);
 
@@ -47,8 +50,10 @@ class JpaQueryFactory<T> {
     CriteriaQuery<Long> cq = cb.createQuery(Long.class);
     Root<T> root = cq.from(entityClass);
 
+    Metamodel metaModel = entityManager.getMetamodel();
+
     applySelectCount(root, cq, cb);
-    applyFilters(root, cq, cb);
+    applyFilters(metaModel, root, cq, cb);
 
     return createTypedQuery(cq);
   }
@@ -57,24 +62,24 @@ class JpaQueryFactory<T> {
     cq.select(cb.countDistinct(root)); // always counting distinct rows, should not be a problem since there's no sorting
   }
 
-  private void applyFilters(Root<T> root, CriteriaQuery<?> cq, CriteriaBuilder cb) {
+  private void applyFilters(Metamodel metamodel, Root<T> root, CriteriaQuery<?> cq, CriteriaBuilder cb) {
     if (query != null && query.hasFilter())
-      cq.where(getPredicate(entityClass, query.getFilter(), root, cq, cb));
+      cq.where(getPredicate(entityClass, query.getFilter(), metamodel, root, cq, cb));
   }
 
-  private static <T> Predicate getPredicate(Class<T> entityClass, Condition filter, Root<T> root, CriteriaQuery<?> cq, CriteriaBuilder cb) {
-    return JpaCondition.of(filter).toPredicate(entityClass, root, cq, cb);
+  private static <T> Predicate getPredicate(Class<T> entityClass, Condition filter, Metamodel metamodel, Root<T> root, CriteriaQuery<?> cq, CriteriaBuilder cb) {
+    return JpaCondition.of(filter).toPredicate(entityClass, metamodel, root, cq, cb);
   }
 
-  private void applySorting(Root<T> root, CriteriaQuery<T> cq, CriteriaBuilder cb) {
+  private void applySorting(Metamodel metamodel, Root<T> root, CriteriaQuery<T> cq, CriteriaBuilder cb) {
     if (query != null && query.hasSort())
-      cq.orderBy(getOrders(query.getSort(), root, cb));
+      cq.orderBy(getOrders(query.getSort(), metamodel, root, cb));
   }
 
-  private static <T> List<Order> getOrders(List<Sort> sort, Root<T> root, CriteriaBuilder cb) {
+  private static <T> List<Order> getOrders(List<Sort> sort, Metamodel metamodel, Root<T> root, CriteriaBuilder cb) {
     return sort.stream()
         .map(JpaSort::new)
-        .map(jpaSort -> jpaSort.toOrder(root, cb))
+        .map(jpaSort -> jpaSort.toOrder(metamodel, root, cb))
         .toList();
   }
 

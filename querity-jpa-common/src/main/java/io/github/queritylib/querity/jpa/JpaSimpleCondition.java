@@ -5,6 +5,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.persistence.metamodel.Metamodel;
 import lombok.experimental.Delegate;
 
 class JpaSimpleCondition extends JpaCondition {
@@ -16,7 +17,7 @@ class JpaSimpleCondition extends JpaCondition {
   }
 
   @Override
-  public <T> Predicate toPredicate(Class<T> entityClass, Root<T> root, CriteriaQuery<?> cq, CriteriaBuilder cb) {
-    return JpaOperatorMapper.getPredicate(entityClass, condition, root, cb);
+  public <T> Predicate toPredicate(Class<T> entityClass, Metamodel metamodel, Root<T> root, CriteriaQuery<?> cq, CriteriaBuilder cb) {
+    return JpaOperatorMapper.getPredicate(entityClass, condition, metamodel, root, cb);
   }
 }
