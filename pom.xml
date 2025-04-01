@@ -5,7 +5,7 @@
 
   <groupId>io.github.queritylib</groupId>
   <artifactId>querity-parent</artifactId>
-  <version>3.1.0</version>
+  <version>3.1.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>querity</name>
@@ -38,7 +38,7 @@
     <url>https://github.com/queritylib/querity</url>
     <connection>scm:git:https://github.com/queritylib/querity.git</connection>
     <developerConnection>scm:git:https://github.com/queritylib/querity.git</developerConnection>
-    <tag>v3.1.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <ciManagement>
@@ -90,32 +90,32 @@
       <dependency>
         <groupId>io.github.queritylib</groupId>
         <artifactId>querity-api</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.1-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>io.github.queritylib</groupId>
         <artifactId>querity-common</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.1-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>io.github.queritylib</groupId>
         <artifactId>querity-jpa-common</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.1-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>io.github.queritylib</groupId>
         <artifactId>querity-jpa-common-test</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.1-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>io.github.queritylib</groupId>
         <artifactId>querity-parser</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.1-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>io.github.queritylib</groupId>
         <artifactId>querity-test</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.1-SNAPSHOT</version>
       </dependency>
 
       <dependency>
