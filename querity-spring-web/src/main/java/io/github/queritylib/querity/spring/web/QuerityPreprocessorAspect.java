@@ -77,10 +77,10 @@ public class QuerityPreprocessorAspect {
   }
 
   private Object preprocessArg(Object arg, WithPreprocessor annotation) {
-    if (arg instanceof Query) {
-      return preprocessQuery((Query) arg, annotation);
-    } else if (arg instanceof Condition) {
-      return preprocessCondition((Condition) arg, annotation);
+    if (arg instanceof Query query) {
+      return preprocessQuery(query, annotation);
+    } else if (arg instanceof Condition condition) {
+      return preprocessCondition(condition, annotation);
     } else return arg;
   }
 
