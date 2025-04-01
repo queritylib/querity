@@ -2,31 +2,34 @@
 layout: default
 ---
 
-Querity is an extensible query builder to create and run database queries in your Java application.
+**Querity** is a powerful and extensible **query builder for Java applications**, designed to simplify database queries across different technologies.
 
-It supports **SQL** and **NoSQL** databases technologies, and each support is built into small modules, so you
-can import the one which fits into your project.
+With Querity, you can effortlessly build **REST APIs** that support **filtering, sorting, and pagination** — perfect for displaying data in frontend applications (see [Demo](#demo)).
 
-Querity currently supports any **SQL database** (with the JPA module), **MongoDB** and **Elasticsearch**.
+* Users benefit from a simple textual query language to interact with data.
+* Developers can leverage a fluent Java API to construct complex queries with ease.
 
-Why you should use Querity?
+Querity supports both **SQL and NoSQL** databases through modular components — import only what you need for your project. Currently, it works with any **SQL database** (via JPA), **MongoDB**, and **Elasticsearch**.
 
-✔ learn once, use everywhere
+# Why choose Querity?
 
-✔ write queries with filtering, sorting and pagination regardless of the database technology
+✔ **Learn once, use everywhere** – a unified approach to querying data.
 
-✔ fluent Java API to build complex queries
+✔ **Database-agnostic queries** – filtering, sorting, and pagination work across different databases.
 
-✔ a simple textual query language to be used in REST APIs
+✔ **Fluent Java API** – construct powerful queries with clean, readable code.
 
-✔ expose the same REST API in all your projects
+✔ **Simple textual query language** – ideal for REST API integration.
 
-✔ switch database without rewriting the logic of your application
+✔ **Consistent API design** – expose the same REST endpoints across all projects.
+
+✔ **Easy database switching** – migrate between databases without rewriting business logic.
 
 # Requirements
 
 * Java 17+
-* Spring Framework 6 (optionally Spring Boot 3... makes things a lot simpler)
+* For the Spring modules:
+  * Spring Framework 6 (optionally Spring Boot 3... makes things a lot simpler)
 
 # Installing
 
@@ -54,8 +57,34 @@ implementation "io.github.queritylib:querity-spring-data-jpa:{{ site.querity_ver
 
 See [Releases](https://github.com/queritylib/querity/releases) to check the latest version and see the changelogs.
 
-All modules are "Spring Boot starters", if you use Spring Boot you just need to add the dependency to your project and
+All the Spring-related modules are "Spring Boot starters": if you use Spring Boot you just need to add the dependency to your project and
 start using it, no other configuration needed.
+
+## Without Spring Boot autoconfiguration
+
+You can use Querity without Spring Boot, but you need to configure the `Querity` bean in your Spring configuration.
+
+Example with JPA:
+
+```java
+import io.github.queritylib.querity.api.Querity;
+
+@Configuration
+public class QuerityConfiguration {
+  @Bean
+  Querity querity(EntityManager entityManager) {
+    return new QuerityJpaImpl(entityManager);
+  }
+}
+```
+
+You can also disable the autoconfiguration of the Spring Boot starter by adding the following property to your `application.properties`:
+
+```properties
+querity.autoconfigure.enabled=false
+```
+
+> This is useful if you want to import multiple Querity modules (e.g. JPA and Elasticsearch) and configure multiple Querity beans in your application.
 
 # Demo
 
@@ -65,9 +94,19 @@ Check out the simplest demo application using Querity at [querity-demo](https://
 
 Currently, Querity supports the following technologies with its modules:
 
+> The datasource configuration is not managed by Querity and is delegated to the underlying application.
+
 ## querity-spring-data-jpa
 
 Supports [Spring Data JPA](https://spring.io/projects/spring-data-jpa) and any SQL database with a compatible JDBC driver.
+
+## querity-jpa
+
+Supports plain [Jakarta Persistence API](https://jakarta.ee/specifications/persistence/) and any SQL database with a compatible JDBC driver.
+
+This module is not Spring-specific, so it's not a Spring Boot starter: you will need to apply all the configurations manually.
+
+You basically need to instantiate a `QuerityJpaImpl` object and pass it the JPA `EntityManager` you want to use.
 
 ## querity-spring-data-mongodb
 
@@ -83,13 +122,27 @@ Supports [Spring Data Elasticsearch](https://spring.io/projects/spring-data-elas
 
 Supports JSON serialization and deserialization of Querity objects in [Spring Web MVC](https://docs.spring.io/spring-framework/docs/current/reference/html/web.html).
 
+With this module, you can pass a JSON `Query` or `Condition` object as request param in your Spring `@RestController` and it will be automatically deserialized into a Querity object.
+
+For example, your API calls will look like this:
+
+```
+curl 'http://localhost:8080/people?q={"filter":{"and":[{"propertyName":"lastName","operator":"EQUALS","value":"Skywalker"},{"propertyName":"lastName","operator":"EQUALS","value":"Luke"}]}}'
+```
+
 This is an alternative approach to the one provided by the module `querity-parser`.
 
 See [Support for Spring MVC and REST APIs](#support-for-spring-mvc-and-rest-apis) for more details.
 
 ## querity-parser
 
-Enables the parsing of Querity objects from a **simple query language**.
+Enables the parsing of Querity objects from a **simple textual query language**.
+
+For example, your API calls will look like this:
+
+```
+curl 'http://localhost:8080/people?q=and(lastName="Skywalker",firstName="Luke")'
+```
 
 This is an alternative approach to the one provided by the module `querity-spring-web`.
 
@@ -257,7 +310,7 @@ This could be useful if you really want to add very complex query conditions tha
 
 > Native conditions are supported only with Java API, not REST.
 
-Example with Spring Data JPA:
+Example with Spring Data JPA / Jakarta Persistence:
 
 ```
 Specification<Person> specification = (root, cq, cb) -> cb.equal(root.get("lastName"), "Skywalker");
@@ -266,7 +319,12 @@ Query query = Querity.query()
     .build();
 ```
 
-Example with Spring Data MongoDB:
+> In the module implementing the Spring Data JPA support, the Spring Data JPA's `Specification` class is used.
+>
+> In the module implementing the Jakarta Persistence support, there is a class named `Specification` that does the same 
+> (since the base library doesn't provide anything similar).
+
+Example with Spring Data MongoDB / Elasticsearch:
 
 ```
 Criteria criteria = Criteria.where("lastName").is("Skywalker");
@@ -335,7 +393,19 @@ Query query = originalQuery.toBuilder()
 Querity objects need some configuration to be correctly deserialized when they are received by a
 Spring `@RestController` as a JSON payload.
 
+This includes:
+
+* registering property editors in Spring MVC to recognize the `Querity` and `Condition` objects as valid request parameters,
+* configuring the Jackson module `QuerityModule` to correctly deserialize the Querity objects from JSON,
+* configuring the aspect `QuerityPreprocessorAspect` to use the preprocessors in the Spring controllers (see [Preprocessors](#preprocessors) below).
+
 These configurations are automatically done by importing the `querity-spring-web` module (see [Installing](#installing)).
+
+> You can disable the autoconfiguration of the Spring Boot starter by adding the following property to your `application.properties`:
+>
+> `querity.web.autoconfigure.enabled=false`
+> 
+> Then you will have to apply the needed configurations manually.
 
 After that, you'll be able to use a `Query` or `Condition` as a controller parameter and build REST APIs like this:
 
@@ -508,13 +578,14 @@ public class MyApplication {
   public QueryPreprocessor preprocessor1() {
     return new PropertyNameMappingPreprocessor(
         SimplePropertyNameMapper.builder()
+            .recursive(true) // default is true
             .mapping("prop1", "prop2") // customize your mappings here
             .build());
   }
 }
 ```
 
-and use it to annotate the parameter in your RestController.
+and use it to annotate the parameter in your RestController:
 
 ```java
 @RestController
@@ -529,3 +600,9 @@ public class MyRestController {
   }
 }
 ```
+
+The mappings in `SimplePropertyNameMapper` are resolved recursively by default. 
+
+So if you mapped `prop1` to `prop2`, then all the fields nested in `prop1` will be automatically mapped to equal-named fields under `prop2`. 
+
+You can switch off the recursive mapping by setting the `recursive` flag to `false` in the builder.
