@@ -54,7 +54,7 @@ class ReflectionUtilsTests {
   public interface MyInterface {
   }
 
-  public static abstract class MySuperclass implements MyInterface {
+  public abstract static class MySuperclass implements MyInterface {
     private String superclassStringValue;
   }
 
