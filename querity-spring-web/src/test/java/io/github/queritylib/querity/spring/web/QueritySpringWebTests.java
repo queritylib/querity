@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.json.JsonCompareMode;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -40,7 +41,7 @@ class QueritySpringWebTests {
             .queryParam("q", query))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(content().json(query, false));
+        .andExpect(content().json(query, JsonCompareMode.LENIENT));
   }
 
   @Test
@@ -83,7 +84,7 @@ class QueritySpringWebTests {
             .queryParam("filter", filter))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(content().json(filter, false));
+        .andExpect(content().json(filter, JsonCompareMode.LENIENT));
   }
 
   @Test
@@ -113,7 +114,7 @@ class QueritySpringWebTests {
             .queryParam("q", "{\"filter\":{\"propertyName\":\"prop1\",\"operator\":\"EQUALS\",\"value\":\"test\"}}"))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(content().json("{\"filter\":{\"propertyName\":\"prop2\",\"operator\":\"EQUALS\",\"value\":\"test\"}}", false));
+        .andExpect(content().json("{\"filter\":{\"propertyName\":\"prop2\",\"operator\":\"EQUALS\",\"value\":\"test\"}}", JsonCompareMode.LENIENT));
   }
 
   @Test
@@ -125,7 +126,7 @@ class QueritySpringWebTests {
             .queryParam("q", "{\"filter\":{\"propertyName\":\"prop1\",\"operator\":\"EQUALS\",\"value\":\"test\"}}"))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(content().json("{\"filter\":{\"propertyName\":\"prop2\",\"operator\":\"EQUALS\",\"value\":\"test\"}}", false));
+        .andExpect(content().json("{\"filter\":{\"propertyName\":\"prop2\",\"operator\":\"EQUALS\",\"value\":\"test\"}}", JsonCompareMode.LENIENT));
   }
 
   @Test
@@ -134,6 +135,6 @@ class QueritySpringWebTests {
             .queryParam("filter", "{\"propertyName\":\"prop1\",\"operator\":\"EQUALS\",\"value\":\"test\"}"))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(content().json("{\"propertyName\":\"prop2\",\"operator\":\"EQUALS\",\"value\":\"test\"}", false));
+        .andExpect(content().json("{\"propertyName\":\"prop2\",\"operator\":\"EQUALS\",\"value\":\"test\"}", JsonCompareMode.LENIENT));
   }
 }
