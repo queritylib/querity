@@ -2,7 +2,6 @@ package io.github.queritylib.querity.common.util;
 
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.AccessibleObject;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -19,15 +18,17 @@ class ReflectionUtilsTests {
 
   @Test
   void givenClassProperty_whenGetAccessibleField_thenReturnAccessibleField() {
+    var obj = new MyClass1();
     assertThat(ReflectionUtils.getAccessibleField(MyClass1.class, "stringValue"))
-        .map(AccessibleObject::isAccessible)
+        .map(field -> field.canAccess(obj))
         .contains(true);
   }
 
   @Test
   void givenSuperclassProperty_whenGetAccessibleField_thenReturnAccessibleField() {
+    var obj = new MyClass1();
     assertThat(ReflectionUtils.getAccessibleField(MyClass1.class, "superclassStringValue"))
-        .map(AccessibleObject::isAccessible)
+        .map(field -> field.canAccess(obj))
         .contains(true);
   }
 
