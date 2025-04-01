@@ -68,11 +68,14 @@
     <sonar.projectName>Querity</sonar.projectName>
     <sonar.organization>queritylib</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-    <sonar.exclusions>querity-test/**</sonar.exclusions>
+    <sonar.exclusions>querity-test/**,querity-jpa-common-test/**</sonar.exclusions>
   </properties>
 
   <modules>
     <module>querity-api</module>
+    <module>querity-jpa-common</module>
+    <module>querity-jpa-common-test</module>
+    <module>querity-jpa</module>
     <module>querity-spring-data-jpa</module>
     <module>querity-spring-data-elasticsearch</module>
     <module>querity-spring-data-mongodb</module>
@@ -92,6 +95,16 @@
       <dependency>
         <groupId>io.github.queritylib</groupId>
         <artifactId>querity-common</artifactId>
+        <version>3.0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>io.github.queritylib</groupId>
+        <artifactId>querity-jpa-common</artifactId>
+        <version>3.0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>io.github.queritylib</groupId>
+        <artifactId>querity-jpa-common-test</artifactId>
         <version>3.0.1-SNAPSHOT</version>
       </dependency>
       <dependency>

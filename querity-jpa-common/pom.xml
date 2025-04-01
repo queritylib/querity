@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>querity-parent</artifactId>
     <groupId>io.github.queritylib</groupId>
@@ -7,11 +8,13 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>querity-spring-data-jpa</artifactId>
+  <artifactId>querity-jpa-common</artifactId>
 
   <properties>
-    <testcontainers.version>1.20.6</testcontainers.version>
-    <postgresql-driver.version>42.7.5</postgresql-driver.version>
+    <jakarta.persistence.version>3.1.0</jakarta.persistence.version>
+    <hibernate.version>6.6.11.Final</hibernate.version>
+    <junit-jupiter.version>5.12.1</junit-jupiter.version>
+    <assertj.version>3.27.3</assertj.version>
   </properties>
 
   <dependencies>
@@ -25,25 +28,19 @@
     </dependency>
     <dependency>
       <groupId>io.github.queritylib</groupId>
-      <artifactId>querity-jpa-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.github.queritylib</groupId>
       <artifactId>querity-jpa-common-test</artifactId>
-      <scope>test</scope>
     </dependency>
 
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-autoconfigure</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.data</groupId>
-      <artifactId>spring-data-jpa</artifactId>
-    </dependency>
-    <dependency>
       <groupId>jakarta.persistence</groupId>
       <artifactId>jakarta.persistence-api</artifactId>
+      <version>${jakarta.persistence.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate.orm</groupId>
+      <artifactId>hibernate-core</artifactId>
+      <version>${hibernate.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -52,11 +49,6 @@
       <scope>provided</scope>
     </dependency>
 
-    <dependency>
-      <groupId>io.github.queritylib</groupId>
-      <artifactId>querity-test</artifactId>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -70,30 +62,6 @@
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>testcontainers</artifactId>
-      <version>${testcontainers.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>${testcontainers.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>${postgresql-driver.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
