@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class JpaConditionTests {
+class JpaConditionTests {
   @Test
   void givenNotSupportedCondition_whenOf_theThrowIllegalArgumentException() {
     Condition condition = new MyCondition();

@@ -10,7 +10,7 @@ import static io.github.queritylib.querity.common.util.ReflectionUtils.findClass
 import static io.github.queritylib.querity.common.util.ReflectionUtils.findSubclasses;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class JpaConditionTests {
+class JpaConditionTests {
   @Test
   void testAllConditionClassesImplemented() {
     Set<Class<? extends Condition>> conditionClasses = findSubclasses(Condition.class);
