@@ -21,7 +21,7 @@ can import the one which fits into your project.
 
 Database support:
 
-* any SQL database (with the JPA module)
+* any SQL database (with the JPA modules)
 * MongoDB
 * Elasticsearch
 
@@ -60,12 +60,13 @@ see [here](https://search.maven.org/search?q=io.github.queritylib)).
 Available modules:
 
 * **querity-spring-data-jpa**: supports Spring Data JPA
+* **querity-jpa**: supports plain Jakarta Persistence API (Spring not required)
 * **querity-spring-data-mongodb**: supports Spring Data MongoDB
 * **querity-spring-data-elasticsearch**: supports Spring Data Elasticsearch
 * **querity-spring-web**: supports JSON de/serialization of Querity objects in Spring Web MVC
 * **querity-parser**: enable the parsing of Querity objects from a **simple query language**
 
-All modules are "Spring Boot starters", you just need to add the dependency to your Spring Boot project and start using
+All Spring modules are "Spring Boot starters", you just need to add the dependency to your Spring Boot project and start using
 it, no other configuration needed.
 
 Maven:
