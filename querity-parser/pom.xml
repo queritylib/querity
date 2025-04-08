@@ -85,10 +85,24 @@
         </configuration>
         <executions>
           <execution>
+            <id>java</id>
             <phase>generate-sources</phase>
             <goals>
               <goal>antlr4</goal>
             </goals>
+          </execution>
+          <execution>
+            <id>typescript</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/generated-sources/antlr4-ts</outputDirectory>
+              <arguments>
+                <argument>-Dlanguage=TypeScript</argument>
+              </arguments>
+            </configuration>
           </execution>
         </executions>
       </plugin>
