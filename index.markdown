@@ -223,7 +223,7 @@ Query query = Querity.query()
     .build();
 ```
 
-Supports **nested properties** with dot notation, also with one-to-many/many-to-many relationships. 
+Supports **nested properties** with dot notation, also with one-to-many/many-to-many relationships.
 
 E.g. `address.city` (one-to-one), `visitedPlaces.country` (one-to-many).
 
@@ -240,10 +240,12 @@ E.g. `address.city` (one-to-one), `visitedPlaces.country` (one-to-many).
 * LESSER_THAN_EQUALS
 * IS_NULL
 * IS_NOT_NULL
+* IN
+* NOT_IN
 
 > \* Operators STARTS_WITH, ENDS_WITH, CONTAINS are case-insensitive only if the underlying database supports case-insensitive matching and proper configurations are applied.
 >
->    E.g. JPA supports case-insensitive matching by default, 
+>    E.g. JPA supports case-insensitive matching by default,
 > while Elasticsearch requires a specific configuration (see [Elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-analyzers.html) and [Spring Data Elasticsearch Documentation](https://docs.spring.io/spring-data/elasticsearch/reference/elasticsearch/object-mapping.html#elasticsearch.mapping.meta-model.annotations)).
 
 #### AND conditions
@@ -321,7 +323,7 @@ Query query = Querity.query()
 
 > In the module implementing the Spring Data JPA support, the Spring Data JPA's `Specification` class is used.
 >
-> In the module implementing the Jakarta Persistence support, there is a class named `Specification` that does the same 
+> In the module implementing the Jakarta Persistence support, there is a class named `Specification` that does the same
 > (since the base library doesn't provide anything similar).
 
 Example with Spring Data MongoDB / Elasticsearch:
@@ -404,7 +406,7 @@ These configurations are automatically done by importing the `querity-spring-web
 > You can disable the autoconfiguration of the Spring Boot starter by adding the following property to your `application.properties`:
 >
 > `querity.web.autoconfigure.enabled=false`
-> 
+>
 > Then you will have to apply the needed configurations manually.
 
 After that, you'll be able to use a `Query` or `Condition` as a controller parameter and build REST APIs like this:
@@ -473,28 +475,30 @@ _Much simpler than JSON, isn't it?_
 The query language supports the following grammar (ANTLR v4 format):
 
 ```
-DISTINCT   : 'distinct';
-AND        : 'and';
-OR         : 'or';
-NOT        : 'not';
-SORT       : 'sort by';
-ASC        : 'asc';
-DESC       : 'desc';
-PAGINATION : 'page';
-NEQ        : '!=';
-LTE        : '<=';
-GTE        : '>=';
-EQ         : '=';
-LT         : '<';
-GT         : '>';
-STARTS_WITH: 'starts with';
-ENDS_WITH  : 'ends with';
-CONTAINS   : 'contains';
-IS_NULL    : 'is null';
-IS_NOT_NULL: 'is not null';
-LPAREN     : '(';
-RPAREN     : ')';
-COMMA      : ',';
+DISTINCT    : 'distinct';
+AND         : 'and';
+OR          : 'or';
+NOT         : 'not';
+SORT        : 'sort by';
+ASC         : 'asc';
+DESC        : 'desc';
+PAGINATION  : 'page';
+NEQ         : '!=';
+LTE         : '<=';
+GTE         : '>=';
+EQ          : '=';
+LT          : '<';
+GT          : '>';
+STARTS_WITH : 'starts with';
+ENDS_WITH   : 'ends with';
+CONTAINS    : 'contains';
+IS_NULL     : 'is null';
+IS_NOT_NULL : 'is not null';
+IN          : 'in';
+NOT_IN      : 'not in';
+LPAREN      : '(';
+RPAREN      : ')';
+COMMA       : ',';
 
 INT_VALUE     : [0-9]+;
 DECIMAL_VALUE : [0-9]+'.'[0-9]+;
@@ -504,10 +508,12 @@ STRING_VALUE  : '"' (~["\\] | '\\' .)* '"';
 
 query            : DISTINCT? (condition)? (SORT sortFields)? (PAGINATION paginationParams)? ;
 condition        : simpleCondition | conditionWrapper | notCondition;
-operator         : NEQ | LTE | GTE | EQ | LT | GT | STARTS_WITH | ENDS_WITH | CONTAINS | IS_NULL | IS_NOT_NULL ;
+operator         : NEQ | LTE | GTE | EQ | LT | GT | STARTS_WITH | ENDS_WITH | CONTAINS | IS_NULL | IS_NOT_NULL | IN | NOT_IN ;
 conditionWrapper : (AND | OR) LPAREN condition (COMMA condition)* RPAREN ;
 notCondition     : NOT LPAREN condition RPAREN ;
-simpleCondition  : PROPERTY operator (INT_VALUE | DECIMAL_VALUE | BOOLEAN_VALUE | STRING_VALUE)? ;
+simpleValue      : INT_VALUE | DECIMAL_VALUE | BOOLEAN_VALUE | STRING_VALUE;
+arrayValue       : LPAREN simpleValue (COMMA simpleValue)* RPAREN ;
+simpleCondition  : PROPERTY operator (simpleValue | arrayValue)? ;
 direction        : ASC | DESC ;
 sortField        : PROPERTY (direction)? ;
 sortFields       : sortField (COMMA sortField)* ;
@@ -533,6 +539,8 @@ and(not(firstName="Luke"), lastName="Skywalker")
 lastName="Skywalker" page 2,10
 lastName is null
 lastName is not null
+lastName in ("Skywalker", "Solo")
+lastName not in ("Skywalker", "Solo")
 deleted=false
 address.city="Rome"
 distinct and(orders.totalPrice>1000,currency="EUR")
@@ -601,8 +609,19 @@ public class MyRestController {
 }
 ```
 
-The mappings in `SimplePropertyNameMapper` are resolved recursively by default. 
+The mappings in `SimplePropertyNameMapper` are resolved recursively by default.
 
-So if you mapped `prop1` to `prop2`, then all the fields nested in `prop1` will be automatically mapped to equal-named fields under `prop2`. 
+So if you mapped `prop1` to `prop2`, then all the fields nested in `prop1` will be automatically mapped to equal-named fields under `prop2`.
 
 You can switch off the recursive mapping by setting the `recursive` flag to `false` in the builder.
+
+# React Components
+
+Querity provides a library of **React components** designed to simplify the creation of user interfaces for Querity-based REST APIs.
+
+These components are available as the [@queritylib/react](https://www.npmjs.com/package/@queritylib/react) package on npm.
+
+- **Live Demo**: See these components in action in the [querity-demo](#demo) project.
+- **Documentation**: Explore the [documentation](https://www.npmjs.com/package/@queritylib/react) to start integrating Querity React Components into your React application.
+
+Get started today and build powerful, dynamic UIs with ease!

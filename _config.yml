@@ -26,7 +26,7 @@ baseurl: "/querity" # the subpath of your site, e.g. /blog
 url: "https://queritylib.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 repository: queritylib/querity
 logo: /assets/img/querity-logo.jpg
-querity_version: 3.1.0
+querity_version: 3.2.0
 
 # Build settings
 remote_theme: pages-themes/minimal@v0.2.0
