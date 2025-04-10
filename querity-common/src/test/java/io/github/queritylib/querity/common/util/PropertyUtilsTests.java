@@ -55,7 +55,9 @@ class PropertyUtilsTests {
         Arguments.of(MyClass.class, "doubleValue", 1.2, Double.class),
         Arguments.of(MyClass.class, "nested.stringValue", "test", String.class),
         Arguments.of(MyClass.class, "stringList", "test", String.class),
-        Arguments.of(MyClass.class, "nestedList.stringValue", "test", String.class)
+        Arguments.of(MyClass.class, "nestedList.stringValue", "test", String.class),
+        Arguments.of(MyClass.class, "stringValue", List.of("test"), Object[].class),
+        Arguments.of(MyClass.class, "stringValue", new Object[]{"test"}, Object[].class)
     );
   }
 

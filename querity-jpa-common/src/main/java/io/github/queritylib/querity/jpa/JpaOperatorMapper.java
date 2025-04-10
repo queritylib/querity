@@ -8,7 +8,6 @@ import jakarta.persistence.metamodel.Metamodel;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -85,15 +84,11 @@ class JpaOperatorMapper {
   }
 
   private static Predicate getIn(Path<?> path, Object value, CriteriaBuilder cb) {
-    Predicate inPredicate;
-    if (value instanceof Collection) {
-      inPredicate = path.in((Collection<?>) value);
-    } else if (value.getClass().isArray()) {
-      inPredicate = path.in((Object[]) value);
+    if (value.getClass().isArray()) {
+      return cb.and(path.in((Object[]) value), getIsNotNull(path, cb));
     } else {
-      throw new IllegalArgumentException("Value must be a collection or an array");
+      throw new IllegalArgumentException("Value must be an array");
     }
-    return cb.and(inPredicate, getIsNotNull(path, cb));
   }
 
   private static Predicate getNotIn(Path<?> path, Object value, CriteriaBuilder cb) {

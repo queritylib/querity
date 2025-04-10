@@ -19,6 +19,7 @@ import static io.github.queritylib.querity.api.Operator.*;
 import static io.github.queritylib.querity.api.Querity.*;
 import static io.github.queritylib.querity.api.Sort.Direction.DESC;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extends Order<? extends OrderItem>>, K extends Comparable<K>> {
   protected DatabaseSeeder<T> databaseSeeder;
@@ -417,6 +418,16 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
+    void givenFilterWithInConditionWithStringValue_whenFilterAll_thenThrowIllegalArgumentException() {
+      Query query = Querity.query()
+          .filter(filterBy(PROPERTY_LAST_NAME, IN, entity1.getLastName()))
+          .build();
+      assertThatIllegalArgumentException()
+          .isThrownBy(() -> querity.findAll(getEntityClass(), query))
+          .withMessage("Value must be an array");
+    }
+
+    @Test
     void givenFilterWithNotInListCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_LAST_NAME, NOT_IN, List.of(entity1.getLastName(), entity2.getLastName())))
@@ -438,6 +449,16 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
       assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
           .filter(p -> p.getLastName() == null || !List.of(entity1.getLastName(), entity2.getLastName()).contains(p.getLastName()))
           .toList());
+    }
+
+    @Test
+    void givenFilterWithNotInConditionWithStringValue_whenFilterAll_thenThrowIllegalArgumentException() {
+      Query query = Querity.query()
+          .filter(filterBy(PROPERTY_LAST_NAME, NOT_IN, entity1.getLastName()))
+          .build();
+      assertThatIllegalArgumentException()
+          .isThrownBy(() -> querity.findAll(getEntityClass(), query))
+          .withMessage("Value must be an array");
     }
 
     @Test

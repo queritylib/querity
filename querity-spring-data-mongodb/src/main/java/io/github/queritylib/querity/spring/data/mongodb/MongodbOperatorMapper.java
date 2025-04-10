@@ -7,7 +7,6 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.query.Criteria;
 
-import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -78,16 +77,18 @@ class MongodbOperatorMapper {
   }
 
   private static Criteria getIn(Criteria where, Object value, boolean negate) {
-    return negate ? where.nin((Object[]) value) : where.in((Object[]) value);
+    if (value.getClass().isArray()) {
+      return negate ? where.nin((Object[]) value) : where.in((Object[]) value);
+    } else {
+      throw new IllegalArgumentException("Value must be an array");
+    }
   }
 
   private static Criteria getNotIn(Criteria where, Object value, boolean negate) {
-    if (value instanceof Collection<?>) {
-      return negate ? where.in((Collection<?>) value) : where.nin((Collection<?>) value);
-    } else if (value.getClass().isArray()) {
+    if (value.getClass().isArray()) {
       return negate ? where.in((Object[]) value) : where.nin((Object[]) value);
     } else {
-      throw new IllegalArgumentException("Value must be a collection or an array");
+      throw new IllegalArgumentException("Value must be an array");
     }
   }
 
