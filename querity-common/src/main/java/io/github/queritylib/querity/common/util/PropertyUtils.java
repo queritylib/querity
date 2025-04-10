@@ -9,6 +9,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.StreamSupport;
 
 import static io.github.queritylib.querity.common.util.ReflectionUtils.getAccessibleField;
 
@@ -49,6 +50,16 @@ public class PropertyUtils {
   public static <T> Object getActualPropertyValue(Class<T> beanClass, String propertyPath, Object value) {
     if (value == null) return null;
     Class<?> propertyType = getPropertyType(beanClass, propertyPath);
-    return PropertyValueExtractorFactory.getPropertyValueExtractor(propertyType).extractValue(propertyType, value);
+    if (value instanceof Iterable<?> it) {
+      return StreamSupport.stream(it.spliterator(), false)
+          .map(v -> PropertyValueExtractorFactory.getPropertyValueExtractor(propertyType).extractValue(propertyType, v))
+          .toArray();
+    } else if (value.getClass().isArray()) {
+      return Arrays.stream((Object[]) value)
+          .map(v -> PropertyValueExtractorFactory.getPropertyValueExtractor(propertyType).extractValue(propertyType, v))
+          .toArray();
+    } else {
+      return PropertyValueExtractorFactory.getPropertyValueExtractor(propertyType).extractValue(propertyType, value);
+    }
   }
 }

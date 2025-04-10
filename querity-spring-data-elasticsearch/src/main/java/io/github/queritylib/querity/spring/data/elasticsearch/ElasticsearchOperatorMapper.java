@@ -26,6 +26,8 @@ class ElasticsearchOperatorMapper {
     OPERATOR_CRITERIA_MAP.put(Operator.LESSER_THAN_EQUALS, ElasticsearchOperatorMapper::getLesserThanEquals);
     OPERATOR_CRITERIA_MAP.put(Operator.IS_NULL, (where, value, negate) -> getIsNull(where, negate));
     OPERATOR_CRITERIA_MAP.put(Operator.IS_NOT_NULL, (where, value, negate) -> getIsNull(where, !negate));
+    OPERATOR_CRITERIA_MAP.put(Operator.IN, ElasticsearchOperatorMapper::getIn);
+    OPERATOR_CRITERIA_MAP.put(Operator.NOT_IN, ElasticsearchOperatorMapper::getNotIn);
   }
 
   private static Criteria getIsNull(Criteria where, boolean negate) {
@@ -70,6 +72,22 @@ class ElasticsearchOperatorMapper {
 
   private static Criteria getLesserThanEquals(Criteria where, Object value, boolean negate) {
     return negate ? where.greaterThan(value) : where.lessThanEqual(value);
+  }
+
+  private static Criteria getIn(Criteria where, Object value, boolean negate) {
+    if (value.getClass().isArray()) {
+      return negate ? where.not().in((Object[]) value) : where.in((Object[]) value);
+    } else {
+      throw new IllegalArgumentException("Value must be an array");
+    }
+  }
+
+  private static Criteria getNotIn(Criteria where, Object value, boolean negate) {
+    if (value.getClass().isArray()) {
+      return negate ? where.in((Object[]) value) : where.not().in((Object[]) value);
+    } else {
+      throw new IllegalArgumentException("Value must be an array");
+    }
   }
 
   @FunctionalInterface

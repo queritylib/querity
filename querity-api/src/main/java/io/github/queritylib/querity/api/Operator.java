@@ -13,7 +13,9 @@ public enum Operator {
   LESSER_THAN(1),
   LESSER_THAN_EQUALS(1),
   IS_NULL(0),
-  IS_NOT_NULL(0);
+  IS_NOT_NULL(0),
+  IN(1),
+  NOT_IN(1);
 
   @Getter
   private final int requiredValuesCount;

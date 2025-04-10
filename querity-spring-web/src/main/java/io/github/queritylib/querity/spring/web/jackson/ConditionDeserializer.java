@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import io.github.queritylib.querity.api.*;
+import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.util.List;
@@ -34,13 +35,15 @@ public class ConditionDeserializer extends StdDeserializer<Condition> {
     return parseCondition(root, jsonParser);
   }
 
+  @SneakyThrows
   private static Condition parseCondition(JsonNode jsonNode, JsonParser jsonParser) {
-    JsonParser jp = jsonNode.traverse();
-    jp.setCodec(jsonParser.getCodec());
-    if (isAndConditionsWrapper(jsonNode)) return parseAndConditionsWrapper(jsonNode, jsonParser);
-    if (isOrConditionsWrapper(jsonNode)) return parseOrConditionsWrapper(jsonNode, jsonParser);
-    if (isNotCondition(jsonNode)) return parseNotCondition(jsonNode, jsonParser);
-    return parseSimpleCondition(jsonNode);
+    try (JsonParser jp = jsonNode.traverse()) {
+      jp.setCodec(jsonParser.getCodec());
+      if (isAndConditionsWrapper(jsonNode)) return parseAndConditionsWrapper(jsonNode, jsonParser);
+      if (isOrConditionsWrapper(jsonNode)) return parseOrConditionsWrapper(jsonNode, jsonParser);
+      if (isNotCondition(jsonNode)) return parseNotCondition(jsonNode, jsonParser);
+      return parseSimpleCondition(jsonNode);
+    }
   }
 
   private static boolean isAndConditionsWrapper(JsonNode jsonNode) {
@@ -85,7 +88,10 @@ public class ConditionDeserializer extends StdDeserializer<Condition> {
     SimpleCondition.SimpleConditionBuilder builder = SimpleCondition.builder();
     builder = setIfNotNull(jsonNode, builder, FIELD_SIMPLE_CONDITION_PROPERTY_NAME, JsonNode::asText, builder::propertyName);
     builder = setIfNotNull(jsonNode, builder, FIELD_SIMPLE_CONDITION_OPERATOR, node -> Operator.valueOf(node.asText()), builder::operator);
-    builder = setIfNotNull(jsonNode, builder, FIELD_SIMPLE_CONDITION_VALUE, JsonNode::asText, builder::value);
+    if (isArray(jsonNode, FIELD_SIMPLE_CONDITION_VALUE))
+      builder = setArrayIfNotNull(jsonNode, builder, FIELD_SIMPLE_CONDITION_VALUE, JsonNode::asText, builder::value);
+    else
+      builder = setIfNotNull(jsonNode, builder, FIELD_SIMPLE_CONDITION_VALUE, JsonNode::asText, builder::value);
     try {
       return builder.build();
     } catch (Exception ex) {
@@ -93,9 +99,27 @@ public class ConditionDeserializer extends StdDeserializer<Condition> {
     }
   }
 
+  private static boolean isArray(JsonNode jsonNode, String fieldName) {
+    return jsonNode.hasNonNull(fieldName) && jsonNode.get(fieldName).isArray();
+  }
+
   private static <T> SimpleCondition.SimpleConditionBuilder setIfNotNull(JsonNode jsonNode, SimpleCondition.SimpleConditionBuilder builder, String fieldName, Function<JsonNode, T> valueProvider, Function<T, SimpleCondition.SimpleConditionBuilder> setValueFunction) {
     if (jsonNode.hasNonNull(fieldName))
       builder = setValueFunction.apply(valueProvider.apply(jsonNode.get(fieldName)));
+    return builder;
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T> SimpleCondition.SimpleConditionBuilder setArrayIfNotNull(JsonNode jsonNode, SimpleCondition.SimpleConditionBuilder builder, String fieldName, Function<JsonNode, T> valueProvider, Function<Object, SimpleCondition.SimpleConditionBuilder> setValueFunction) {
+    if (jsonNode.hasNonNull(fieldName)) {
+      JsonNode valueNode = jsonNode.get(fieldName);
+      T[] values = (T[]) StreamSupport.stream(
+              Spliterators.spliteratorUnknownSize(valueNode.elements(), Spliterator.ORDERED),
+              false)
+          .map(valueProvider)
+          .toArray();
+      builder = setValueFunction.apply(values);
+    }
     return builder;
   }
 }

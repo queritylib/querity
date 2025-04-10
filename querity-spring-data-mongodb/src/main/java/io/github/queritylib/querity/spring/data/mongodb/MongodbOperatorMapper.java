@@ -26,6 +26,8 @@ class MongodbOperatorMapper {
     OPERATOR_CRITERIA_MAP.put(Operator.LESSER_THAN_EQUALS, MongodbOperatorMapper::getLesserThanEquals);
     OPERATOR_CRITERIA_MAP.put(Operator.IS_NULL, (where, value, negate) -> getIsNull(where, negate));
     OPERATOR_CRITERIA_MAP.put(Operator.IS_NOT_NULL, (where, value, negate) -> getIsNull(where, !negate));
+    OPERATOR_CRITERIA_MAP.put(Operator.IN, MongodbOperatorMapper::getIn);
+    OPERATOR_CRITERIA_MAP.put(Operator.NOT_IN, MongodbOperatorMapper::getNotIn);
   }
 
   private static Criteria getIsNull(Criteria where, boolean negate) {
@@ -72,6 +74,22 @@ class MongodbOperatorMapper {
 
   private static Criteria getLesserThanEquals(Criteria where, Object value, boolean negate) {
     return negate ? where.gt(value) : where.lte(value);
+  }
+
+  private static Criteria getIn(Criteria where, Object value, boolean negate) {
+    if (value.getClass().isArray()) {
+      return negate ? where.nin((Object[]) value) : where.in((Object[]) value);
+    } else {
+      throw new IllegalArgumentException("Value must be an array");
+    }
+  }
+
+  private static Criteria getNotIn(Criteria where, Object value, boolean negate) {
+    if (value.getClass().isArray()) {
+      return negate ? where.in((Object[]) value) : where.nin((Object[]) value);
+    } else {
+      throw new IllegalArgumentException("Value must be an array");
+    }
   }
 
   @FunctionalInterface

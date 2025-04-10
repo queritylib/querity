@@ -35,6 +35,7 @@ class QueritySpringWebTests {
       /* sort */                      "{\"sort\":[{\"propertyName\":\"lastName\"},{\"propertyName\":\"firstName\",\"direction\":\"DESC\"}]}",
       /* not single condition */      "{\"filter\":{\"not\":{\"propertyName\":\"lastName\",\"operator\":\"EQUALS\",\"value\":\"Skywalker\"}}}",
       /* not conditions wrapper */    "{\"filter\":{\"not\":{\"and\":[{\"propertyName\":\"lastName\",\"operator\":\"EQUALS\",\"value\":\"Skywalker\"}]}}}",
+      /* in array condition */        "{\"filter\":{\"propertyName\":\"lastName\",\"operator\":\"IN\",\"value\":[\"Skywalker\",\"Solo\"]}}",
   })
   void givenJsonQuery_whenGetQuery_thenReturnsTheSameQueryAsResponse(String query) throws Exception {
     mockMvc.perform(get("/query")
@@ -78,6 +79,7 @@ class QueritySpringWebTests {
       /* nested conditions wrapper */ "{\"and\":[{\"propertyName\":\"lastName\",\"operator\":\"EQUALS\",\"value\":\"Skywalker\"},{\"or\":[{\"propertyName\":\"firstName\",\"operator\":\"EQUALS\",\"value\":\"Anakin\"},{\"propertyName\":\"firstName\",\"operator\":\"EQUALS\",\"value\":\"Luke\"}]}]}",
       /* not single condition */      "{\"not\":{\"propertyName\":\"lastName\",\"operator\":\"EQUALS\",\"value\":\"Skywalker\"}}",
       /* not conditions wrapper */    "{\"not\":{\"and\":[{\"propertyName\":\"lastName\",\"operator\":\"EQUALS\",\"value\":\"Skywalker\"}]}}",
+      /* in array condition */        "{\"propertyName\":\"lastName\",\"operator\":\"IN\",\"value\":[\"Skywalker\",\"Solo\"]}",
   })
   void givenJsonFilter_whenGetCount_thenReturnsTheSameFilterAsResponse(String filter) throws Exception {
     mockMvc.perform(get("/count")
