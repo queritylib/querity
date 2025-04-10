@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.data.elasticsearch.core.query.Criteria;
 
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -26,6 +27,8 @@ class ElasticsearchOperatorMapper {
     OPERATOR_CRITERIA_MAP.put(Operator.LESSER_THAN_EQUALS, ElasticsearchOperatorMapper::getLesserThanEquals);
     OPERATOR_CRITERIA_MAP.put(Operator.IS_NULL, (where, value, negate) -> getIsNull(where, negate));
     OPERATOR_CRITERIA_MAP.put(Operator.IS_NOT_NULL, (where, value, negate) -> getIsNull(where, !negate));
+    OPERATOR_CRITERIA_MAP.put(Operator.IN, ElasticsearchOperatorMapper::getIn);
+    OPERATOR_CRITERIA_MAP.put(Operator.NOT_IN, ElasticsearchOperatorMapper::getNotIn);
   }
 
   private static Criteria getIsNull(Criteria where, boolean negate) {
@@ -70,6 +73,26 @@ class ElasticsearchOperatorMapper {
 
   private static Criteria getLesserThanEquals(Criteria where, Object value, boolean negate) {
     return negate ? where.greaterThan(value) : where.lessThanEqual(value);
+  }
+
+  private static Criteria getIn(Criteria where, Object value, boolean negate) {
+    if (value instanceof Collection<?>) {
+      return negate ? where.not().in((Collection<?>) value) : where.in((Collection<?>) value);
+    } else if (value.getClass().isArray()) {
+      return negate ? where.not().in((Object[]) value) : where.in((Object[]) value);
+    } else {
+      throw new IllegalArgumentException("Value must be a collection or an array");
+    }
+  }
+
+  private static Criteria getNotIn(Criteria where, Object value, boolean negate) {
+    if (value instanceof Collection<?>) {
+      return negate ? where.in((Collection<?>) value) : where.not().in((Collection<?>) value);
+    } else if (value.getClass().isArray()) {
+      return negate ? where.in((Object[]) value) : where.not().in((Object[]) value);
+    } else {
+      throw new IllegalArgumentException("Value must be a collection or an array");
+    }
   }
 
   @FunctionalInterface

@@ -393,6 +393,54 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
+    void givenFilterWithInListCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+      Query query = Querity.query()
+          .filter(filterBy(PROPERTY_LAST_NAME, IN, List.of(entity1.getLastName(), entity2.getLastName())))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getLastName() != null && List.of(entity1.getLastName(), entity2.getLastName()).contains(p.getLastName()))
+          .toList());
+    }
+
+    @Test
+    void givenFilterWithInArrayCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+      Query query = Querity.query()
+          .filter(filterBy(PROPERTY_LAST_NAME, IN, new String[]{entity1.getLastName(), entity2.getLastName()}))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getLastName() != null && List.of(entity1.getLastName(), entity2.getLastName()).contains(p.getLastName()))
+          .toList());
+    }
+
+    @Test
+    void givenFilterWithNotInListCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+      Query query = Querity.query()
+          .filter(filterBy(PROPERTY_LAST_NAME, NOT_IN, List.of(entity1.getLastName(), entity2.getLastName())))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getLastName() == null || !List.of(entity1.getLastName(), entity2.getLastName()).contains(p.getLastName()))
+          .toList());
+    }
+
+    @Test
+    void givenFilterWithNotInArrayCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+      Query query = Querity.query()
+          .filter(filterBy(PROPERTY_LAST_NAME, NOT_IN, new String[]{entity1.getLastName(), entity2.getLastName()}))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getLastName() == null || !List.of(entity1.getLastName(), entity2.getLastName()).contains(p.getLastName()))
+          .toList());
+    }
+
+    @Test
     void givenFilterWithTwoStringEqualsConditionsWithAndLogic_whenFilterAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(and(

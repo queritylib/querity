@@ -73,14 +73,10 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
     Operator operator = (Operator) visit(ctx.operator());
     Object value = null;
     if (operator.getRequiredValuesCount() > 0) {
-      if (ctx.INT_VALUE() != null) {
-        value = Integer.parseInt(ctx.INT_VALUE().getText());
-      } else if (ctx.DECIMAL_VALUE() != null) {
-        value = new BigDecimal(ctx.DECIMAL_VALUE().getText());
-      } else if (ctx.BOOLEAN_VALUE() != null) {
-        value = Boolean.valueOf(ctx.BOOLEAN_VALUE().getText());
-      } else {
-        value = ctx.STRING_VALUE().getText().replace("\"", "");  // Remove quotes if present
+      if (ctx.arrayValue() != null) {
+        value = visitArrayValue(ctx.arrayValue());
+      } else if (ctx.simpleValue() != null) {
+        value = visitSimpleValue(ctx.simpleValue());
       }
     }
 
@@ -89,6 +85,28 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
         .operator(operator)
         .value(value)
         .build();
+  }
+
+  @Override
+  public Object visitSimpleValue(QueryParser.SimpleValueContext ctx) {
+    Object value;
+    if (ctx.INT_VALUE() != null) {
+      value = Integer.parseInt(ctx.INT_VALUE().getText());
+    } else if (ctx.DECIMAL_VALUE() != null) {
+      value = new BigDecimal(ctx.DECIMAL_VALUE().getText());
+    } else if (ctx.BOOLEAN_VALUE() != null) {
+      value = Boolean.valueOf(ctx.BOOLEAN_VALUE().getText());
+    } else {
+      value = ctx.STRING_VALUE().getText().replace("\"", "");  // Remove quotes if present
+    }
+    return value;
+  }
+
+  @Override
+  public Object visitArrayValue(QueryParser.ArrayValueContext ctx) {
+    return ctx.simpleValue().stream()
+        .map(this::visitSimpleValue)
+        .toArray();
   }
 
   @Override
@@ -115,6 +133,10 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
       return Operator.IS_NULL;
     } else if (ctx.IS_NOT_NULL() != null) {
       return Operator.IS_NOT_NULL;
+    } else if (ctx.IN() != null) {
+      return Operator.IN;
+    } else if (ctx.NOT_IN() != null) {
+      return Operator.NOT_IN;
     } else {
       throw new UnsupportedOperationException("Unsupported operator: " + ctx.getText());
     }

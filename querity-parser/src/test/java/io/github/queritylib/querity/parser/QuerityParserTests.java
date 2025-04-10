@@ -13,7 +13,7 @@ import static io.github.queritylib.querity.api.Operator.*;
 import static io.github.queritylib.querity.api.Querity.*;
 import static io.github.queritylib.querity.api.Sort.Direction.ASC;
 import static io.github.queritylib.querity.api.Sort.Direction.DESC;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class QuerityParserTests {
 
@@ -52,6 +52,10 @@ class QuerityParserTests {
             Querity.query().filter(filterBy("lastName", IS_NULL)).build()),
         Arguments.of("lastName is not null",
             Querity.query().filter(filterBy("lastName", IS_NOT_NULL)).build()),
+        Arguments.of("lastName in (\"Skywalker\", \"Solo\")",
+            Querity.query().filter(filterBy("lastName", IN, new Object[]{"Skywalker", "Solo"})).build()),
+        Arguments.of("lastName not in (\"Skywalker\", \"Solo\")",
+            Querity.query().filter(filterBy("lastName", NOT_IN, new Object[]{"Skywalker", "Solo"})).build()),
         Arguments.of("deleted=false",
             Querity.query().filter(filterBy("deleted", Boolean.FALSE)).build()),
         Arguments.of("address.city=\"Rome\"",
@@ -67,6 +71,6 @@ class QuerityParserTests {
   @MethodSource("provideArguments")
   void testParseQuery(String query, Query expected) {
     Query actual = QuerityParser.parseQuery(query);
-    assertEquals(expected, actual);
+    assertThat(actual).usingRecursiveComparison().isEqualTo(expected);
   }
 }

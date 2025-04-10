@@ -126,6 +126,24 @@ class QuerityApiTests {
     }
 
     @Test
+    void givenFilterWithOneInListCondition_whenFindAll_thenReturnListOfEntity() {
+      List<Person> people = querity.findAll(Person.class,
+          Querity.query()
+              .filter(filterBy("lastName", IN, List.of("Skywalker", "Solo")))
+              .build());
+      assertThat(people).isNotNull();
+    }
+
+    @Test
+    void givenFilterWithOneNotInListCondition_whenFindAll_thenReturnListOfEntity() {
+      List<Person> people = querity.findAll(Person.class,
+          Querity.query()
+              .filter(filterBy("lastName", NOT_IN, List.of("Skywalker", "Solo")))
+              .build());
+      assertThat(people).isNotNull();
+    }
+
+    @Test
     void givenFilterWithNotConditionContainingSimpleCondition_whenFindAll_thenReturnListOfEntity() {
       List<Person> people = querity.findAll(Person.class,
           Querity.query()

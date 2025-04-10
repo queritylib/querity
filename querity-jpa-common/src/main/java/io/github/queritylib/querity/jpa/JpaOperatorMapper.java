@@ -8,6 +8,7 @@ import jakarta.persistence.metamodel.Metamodel;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -27,6 +28,8 @@ class JpaOperatorMapper {
     OPERATOR_PREDICATE_MAP.put(Operator.LESSER_THAN_EQUALS, JpaOperatorMapper::getLesserThanEquals);
     OPERATOR_PREDICATE_MAP.put(Operator.IS_NULL, (path, value, cb) -> getIsNull(path, cb));
     OPERATOR_PREDICATE_MAP.put(Operator.IS_NOT_NULL, (path, value, cb) -> getIsNotNull(path, cb));
+    OPERATOR_PREDICATE_MAP.put(Operator.IN, JpaOperatorMapper::getIn);
+    OPERATOR_PREDICATE_MAP.put(Operator.NOT_IN, JpaOperatorMapper::getNotIn);
   }
 
   private static Predicate getIsNull(Path<?> path, CriteriaBuilder cb) {
@@ -79,6 +82,22 @@ class JpaOperatorMapper {
   @SuppressWarnings({"unchecked", "rawtypes"})
   private static Predicate getLesserThanEquals(Path<?> path, Object value, CriteriaBuilder cb) {
     return cb.lessThanOrEqualTo((Expression) path, (Comparable) value);
+  }
+
+  private static Predicate getIn(Path<?> path, Object value, CriteriaBuilder cb) {
+    Predicate inPredicate;
+    if (value instanceof Collection) {
+      inPredicate = path.in((Collection<?>) value);
+    } else if (value.getClass().isArray()) {
+      inPredicate = path.in((Object[]) value);
+    } else {
+      throw new IllegalArgumentException("Value must be a collection or an array");
+    }
+    return cb.and(inPredicate, getIsNotNull(path, cb));
+  }
+
+  private static Predicate getNotIn(Path<?> path, Object value, CriteriaBuilder cb) {
+    return getIn(path, value, cb).not();
   }
 
   @FunctionalInterface
