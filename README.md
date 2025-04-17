@@ -45,6 +45,9 @@ Read the full documentation [here](https://queritylib.github.io/querity).
 
 Check out the simplest demo application using Querity at [querity-demo](https://github.com/queritylib/querity-demo).
 
+This demo also uses the [@queritylib/react](https://github.com/queritylib/querity-react) library for the frontend. Take
+a look!
+
 ## Getting Started
 
 ### Dependencies
