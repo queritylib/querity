@@ -10,7 +10,7 @@
   <artifactId>querity-api</artifactId>
 
   <properties>
-    <jackson.version>2.18.3</jackson.version>
+    <jackson.version>2.19.0</jackson.version>
     <junit-jupiter.version>5.12.2</junit-jupiter.version>
     <assertj.version>3.27.3</assertj.version>
     <mockito.version>5.17.0</mockito.version>
