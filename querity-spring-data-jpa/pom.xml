@@ -10,7 +10,7 @@
   <artifactId>querity-spring-data-jpa</artifactId>
 
   <properties>
-    <testcontainers.version>1.20.6</testcontainers.version>
+    <testcontainers.version>1.21.0</testcontainers.version>
     <postgresql-driver.version>42.7.5</postgresql-driver.version>
   </properties>
 

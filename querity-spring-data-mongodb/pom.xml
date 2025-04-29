@@ -10,7 +10,7 @@
   <artifactId>querity-spring-data-mongodb</artifactId>
 
   <properties>
-    <testcontainers.version>1.20.6</testcontainers.version>
+    <testcontainers.version>1.21.0</testcontainers.version>
   </properties>
 
   <dependencies>
