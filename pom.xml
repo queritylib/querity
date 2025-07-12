@@ -52,7 +52,7 @@
 
     <spring-boot.version>3.5.3</spring-boot.version>
     <lombok.version>1.18.38</lombok.version>
-    <commons-lang3.version>3.17.0</commons-lang3.version>
+    <commons-lang3.version>3.18.0</commons-lang3.version>
     <reflections.version>0.10.2</reflections.version>
 
     <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
