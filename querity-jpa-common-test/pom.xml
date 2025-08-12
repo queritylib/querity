@@ -12,7 +12,7 @@
   <properties>
     <jakarta.persistence.version>3.1.0</jakarta.persistence.version>
     <junit-jupiter.version>5.13.3</junit-jupiter.version>
-    <assertj.version>3.27.3</assertj.version>
+    <assertj.version>3.27.4</assertj.version>
   </properties>
 
   <dependencies>
