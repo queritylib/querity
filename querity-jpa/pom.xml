@@ -9,6 +9,11 @@
 
   <artifactId>querity-jpa</artifactId>
 
+  <name>Querity JPA</name>
+  <description>Support for querying SQL databases using a Jakarta Persistence API implementation as backend (defaults to
+    Hibernate)
+  </description>
+
   <properties>
     <jakarta.persistence.version>3.1.0</jakarta.persistence.version>
     <hibernate.version>6.6.27.Final</hibernate.version>

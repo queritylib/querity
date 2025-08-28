@@ -9,6 +9,9 @@
 
   <artifactId>querity-test</artifactId>
 
+  <name>Querity Test</name>
+  <description>Test suite and utilities to test Querity</description>
+
   <dependencies>
     <dependency>
       <groupId>io.github.queritylib</groupId>

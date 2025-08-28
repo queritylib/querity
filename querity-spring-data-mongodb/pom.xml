@@ -9,6 +9,9 @@
 
   <artifactId>querity-spring-data-mongodb</artifactId>
 
+  <name>Querity Spring Data MongoDB</name>
+  <description>Support for querying MongoDB using Spring Data MongoDB as backend</description>
+
   <properties>
     <testcontainers.version>1.21.3</testcontainers.version>
   </properties>

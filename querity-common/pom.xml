@@ -9,6 +9,9 @@
 
   <artifactId>querity-common</artifactId>
 
+  <name>Querity Common</name>
+  <description>Common utilities and classes for Querity</description>
+
   <properties>
     <jackson.version>2.18.2</jackson.version>
     <junit-jupiter.version>5.13.4</junit-jupiter.version>

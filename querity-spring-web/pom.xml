@@ -9,6 +9,9 @@
 
   <artifactId>querity-spring-web</artifactId>
 
+  <name>Querity Spring Web</name>
+  <description>Support for Spring Web MVC</description>
+
   <dependencies>
     <dependency>
       <groupId>io.github.queritylib</groupId>

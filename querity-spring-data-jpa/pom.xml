@@ -9,6 +9,9 @@
 
   <artifactId>querity-spring-data-jpa</artifactId>
 
+  <name>Querity Spring Data JPA</name>
+  <description>Support for querying SQL databases using Spring Data JPA as backend</description>
+
   <properties>
     <testcontainers.version>1.21.3</testcontainers.version>
     <postgresql-driver.version>42.7.7</postgresql-driver.version>

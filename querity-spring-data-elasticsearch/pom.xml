@@ -9,6 +9,9 @@
 
   <artifactId>querity-spring-data-elasticsearch</artifactId>
 
+  <name>Querity Spring Data ElasticSearch</name>
+  <description>Support for querying ElasticSearch using Spring Data ElasticSearch as backend</description>
+
   <properties>
     <testcontainers.version>1.21.3</testcontainers.version>
     <postgresql-driver.version>42.7.5</postgresql-driver.version>

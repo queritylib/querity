@@ -9,6 +9,9 @@
 
   <artifactId>querity-jpa-common</artifactId>
 
+  <name>Querity JPA Common</name>
+  <description>Common code for JPA based Querity implementations</description>
+
   <properties>
     <jakarta.persistence.version>3.1.0</jakarta.persistence.version>
     <hibernate.version>6.6.27.Final</hibernate.version>
