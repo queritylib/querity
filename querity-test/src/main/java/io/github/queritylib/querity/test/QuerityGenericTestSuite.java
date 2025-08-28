@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -40,6 +41,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
   public static final String PROPERTY_VISITED_LOCATIONS_COUNTRY = "visitedLocations.country";
   public static final String PROPERTY_VISITED_LOCATIONS_CITIES = "visitedLocations.cities";
   public static final String PROPERTY_FAVOURITE_PRODUCT_CATEGORY = "favouriteProductCategory";
+  public static final String PROPERTY_ORDERS_EXTERNAL_ID = "orders.externalId";
 
   protected List<T> entities;
   protected T entity1;
@@ -166,6 +168,34 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
       assertThat(result).isNotEmpty();
       assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
           .filter(Person::isMarried)
+          .toList());
+    }
+
+    @Test
+    void givenFilterWithUUIDEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+      UUID anOrderExternalId = entity1.getOrders().get(0).getExternalId();
+      Query query = Querity.query()
+          .filter(filterBy(PROPERTY_ORDERS_EXTERNAL_ID, EQUALS, anOrderExternalId))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getOrders().stream()
+              .anyMatch(l -> l.getExternalId().equals(anOrderExternalId)))
+          .toList());
+    }
+
+    @Test
+    void givenFilterWithUUIDAsStringEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+      UUID anOrderExternalId = entity1.getOrders().get(0).getExternalId();
+      Query query = Querity.query()
+          .filter(filterBy(PROPERTY_ORDERS_EXTERNAL_ID, EQUALS, anOrderExternalId.toString()))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getOrders().stream()
+              .anyMatch(l -> l.getExternalId().equals(anOrderExternalId)))
           .toList());
     }
 

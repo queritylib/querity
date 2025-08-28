@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -24,4 +25,5 @@ public class Order extends AbstractPersistable<Long> implements io.github.querit
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
   @Builder.Default
   private List<OrderItem> items = new ArrayList<>();
+  private UUID externalId;
 }

@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -17,4 +18,5 @@ public class Order implements io.github.queritylib.querity.test.domain.Order<Ord
   @NonNull
   @Builder.Default
   private List<OrderItem> items = new ArrayList<>();
+  private UUID externalId;
 }
