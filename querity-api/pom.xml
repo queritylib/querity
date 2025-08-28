@@ -4,7 +4,7 @@
   <parent>
     <artifactId>querity-parent</artifactId>
     <groupId>io.github.queritylib</groupId>
-    <version>3.3.1</version>
+    <version>3.3.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>querity-api</artifactId>
