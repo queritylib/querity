@@ -19,7 +19,8 @@ public class PropertyValueExtractorFactory {
       new LocalDateValueExtractor(),
       new LocalDateTimeValueExtractor(),
       new ZonedDateTimeValueExtractor(),
-      new EnumValueExtractor());
+      new EnumValueExtractor(),
+      new UUIDValueExtractor());
 
   @SuppressWarnings("java:S1452")
   public static PropertyValueExtractor<?> getPropertyValueExtractor(Class<?> propertyType) {

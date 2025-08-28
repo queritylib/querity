@@ -1,6 +1,7 @@
 package io.github.queritylib.querity.test.domain;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface Order<I extends OrderItem> {
   Short getYear();
@@ -14,4 +15,8 @@ public interface Order<I extends OrderItem> {
   List<I> getItems();
 
   void setItems(List<I> items);
+
+  UUID getExternalId();
+
+  void setExternalId(UUID externalId);
 }

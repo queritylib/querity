@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,7 +28,8 @@ class PropertyValueExtractorFactoryTests {
         Arguments.of(Date.class, DateValueExtractor.class),
         Arguments.of(LocalDate.class, LocalDateValueExtractor.class),
         Arguments.of(LocalDateTime.class, LocalDateTimeValueExtractor.class),
-        Arguments.of(ZonedDateTime.class, ZonedDateTimeValueExtractor.class)
+        Arguments.of(ZonedDateTime.class, ZonedDateTimeValueExtractor.class),
+        Arguments.of(UUID.class, UUIDValueExtractor.class)
     );
   }
 
