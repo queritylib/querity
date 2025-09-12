@@ -61,14 +61,14 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
   class FilteringTests {
 
     @Test
-    void givenNullQuery_whenFilterAll_thenReturnAllTheElements() {
+    void givenNullQuery_whenFindAll_thenReturnAllTheElements() {
       List<T> result = querity.findAll(getEntityClass(), null);
       assertThat(result).isNotEmpty();
       assertThat(result).containsExactlyInAnyOrderElementsOf(entities);
     }
 
     @Test
-    void givenEmptyFilter_whenFilterAll_thenReturnAllTheElements() {
+    void givenEmptyFilter_whenFindAll_thenReturnAllTheElements() {
       Query query = Querity.query()
           .build();
       List<T> result = querity.findAll(getEntityClass(), query);
@@ -77,7 +77,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterByIdEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterByIdEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_ID, EQUALS, entity1.getId()))
           .build();
@@ -88,7 +88,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithStringEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithStringEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_LAST_NAME, EQUALS, entity1.getLastName()))
           .build();
@@ -100,7 +100,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithIntegerEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithIntegerEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_CHILDREN, EQUALS, entity1.getChildren()))
           .build();
@@ -112,7 +112,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithIntegerAsStringEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithIntegerAsStringEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_CHILDREN, EQUALS, entity1.getChildren().toString()))
           .build();
@@ -124,7 +124,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithDateEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithDateEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_BIRTH_DATE, EQUALS, entity1.getBirthDate()))
           .build();
@@ -136,7 +136,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithDateAsStringEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithDateAsStringEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_BIRTH_DATE, EQUALS, formatDate(entity1.getBirthDate())))
           .build();
@@ -148,7 +148,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithBooleanEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithBooleanEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_MARRIED, EQUALS, true))
           .build();
@@ -160,7 +160,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithBooleanAsStringEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithBooleanAsStringEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_MARRIED, EQUALS, Boolean.TRUE.toString()))
           .build();
@@ -172,7 +172,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithUUIDEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithUUIDEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       UUID anOrderExternalId = entity1.getOrders().get(0).getExternalId();
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_ORDERS_EXTERNAL_ID, EQUALS, anOrderExternalId))
@@ -186,7 +186,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithUUIDAsStringEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithUUIDAsStringEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       UUID anOrderExternalId = entity1.getOrders().get(0).getExternalId();
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_ORDERS_EXTERNAL_ID, EQUALS, anOrderExternalId.toString()))
@@ -200,7 +200,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithBigDecimalEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithBigDecimalEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_HEIGHT, EQUALS, entity1.getHeight()))
           .build();
@@ -212,7 +212,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithBigDecimalEqualsConditionAsString_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithBigDecimalEqualsConditionAsString_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_HEIGHT, EQUALS, entity1.getHeight().toString()))
           .build();
@@ -224,7 +224,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithBigDecimalGreaterThanCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithBigDecimalGreaterThanCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_HEIGHT, GREATER_THAN, entity1.getHeight().toString()))
           .build();
@@ -236,7 +236,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithNotBigDecimalGreaterThanCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithNotBigDecimalGreaterThanCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(not(filterBy(PROPERTY_HEIGHT, GREATER_THAN, entity1.getHeight().toString())))
           .build();
@@ -248,7 +248,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithBigDecimalGreaterThanEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithBigDecimalGreaterThanEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_HEIGHT, GREATER_THAN_EQUALS, entity1.getHeight().toString()))
           .build();
@@ -260,7 +260,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithNotBigDecimalGreaterThanEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithNotBigDecimalGreaterThanEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(not(filterBy(PROPERTY_HEIGHT, GREATER_THAN_EQUALS, entity1.getHeight().toString())))
           .build();
@@ -272,7 +272,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithBigDecimalLesserThanCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithBigDecimalLesserThanCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_HEIGHT, LESSER_THAN, entity1.getHeight().toString()))
           .build();
@@ -284,7 +284,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithNotBigDecimalLesserThanCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithNotBigDecimalLesserThanCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(not(filterBy(PROPERTY_HEIGHT, LESSER_THAN, entity1.getHeight().toString())))
           .build();
@@ -296,7 +296,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithBigDecimalLesserThanEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithBigDecimalLesserThanEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_HEIGHT, LESSER_THAN_EQUALS, entity1.getHeight().toString()))
           .build();
@@ -308,7 +308,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithNotBigDecimalLesserThanEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithNotBigDecimalLesserThanEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(not(filterBy(PROPERTY_HEIGHT, LESSER_THAN_EQUALS, entity1.getHeight().toString())))
           .build();
@@ -320,7 +320,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithStringNotEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithStringNotEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_LAST_NAME, NOT_EQUALS, entity1.getLastName()))
           .build();
@@ -330,7 +330,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithNotStringNotEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithNotStringNotEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(not(filterBy(PROPERTY_LAST_NAME, NOT_EQUALS, entity1.getLastName())))
           .build();
@@ -342,7 +342,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithStringStartsWithCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithStringStartsWithCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       String prefix = entity1.getLastName().substring(0, 3);
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_LAST_NAME, STARTS_WITH, prefix))
@@ -355,7 +355,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithStringEndsWithCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithStringEndsWithCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       String suffix = entity1.getLastName().substring(3);
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_LAST_NAME, ENDS_WITH, suffix))
@@ -368,7 +368,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithStringContainsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithStringContainsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       String substring = entity1.getLastName().substring(1, 3);
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_LAST_NAME, CONTAINS, substring))
@@ -381,7 +381,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithStringNotContainsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithStringNotContainsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       String substring = entity1.getLastName().substring(1, 3);
       Query query = Querity.query()
           .filter(not(filterBy(PROPERTY_LAST_NAME, CONTAINS, substring)))
@@ -394,7 +394,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithStringIsNullCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithStringIsNullCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_LAST_NAME, IS_NULL))
           .build();
@@ -404,7 +404,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithStringIsNotNullCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithStringIsNotNullCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_LAST_NAME, IS_NOT_NULL))
           .build();
@@ -414,7 +414,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithNotStringIsNotNullCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithNotStringIsNotNullCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(not(filterBy(PROPERTY_LAST_NAME, IS_NOT_NULL)))
           .build();
@@ -424,7 +424,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithInListCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithInListCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_LAST_NAME, IN, List.of(entity1.getLastName(), entity2.getLastName())))
           .build();
@@ -436,7 +436,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithInArrayCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithInArrayCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_LAST_NAME, IN, new String[]{entity1.getLastName(), entity2.getLastName()}))
           .build();
@@ -448,7 +448,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithInConditionWithStringValue_whenFilterAll_thenThrowIllegalArgumentException() {
+    void givenFilterWithInConditionWithStringValue_whenFindAll_thenThrowIllegalArgumentException() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_LAST_NAME, IN, entity1.getLastName()))
           .build();
@@ -458,7 +458,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithNotInListCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithNotInListCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_LAST_NAME, NOT_IN, List.of(entity1.getLastName(), entity2.getLastName())))
           .build();
@@ -470,7 +470,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithNotInArrayCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithNotInArrayCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_LAST_NAME, NOT_IN, new String[]{entity1.getLastName(), entity2.getLastName()}))
           .build();
@@ -482,7 +482,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithNotInConditionWithStringValue_whenFilterAll_thenThrowIllegalArgumentException() {
+    void givenFilterWithNotInConditionWithStringValue_whenFindAll_thenThrowIllegalArgumentException() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_LAST_NAME, NOT_IN, entity1.getLastName()))
           .build();
@@ -492,7 +492,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithTwoStringEqualsConditionsWithAndLogic_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithTwoStringEqualsConditionsWithAndLogic_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(and(
               filterBy(PROPERTY_LAST_NAME, EQUALS, entity1.getLastName()),
@@ -507,7 +507,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithTwoStringEqualsConditionsWithOrLogic_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithTwoStringEqualsConditionsWithOrLogic_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(or(
               filterBy(PROPERTY_LAST_NAME, EQUALS, entity1.getLastName()),
@@ -541,7 +541,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithStringEqualsConditionOnNestedField_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithStringEqualsConditionOnNestedField_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_ADDRESS_CITY, EQUALS, entity1.getAddress().getCity()))
           .build();
@@ -553,7 +553,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithStringEqualsConditionOnNestedCollectionItemField_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithStringEqualsConditionOnNestedCollectionItemField_whenFindAll_thenReturnOnlyFilteredElements() {
       String visitedCountry = entity1.getVisitedLocations().get(0).getCountry();
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_VISITED_LOCATIONS_COUNTRY, EQUALS, visitedCountry))
@@ -568,7 +568,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithStringEqualsConditionOnNestedCollectionItemStringListField_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithStringEqualsConditionOnNestedCollectionItemStringListField_whenFindAll_thenReturnOnlyFilteredElements() {
       String visitedCity = entity1.getVisitedLocations().get(0).getCities().get(0);
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_VISITED_LOCATIONS_CITIES, EQUALS, visitedCity))
@@ -582,7 +582,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithTwoStringEqualsConditionOnNestedCollectionItemFieldsWithAndLogic_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithTwoStringEqualsConditionOnNestedCollectionItemFieldsWithAndLogic_whenFindAll_thenReturnOnlyFilteredElements() {
       String visitedCountry = entity1.getVisitedLocations().get(0).getCountry();
       String visitedCity = entity1.getVisitedLocations().get(0).getCities().get(0);
       Query query = Querity.query()
@@ -601,7 +601,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithStringEqualsConditionOnDoubleNestedCollectionItemField_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithStringEqualsConditionOnDoubleNestedCollectionItemField_whenFindAll_thenReturnOnlyFilteredElements() {
       String sku = entity1.getOrders().get(0).getItems().get(0).getSku();
       Query query = Querity.query()
           .filter(filterBy("orders.items.sku", EQUALS, sku))
@@ -618,7 +618,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
      * In those cases, the distinct flag should be set to true to remove duplicates.
      */
     @Test
-    void givenFilterWithNumberGreaterThanConditionOnDoubleNestedCollectionItemFieldAndDistinctAndSortAndPagination_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithNumberGreaterThanConditionOnDoubleNestedCollectionItemFieldAndDistinctAndSortAndPagination_whenFindAll_thenReturnOnlyFilteredElements() {
       int quantity = 8;
       Query query = Querity.query()
           .distinct(true)
@@ -635,7 +635,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithEnumEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithEnumEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       ProductCategory category = entity1.getFavouriteProductCategory();
       Query query = Querity.query()
           .filter(filterBy(PROPERTY_FAVOURITE_PRODUCT_CATEGORY, EQUALS, category.name()))
@@ -646,7 +646,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithNotConditionWithStringEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithNotConditionWithStringEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(not(filterBy(PROPERTY_LAST_NAME, EQUALS, entity1.getLastName())))
           .build();
@@ -656,7 +656,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithTwoNestedNotConditionsWithStringEqualsCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithTwoNestedNotConditionsWithStringEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(not(not(filterBy(PROPERTY_LAST_NAME, EQUALS, entity1.getLastName()))))
           .build();
@@ -666,7 +666,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithNotConditionWithTwoStringEqualsConditionsWithAndLogic_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithNotConditionWithTwoStringEqualsConditionsWithAndLogic_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(not(and(
               filterBy(PROPERTY_LAST_NAME, EQUALS, entity1.getLastName()),
@@ -681,7 +681,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenFilterWithNotConditionWithTwoStringEqualsConditionsWithOrLogic_whenFilterAll_thenReturnOnlyFilteredElements() {
+    void givenFilterWithNotConditionWithTwoStringEqualsConditionsWithOrLogic_whenFindAll_thenReturnOnlyFilteredElements() {
       Query query = Querity.query()
           .filter(not(or(
               filterBy(PROPERTY_LAST_NAME, EQUALS, entity1.getLastName()),
@@ -722,7 +722,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
   class PaginationTests {
 
     @Test
-    void givenPagination_whenFilterAll_thenReturnThePageElements() {
+    void givenPagination_whenFindAll_thenReturnThePageElements() {
       Query query = Querity.query()
           .sort(sortBy(PROPERTY_ID))
           .pagination(2, 3)
@@ -740,7 +740,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
   class SortingTests {
 
     @Test
-    void givenSortByFieldAscending_whenFilterAll_thenReturnSortedElements() {
+    void givenSortByFieldAscending_whenFindAll_thenReturnSortedElements() {
       Query query = Querity.query()
           .sort(sortBy(PROPERTY_LAST_NAME), sortBy(PROPERTY_ID))
           .build();
@@ -753,7 +753,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenSortByDateField_whenFilterAll_thenReturnSortedElements() {
+    void givenSortByDateField_whenFindAll_thenReturnSortedElements() {
       Query query = Querity.query()
           .sort(sortBy(PROPERTY_BIRTH_DATE), sortBy(PROPERTY_ID))
           .build();
@@ -766,7 +766,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenSortByFieldDescending_whenFilterAll_thenReturnSortedElements() {
+    void givenSortByFieldDescending_whenFindAll_thenReturnSortedElements() {
       Query query = Querity.query()
           .sort(sortBy(PROPERTY_LAST_NAME, DESC), sortBy(PROPERTY_ID))
           .build();
@@ -779,7 +779,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenSortByNestedField_whenFilterAll_thenReturnSortedElements() {
+    void givenSortByNestedField_whenFindAll_thenReturnSortedElements() {
       Query query = Querity.query()
           .sort(sortBy(PROPERTY_ADDRESS_CITY), sortBy(PROPERTY_ID))
           .build();
@@ -792,7 +792,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
-    void givenSortByMultipleFields_whenFilterAll_thenReturnSortedElements() {
+    void givenSortByMultipleFields_whenFindAll_thenReturnSortedElements() {
       Query query = Querity.query()
           .sort(sortBy(PROPERTY_LAST_NAME), sortBy(PROPERTY_FIRST_NAME))
           .build();

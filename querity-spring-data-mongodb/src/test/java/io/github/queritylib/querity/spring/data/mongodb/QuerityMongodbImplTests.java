@@ -52,7 +52,7 @@ class QuerityMongodbImplTests extends QuerityGenericSpringTestSuite<Person, Stri
   }
 
   @Test
-  void givenMongodbNativeCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+  void givenMongodbNativeCondition_whenFindAll_thenReturnOnlyFilteredElements() {
     Criteria criteria = Criteria.where("lastName").is(entity1.getLastName());
     Query query = Querity.query()
         .filter(filterByNative(criteria))
@@ -66,7 +66,7 @@ class QuerityMongodbImplTests extends QuerityGenericSpringTestSuite<Person, Stri
   }
 
   @Test
-  void givenNotConditionWrappingMongodbNativeCondition_whenFilterAll_thenThrowIllegalArgumentException() {
+  void givenNotConditionWrappingMongodbNativeCondition_whenFindAll_thenThrowIllegalArgumentException() {
     Criteria criteria = Criteria.where("lastName").is(entity1.getLastName());
     Query query = Querity.query()
         .filter(not(filterByNative(criteria)))

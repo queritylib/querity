@@ -53,7 +53,7 @@ class QuerityElasticsearchImplTests extends QuerityGenericSpringTestSuite<Person
   }
 
   @Test
-  void givenElasticsearchNativeCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+  void givenElasticsearchNativeCondition_whenFindAll_thenReturnOnlyFilteredElements() {
     Criteria criteria = Criteria.where("lastName").is(entity1.getLastName());
     Query query = Querity.query()
         .filter(filterByNative(criteria))
@@ -67,7 +67,7 @@ class QuerityElasticsearchImplTests extends QuerityGenericSpringTestSuite<Person
   }
 
   @Test
-  void givenNotConditionWrappingElasticsearchNativeCondition_whenFilterAll_thenThrowIllegalArgumentException() {
+  void givenNotConditionWrappingElasticsearchNativeCondition_whenFindAll_thenThrowIllegalArgumentException() {
     Criteria criteria = Criteria.where("lastName").is(entity1.getLastName());
     Query query = Querity.query()
         .filter(not(filterByNative(criteria)))

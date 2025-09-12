@@ -22,7 +22,7 @@ public abstract class QuerityJpaImplTests extends QuerityGenericSpringTestSuite<
   }
 
   @Test
-  void givenJpaNativeCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+  void givenJpaNativeCondition_whenFindAll_thenReturnOnlyFilteredElements() {
     Specification<Person> specification = (root, cq, cb) -> cb.equal(root.get("lastName"), entity1.getLastName());
     Query query = Querity.query()
         .filter(filterByNative(specification))
@@ -36,7 +36,7 @@ public abstract class QuerityJpaImplTests extends QuerityGenericSpringTestSuite<
   }
 
   @Test
-  void givenNotConditionWrappingJpaNativeCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+  void givenNotConditionWrappingJpaNativeCondition_whenFindAll_thenReturnOnlyFilteredElements() {
     Specification<Person> specification = (root, cq, cb) -> cb.and(
         root.get("lastName").isNotNull(),
         cb.equal(root.get("lastName"), entity1.getLastName())

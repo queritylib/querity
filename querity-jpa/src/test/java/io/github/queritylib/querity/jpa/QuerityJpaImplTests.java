@@ -60,7 +60,7 @@ public abstract class QuerityJpaImplTests extends QuerityGenericTestSuite<Person
   }
 
   @Test
-  void givenJpaNativeCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+  void givenJpaNativeCondition_whenFindAll_thenReturnOnlyFilteredElements() {
     Query query = Querity.query()
         .filter(filterByNative(Specification.<Person>where(
             (root, cq, cb) ->
@@ -75,7 +75,7 @@ public abstract class QuerityJpaImplTests extends QuerityGenericTestSuite<Person
   }
 
   @Test
-  void givenNotConditionWrappingJpaNativeCondition_whenFilterAll_thenReturnOnlyFilteredElements() {
+  void givenNotConditionWrappingJpaNativeCondition_whenFindAll_thenReturnOnlyFilteredElements() {
     Query query = Querity.query()
         .filter(not(filterByNative(Specification.<Person>where(
             (root, cq, cb) -> cb.and(
