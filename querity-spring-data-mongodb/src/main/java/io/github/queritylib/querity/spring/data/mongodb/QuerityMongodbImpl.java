@@ -29,6 +29,10 @@ public class QuerityMongodbImpl implements Querity {
   }
 
   private <T> org.springframework.data.mongodb.core.query.Query getMongodbQuery(Class<T> entityClass, Query query) {
-    return new MongodbQueryFactory<>(entityClass, query).getMongodbQuery();
+    return getMongodbQueryFactory(entityClass, query).getMongodbQuery();
+  }
+
+  protected static <T> MongodbQueryFactory<T> getMongodbQueryFactory(Class<T> entityClass, Query query) {
+    return new MongodbQueryFactory<>(entityClass, query);
   }
 }

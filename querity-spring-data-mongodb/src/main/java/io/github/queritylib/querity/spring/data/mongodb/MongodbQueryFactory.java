@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import java.util.List;
 
 @Slf4j
-class MongodbQueryFactory<T> {
+public class MongodbQueryFactory<T> {
   private final Class<T> entityClass;
   private final Query query;
 

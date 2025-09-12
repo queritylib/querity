@@ -11,7 +11,7 @@ import jakarta.persistence.metamodel.Metamodel;
 
 import java.util.List;
 
-class JpaQueryFactory<T> {
+public class JpaQueryFactory<T> {
   private final Class<T> entityClass;
   private final Query query;
   private final EntityManager entityManager;

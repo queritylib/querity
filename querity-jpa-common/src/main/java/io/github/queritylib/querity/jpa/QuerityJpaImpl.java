@@ -29,7 +29,7 @@ public class QuerityJpaImpl implements Querity {
     return jpaQuery.getSingleResult();
   }
 
-  private <T> JpaQueryFactory<T> getJpaQueryFactory(Class<T> entityClass, Query query) {
+  protected <T> JpaQueryFactory<T> getJpaQueryFactory(Class<T> entityClass, Query query) {
     return new JpaQueryFactory<>(entityClass, query, entityManager);
   }
 }

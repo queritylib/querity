@@ -41,6 +41,10 @@ public class QuerityElasticsearchImpl implements Querity {
   }
 
   private <T> org.springframework.data.elasticsearch.core.query.Query getElasticsearchQuery(Class<T> entityClass, Query query) {
-    return new ElasticsearchQueryFactory<>(entityClass, query).getElasticsearchQuery();
+    return getElasticsearchQueryFactory(entityClass, query).getElasticsearchQuery();
+  }
+
+  protected static <T> ElasticsearchQueryFactory<T> getElasticsearchQueryFactory(Class<T> entityClass, Query query) {
+    return new ElasticsearchQueryFactory<>(entityClass, query);
   }
 }
