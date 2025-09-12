@@ -4,6 +4,7 @@ import io.github.queritylib.querity.api.Condition;
 import io.github.queritylib.querity.api.Querity;
 import io.github.queritylib.querity.api.Query;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 
 import java.util.List;
@@ -18,8 +19,10 @@ public class QuerityJpaImpl implements Querity {
 
   @Override
   public <T> List<T> findAll(Class<T> entityClass, Query query) {
-    TypedQuery<T> jpaQuery = getJpaQueryFactory(entityClass, query).getJpaQuery();
-    return jpaQuery.getResultList();
+    TypedQuery<Tuple> jpaQuery = getJpaQueryFactory(entityClass, query).getJpaQuery();
+    return jpaQuery.getResultList().stream()
+        .map(t -> t.get(0, entityClass))
+        .toList();
   }
 
   @Override

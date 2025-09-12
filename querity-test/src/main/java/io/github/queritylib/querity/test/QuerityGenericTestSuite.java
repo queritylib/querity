@@ -791,6 +791,25 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
       assertThat(result).isEqualTo(entities.stream().sorted(comparator).toList());
     }
 
+    /**
+     * This test highlights the need for a tuple query in JPA,
+     * as SQL databases don't allow to sort by a field that is not selected in the query,
+     * and that's the case of nested fields when using DISTINCT.
+     */
+    @Test
+    void givenSortByNestedFieldWithDistinct_whenFindAll_thenReturnSortedElements() {
+      Query query = Querity.query()
+          .distinct(true)
+          .sort(sortBy(PROPERTY_ADDRESS_CITY), sortBy(PROPERTY_ID))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      Comparator<T> comparator = getStringComparator((T t) -> t.getAddress().getCity()).thenComparing(T::getId);
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .sorted(comparator)
+          .toList());
+    }
+
     @Test
     void givenSortByMultipleFields_whenFindAll_thenReturnSortedElements() {
       Query query = Querity.query()
