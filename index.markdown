@@ -372,8 +372,6 @@ Query query = Querity.query()
     .build();
 ```
 
-> Because of limitations of SQL databases, when the distinct flag is set to `true`, you cannot sort by nested properties.
-
 > The distinct flag is meaningless in NoSQL databases and will be ignored.
 
 ## Modify an existing Query
