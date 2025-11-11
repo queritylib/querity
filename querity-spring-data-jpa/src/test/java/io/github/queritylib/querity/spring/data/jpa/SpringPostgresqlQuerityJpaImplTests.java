@@ -4,9 +4,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.Comparator;
@@ -22,7 +22,7 @@ class SpringPostgresqlQuerityJpaImplTests extends QuerityJpaImplTests {
   public static final String POSTGRES_DOCKER_IMAGE = "postgres:14.1";
 
   @Container
-  private static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER = new PostgreSQLContainer<>(DockerImageName.parse(POSTGRES_DOCKER_IMAGE));
+  private static final PostgreSQLContainer POSTGRESQL_CONTAINER = new PostgreSQLContainer(DockerImageName.parse(POSTGRES_DOCKER_IMAGE));
 
   @DynamicPropertySource
   static void setProperties(DynamicPropertyRegistry registry) {

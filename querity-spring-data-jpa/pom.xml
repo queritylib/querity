@@ -13,7 +13,7 @@
   <description>Support for querying SQL databases using Spring Data JPA as backend</description>
 
   <properties>
-    <testcontainers.version>1.21.3</testcontainers.version>
+    <testcontainers.version>2.0.1</testcontainers.version>
     <postgresql-driver.version>42.7.8</postgresql-driver.version>
   </properties>
 
@@ -83,7 +83,7 @@
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>postgresql</artifactId>
+      <artifactId>testcontainers-postgresql</artifactId>
       <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
@@ -95,7 +95,7 @@
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>junit-jupiter</artifactId>
+      <artifactId>testcontainers-junit-jupiter</artifactId>
       <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
