@@ -13,7 +13,7 @@
   <description>Support for querying SQL databases using Spring Data JPA as backend</description>
 
   <properties>
-    <testcontainers.version>2.0.1</testcontainers.version>
+    <testcontainers.version>2.0.2</testcontainers.version>
     <postgresql-driver.version>42.7.8</postgresql-driver.version>
   </properties>
 
