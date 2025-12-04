@@ -19,4 +19,9 @@ class SpringH2QuerityJpaImplTests extends QuerityJpaImplTests {
     if (reversed) comparator = comparator.reversed();
     return comparator;
   }
+
+  // Note: Integration tests for JPA NativeSortWrapper are not included here because
+  // JPA Order objects are tied to specific Root/CriteriaQuery instances and cannot be
+  // created externally and reused in different queries.
+  // Unit tests for JpaNativeSortWrapper are in JpaSortTests.
 }

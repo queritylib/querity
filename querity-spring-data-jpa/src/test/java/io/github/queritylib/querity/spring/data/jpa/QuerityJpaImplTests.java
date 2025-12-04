@@ -12,10 +12,12 @@ import java.util.List;
 
 import static io.github.queritylib.querity.api.Querity.filterByNative;
 import static io.github.queritylib.querity.api.Querity.not;
+import static io.github.queritylib.querity.api.Querity.sortBy;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = QueritySpringJpaTestApplication.class)
 public abstract class QuerityJpaImplTests extends QuerityGenericSpringTestSuite<Person, Long> {
+
   @Override
   protected Class<Person> getEntityClass() {
     return Person.class;
@@ -51,4 +53,24 @@ public abstract class QuerityJpaImplTests extends QuerityGenericSpringTestSuite<
             .filter(p -> !entity1.getLastName().equals(p.getLastName()))
             .toList());
   }
+
+  @Test
+  void givenNativeConditionWithSorting_whenFindAll_thenReturnFilteredAndSortedElements() {
+    Specification<Person> specification = (root, cq, cb) -> root.get("lastName").isNotNull();
+    Query query = Querity.query()
+        .filter(filterByNative(specification))
+        .sort(sortBy("id"))
+        .build();
+    List<Person> result = querity.findAll(getEntityClass(), query);
+    assertThat(result).isNotEmpty();
+    assertThat(result)
+        .extracting(Person::getId)
+        .isSorted();
+  }
+
+  // Note: Integration tests for JPA NativeSortWrapper are not included here because
+  // JPA Order objects are tied to specific Root/CriteriaQuery instances and cannot be
+  // created externally and reused in different queries.
+  // Unit tests for JpaNativeSortWrapper are in JpaSortTests.
 }
+
