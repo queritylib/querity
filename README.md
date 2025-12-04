@@ -218,7 +218,7 @@ schema [here](https://mockaroo.com/ec155390).
 
 Contributors names and contact info
 
-* Bruno Mendola [@brunomendola](https://x.com/brunomendola)
+* Bruno Mendola [@brunomendola](https://github.com/brunomendola)
 
 **PRs are welcome!**
 
