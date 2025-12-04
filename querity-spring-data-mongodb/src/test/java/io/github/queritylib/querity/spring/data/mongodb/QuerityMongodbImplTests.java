@@ -86,7 +86,7 @@ class QuerityMongodbImplTests extends QuerityGenericSpringTestSuite<Person, Stri
         .build();
     List<Person> result = querity.findAll(Person.class, query);
     assertThat(result).isNotEmpty();
-    // Verifica che i risultati siano ordinati per lastName ascending
+    // Verify that results are sorted by lastName ascending
     assertThat(result)
         .extracting(Person::getLastName)
         .isSortedAccordingTo(Comparator.nullsFirst(Comparator.naturalOrder()));
@@ -100,8 +100,8 @@ class QuerityMongodbImplTests extends QuerityGenericSpringTestSuite<Person, Stri
         .build();
     List<Person> result = querity.findAll(Person.class, query);
     assertThat(result).isNotEmpty();
-    // Verifica che i risultati siano ordinati per lastName descending
-    // In MongoDB con desc, i null sono alla fine per default
+    // Verify that results are sorted by lastName descending
+    // In MongoDB with desc, nulls are at the end by default
     Comparator<String> comparator = Comparator.nullsLast(Comparator.<String>reverseOrder());
     assertThat(result)
         .extracting(Person::getLastName)
@@ -116,7 +116,7 @@ class QuerityMongodbImplTests extends QuerityGenericSpringTestSuite<Person, Stri
         .build();
     List<Person> result = querity.findAll(Person.class, query);
     assertThat(result).isNotEmpty();
-    // Verifica che i risultati siano ordinati prima per lastName, poi per firstName
+    // Verify that results are sorted first by lastName, then by firstName
     Comparator<Person> comparator = Comparator
         .comparing(Person::getLastName, Comparator.nullsFirst(Comparator.naturalOrder()))
         .thenComparing(Person::getFirstName, Comparator.nullsFirst(Comparator.naturalOrder()));

@@ -124,7 +124,7 @@ class NativeSortWrapperTest {
     }
   }
 
-  // Helper class per simulare un oggetto di sort nativo complesso
+  // Helper class to simulate a complex native sort object
   private static class TestNativeSort {
     private final String field;
     private final String direction;

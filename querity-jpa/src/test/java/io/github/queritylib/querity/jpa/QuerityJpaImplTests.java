@@ -161,7 +161,7 @@ public abstract class QuerityJpaImplTests extends QuerityGenericTestSuite<Person
         .build();
     List<Person> result = querity.findAll(getEntityClass(), query);
     assertThat(result).isNotEmpty();
-    // Verifica che i risultati siano ordinati prima per lastName, poi per firstName
+    // Verify that results are sorted first by lastName, then by firstName
     // In H2, nulls are sorted first by default
     assertThat(result)
         .isSortedAccordingTo(Comparator

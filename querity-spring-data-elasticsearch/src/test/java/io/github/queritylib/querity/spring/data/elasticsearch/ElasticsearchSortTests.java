@@ -152,7 +152,7 @@ class ElasticsearchSortTests {
     }
   }
 
-  // Helper class per testare il caso di Sort non supportato
+  // Helper class to test unsupported Sort case
   private static class UnsupportedSort implements Sort {
   }
 }

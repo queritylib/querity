@@ -87,7 +87,7 @@ class QuerityElasticsearchImplTests extends QuerityGenericSpringTestSuite<Person
         .build();
     List<Person> result = querity.findAll(Person.class, query);
     assertThat(result).isNotEmpty();
-    // Verifica che i risultati siano ordinati per lastName ascending
+    // Verify that results are sorted by lastName ascending
     assertThat(result)
         .extracting(Person::getLastName)
         .isSortedAccordingTo(Comparator.nullsLast(Comparator.naturalOrder()));
@@ -101,7 +101,7 @@ class QuerityElasticsearchImplTests extends QuerityGenericSpringTestSuite<Person
         .build();
     List<Person> result = querity.findAll(Person.class, query);
     assertThat(result).isNotEmpty();
-    // Verifica che i risultati siano ordinati per lastName descending
+    // Verify that results are sorted by lastName descending
     Comparator<String> comparator = Comparator.nullsLast(Comparator.<String>naturalOrder().reversed());
     assertThat(result)
         .extracting(Person::getLastName)
@@ -116,7 +116,7 @@ class QuerityElasticsearchImplTests extends QuerityGenericSpringTestSuite<Person
         .build();
     List<Person> result = querity.findAll(Person.class, query);
     assertThat(result).isNotEmpty();
-    // Verifica che i risultati siano ordinati prima per lastName, poi per firstName
+    // Verify that results are sorted first by lastName, then by firstName
     Comparator<Person> comparator = Comparator
         .comparing(Person::getLastName, Comparator.nullsLast(Comparator.naturalOrder()))
         .thenComparing(Person::getFirstName, Comparator.nullsLast(Comparator.naturalOrder()));
