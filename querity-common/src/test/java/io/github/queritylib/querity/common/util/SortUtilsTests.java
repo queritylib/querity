@@ -99,6 +99,60 @@ class SortUtilsTests {
         .isInstanceOf(WildcardSortImplementation.class);
   }
 
+  @Test
+  void givenImplementationWithMultipleConstructors_whenGetSortImplementation_thenReturnMatchingImplementation() {
+    String nativeSort = "test";
+    NativeSortWrapper<String> wrapper = sortByNative(nativeSort);
+    Set<Class<? extends SortImplementation>> classes = new HashSet<>();
+    classes.add(MultiConstructorSortImplementation.class);
+
+    Optional<SortImplementation> result = SortUtils.getSortImplementation(classes, wrapper);
+
+    assertThat(result)
+        .isPresent()
+        .get()
+        .isInstanceOf(MultiConstructorSortImplementation.class);
+  }
+
+  @Test
+  void givenImplementationWithNoArgConstructorOnly_whenGetSortImplementation_thenReturnEmpty() {
+    String nativeSort = "test";
+    NativeSortWrapper<String> wrapper = sortByNative(nativeSort);
+    Set<Class<? extends SortImplementation>> classes = new HashSet<>();
+    classes.add(NoArgConstructorSortImplementation.class);
+
+    Optional<SortImplementation> result = SortUtils.getSortImplementation(classes, wrapper);
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  void givenImplementationWithNonNativeSortWrapperConstructor_whenGetSortImplementation_thenReturnEmpty() {
+    String nativeSort = "test";
+    NativeSortWrapper<String> wrapper = sortByNative(nativeSort);
+    Set<Class<? extends SortImplementation>> classes = new HashSet<>();
+    classes.add(NonWrapperConstructorSortImplementation.class);
+
+    Optional<SortImplementation> result = SortUtils.getSortImplementation(classes, wrapper);
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  void givenImplementationWithParameterizedTypeInWrapper_whenGetSortImplementation_thenReturnMatchingImplementation() {
+    java.util.List<String> nativeSort = java.util.Arrays.asList("a", "b");
+    NativeSortWrapper<java.util.List<String>> wrapper = sortByNative(nativeSort);
+    Set<Class<? extends SortImplementation>> classes = new HashSet<>();
+    classes.add(ListSortImplementation.class);
+
+    Optional<SortImplementation> result = SortUtils.getSortImplementation(classes, wrapper);
+
+    assertThat(result)
+        .isPresent()
+        .get()
+        .isInstanceOf(ListSortImplementation.class);
+  }
+
   // Test interface
   interface SortImplementation {
   }
@@ -135,6 +189,44 @@ class SortUtilsTests {
     private final NativeSortWrapper<? extends CharSequence> wrapper;
 
     public WildcardSortImplementation(NativeSortWrapper<? extends CharSequence> wrapper) {
+      this.wrapper = wrapper;
+    }
+  }
+
+  // Test implementation with multiple constructors
+  public static class MultiConstructorSortImplementation implements SortImplementation {
+    private final NativeSortWrapper<String> wrapper;
+
+    public MultiConstructorSortImplementation() {
+      this.wrapper = null;
+    }
+
+    public MultiConstructorSortImplementation(NativeSortWrapper<String> wrapper) {
+      this.wrapper = wrapper;
+    }
+
+    public MultiConstructorSortImplementation(String other, int value) {
+      this.wrapper = null;
+    }
+  }
+
+  // Test implementation with only no-arg constructor
+  public static class NoArgConstructorSortImplementation implements SortImplementation {
+    public NoArgConstructorSortImplementation() {
+    }
+  }
+
+  // Test implementation with non-NativeSortWrapper constructor
+  public static class NonWrapperConstructorSortImplementation implements SortImplementation {
+    public NonWrapperConstructorSortImplementation(String value) {
+    }
+  }
+
+  // Test implementation that accepts NativeSortWrapper<List> (to test ParameterizedType extraction)
+  public static class ListSortImplementation implements SortImplementation {
+    private final NativeSortWrapper<java.util.List<?>> wrapper;
+
+    public ListSortImplementation(NativeSortWrapper<java.util.List<?>> wrapper) {
       this.wrapper = wrapper;
     }
   }

@@ -48,6 +48,17 @@ class JpaSortTests {
           .hasMessageContaining("UnsupportedSort")
           .hasMessageContaining("is not supported by the JPA module");
     }
+
+    @Test
+    void givenNativeSortWrapperWithUnsupportedType_whenOf_thenThrowIllegalArgumentException() {
+      // Using a String instead of Order or OrderSpecification
+      NativeSortWrapper<String> nativeSortWrapper = sortByNative("unsupportedType");
+
+      assertThatThrownBy(() -> JpaSort.of(nativeSortWrapper))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessageContaining("String")
+          .hasMessageContaining("is not supported by the JPA module");
+    }
   }
 
   @Nested
