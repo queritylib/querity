@@ -6,7 +6,7 @@ import jakarta.persistence.criteria.Root;
 
 /**
  * Functional interface for creating JPA Order instances.
- * Similar to {@link Specification} but for sorting instead of filtering.
+ * Similar to {@code Specification} but for sorting instead of filtering.
  * <p>
  * This allows users to create native JPA sorts using a lambda that receives
  * the Root and CriteriaBuilder at query execution time.
