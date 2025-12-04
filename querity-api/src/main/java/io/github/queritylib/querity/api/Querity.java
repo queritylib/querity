@@ -56,12 +56,18 @@ public interface Querity {
     return Pagination.builder().page(page).pageSize(pageSize).build();
   }
 
-  static Sort sortBy(String propertyName) {
-    return sortBy(propertyName, Sort.Direction.ASC);
+  static SimpleSort sortBy(String propertyName) {
+    return sortBy(propertyName, SimpleSort.Direction.ASC);
   }
 
-  static Sort sortBy(String propertyName, Sort.Direction direction) {
-    return Sort.builder().propertyName(propertyName).direction(direction).build();
+  static SimpleSort sortBy(String propertyName, SimpleSort.Direction direction) {
+    return SimpleSort.builder().propertyName(propertyName).direction(direction).build();
+  }
+
+  static <T> NativeSortWrapper<T> sortByNative(T nativeSort) {
+    return NativeSortWrapper.<T>builder()
+        .nativeSort(nativeSort)
+        .build();
   }
 
   static Query wrapConditionInQuery(Condition condition) {

@@ -104,7 +104,7 @@ public class JpaQueryFactory<T> {
 
   private static <T> List<Order> getOrders(List<Sort> sort, Metamodel metamodel, Root<T> root, CriteriaBuilder cb) {
     return sort.stream()
-        .map(JpaSort::new)
+        .map(JpaSort::of)
         .map(jpaSort -> jpaSort.toOrder(metamodel, root, cb))
         .toList();
   }

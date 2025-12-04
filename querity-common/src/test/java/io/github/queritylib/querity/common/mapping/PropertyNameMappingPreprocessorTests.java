@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static io.github.queritylib.querity.api.Operator.EQUALS;
 import static io.github.queritylib.querity.api.Querity.*;
-import static io.github.queritylib.querity.api.Sort.Direction.DESC;
+import static io.github.queritylib.querity.api.SimpleSort.Direction.DESC;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PropertyNameMappingPreprocessorTests {
@@ -84,7 +84,46 @@ class PropertyNameMappingPreprocessorTests {
         .preprocess();
 
     assertThat(q.hasSort()).isTrue();
-    assertThat(q.getSort().get(0).getPropertyName()).isEqualTo("prop2");
-    assertThat(q.getSort().get(1).getPropertyName()).isEqualTo("prop3");
+    assertThat(((SimpleSort) q.getSort().get(0)).getPropertyName()).isEqualTo("prop2");
+    assertThat(((SimpleSort) q.getSort().get(1)).getPropertyName()).isEqualTo("prop3");
+  }
+
+  @Test
+  void givenQueryWithNativeSortWrapper_whenPreprocess_thenNativeSortIsPreservedAsIs() {
+    String nativeSort = "prop1 ASC";
+    NativeSortWrapper<String> nativeSortWrapper = sortByNative(nativeSort);
+
+    Query q = Querity.query().withPreprocessor(PREPROCESSOR)
+        .sort(nativeSortWrapper)
+        .build()
+        .preprocess();
+
+    assertThat(q.hasSort()).isTrue();
+    assertThat(q.getSort()).hasSize(1);
+    assertThat(q.getSort().get(0)).isInstanceOf(NativeSortWrapper.class);
+    assertThat(((NativeSortWrapper<?>) q.getSort().get(0)).getNativeSort()).isEqualTo(nativeSort);
+  }
+
+  @Test
+  void givenQueryWithMixedSortTypes_whenPreprocess_thenSimpleSortIsMappedAndNativeSortIsPreserved() {
+    String nativeSort = "native_field ASC";
+    NativeSortWrapper<String> nativeSortWrapper = sortByNative(nativeSort);
+
+    Query q = Querity.query().withPreprocessor(PREPROCESSOR)
+        .sort(sortBy("prop1"), nativeSortWrapper, sortBy("prop3", DESC))
+        .build()
+        .preprocess();
+
+    assertThat(q.hasSort()).isTrue();
+    assertThat(q.getSort()).hasSize(3);
+    // First sort: SimpleSort with mapped property name
+    assertThat(q.getSort().get(0)).isInstanceOf(SimpleSort.class);
+    assertThat(((SimpleSort) q.getSort().get(0)).getPropertyName()).isEqualTo("prop2");
+    // Second sort: NativeSortWrapper preserved as-is
+    assertThat(q.getSort().get(1)).isInstanceOf(NativeSortWrapper.class);
+    assertThat(((NativeSortWrapper<?>) q.getSort().get(1)).getNativeSort()).isEqualTo(nativeSort);
+    // Third sort: SimpleSort with unmapped property name (no mapping defined)
+    assertThat(q.getSort().get(2)).isInstanceOf(SimpleSort.class);
+    assertThat(((SimpleSort) q.getSort().get(2)).getPropertyName()).isEqualTo("prop3");
   }
 }

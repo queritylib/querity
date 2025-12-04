@@ -9,7 +9,7 @@ import java.util.List;
 
 import static io.github.queritylib.querity.api.Operator.*;
 import static io.github.queritylib.querity.api.Querity.*;
-import static io.github.queritylib.querity.api.Sort.Direction.DESC;
+import static io.github.queritylib.querity.api.SimpleSort.Direction.DESC;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class QuerityApiTests {

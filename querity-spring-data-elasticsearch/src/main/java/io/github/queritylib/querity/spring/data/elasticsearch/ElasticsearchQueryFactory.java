@@ -60,7 +60,7 @@ public class ElasticsearchQueryFactory<T> {
 
   private List<Sort.Order> getElasticsearchSortOrder() {
     return query.getSort().stream()
-        .map(ElasticsearchSort::new)
+        .map(ElasticsearchSort::of)
         .map(ElasticsearchSort::toElasticsearchSortOrder)
         .toList();
   }

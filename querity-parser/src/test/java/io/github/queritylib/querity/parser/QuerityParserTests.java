@@ -11,8 +11,8 @@ import java.util.stream.Stream;
 
 import static io.github.queritylib.querity.api.Operator.*;
 import static io.github.queritylib.querity.api.Querity.*;
-import static io.github.queritylib.querity.api.Sort.Direction.ASC;
-import static io.github.queritylib.querity.api.Sort.Direction.DESC;
+import static io.github.queritylib.querity.api.SimpleSort.Direction.ASC;
+import static io.github.queritylib.querity.api.SimpleSort.Direction.DESC;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class QuerityParserTests {

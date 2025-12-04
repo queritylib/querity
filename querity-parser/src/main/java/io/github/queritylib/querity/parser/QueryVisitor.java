@@ -154,15 +154,15 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
   public Object visitSortField(QueryParser.SortFieldContext ctx) {
     return Querity.sortBy(
         ctx.PROPERTY().getText(),
-        ctx.direction() != null ? (Sort.Direction) visit(ctx.direction()) : Sort.Direction.ASC);
+        ctx.direction() != null ? (SimpleSort.Direction) visit(ctx.direction()) : SimpleSort.Direction.ASC);
   }
 
   @Override
   public Object visitDirection(QueryParser.DirectionContext ctx) {
     if (ctx.ASC() != null) {
-      return Sort.Direction.ASC;
+      return SimpleSort.Direction.ASC;
     } else {
-      return Sort.Direction.DESC;
+      return SimpleSort.Direction.DESC;
     }
   }
 }
