@@ -50,7 +50,7 @@
     <java.version>17</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <spring-boot.version>3.5.7</spring-boot.version>
+    <spring-boot.version>4.0.0</spring-boot.version>
     <lombok.version>1.18.42</lombok.version>
     <commons-lang3.version>3.20.0</commons-lang3.version>
     <reflections.version>0.10.2</reflections.version>
