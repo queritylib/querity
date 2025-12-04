@@ -1,23 +1,22 @@
 package io.github.queritylib.querity.spring.data.mongodb;
 
+import io.github.queritylib.querity.api.NativeSortWrapper;
+import io.github.queritylib.querity.api.SimpleSort;
 import io.github.queritylib.querity.api.Sort;
-import lombok.experimental.Delegate;
 
-class MongodbSort {
-  @Delegate
-  private final Sort sort;
+abstract class MongodbSort {
 
-  public MongodbSort(Sort sort) {
-    this.sort = sort;
-  }
+  public abstract org.springframework.data.domain.Sort.Order toMongoSortOrder();
 
-  public org.springframework.data.domain.Sort.Order toMongoSortOrder() {
-    return new org.springframework.data.domain.Sort.Order(
-        getDirection().equals(Sort.Direction.ASC) ?
-            org.springframework.data.domain.Sort.Direction.ASC :
-            org.springframework.data.domain.Sort.Direction.DESC,
-        getPropertyName(),
-        org.springframework.data.domain.Sort.NullHandling.NULLS_FIRST // looks like NULLS_LAST is not supported by MongoDB
-    );
+  @SuppressWarnings("unchecked")
+  public static MongodbSort of(Sort sort) {
+    if (sort instanceof SimpleSort simpleSort) {
+      return new MongodbSimpleSort(simpleSort);
+    } else if (sort instanceof NativeSortWrapper) {
+      return new MongodbNativeSortWrapper((NativeSortWrapper<org.springframework.data.domain.Sort.Order>) sort);
+    }
+    throw new IllegalArgumentException(
+        String.format("Sort class %s is not supported by the MongoDB module", sort.getClass().getSimpleName()));
   }
 }
+

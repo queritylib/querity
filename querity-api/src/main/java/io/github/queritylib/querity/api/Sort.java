@@ -1,21 +1,18 @@
 package io.github.queritylib.querity.api;
 
-import lombok.*;
-import lombok.extern.jackson.Jacksonized;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-@Builder(toBuilder = true)
-@Jacksonized
-@Getter
-@EqualsAndHashCode
-@ToString
-public class Sort {
-  @NonNull
-  private String propertyName;
-  @Builder.Default
-  @NonNull
-  private Direction direction = Direction.ASC;
-
-  public enum Direction {
-    ASC, DESC
-  }
+/**
+ * Marker interface for sort options.
+ * Implementations include {@link SimpleSort} for property-based sorting
+ * and {@link NativeSortWrapper} for native sorting.
+ */
+@JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
+@JsonSubTypes({
+    @JsonSubTypes.Type(SimpleSort.class),
+    @JsonSubTypes.Type(NativeSortWrapper.class)
+})
+public interface Sort {
 }
+

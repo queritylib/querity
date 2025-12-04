@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static io.github.queritylib.querity.api.Operator.EQUALS;
 import static io.github.queritylib.querity.api.Querity.*;
-import static io.github.queritylib.querity.api.Sort.Direction.DESC;
+import static io.github.queritylib.querity.api.SimpleSort.Direction.DESC;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PropertyNameMappingPreprocessorTests {
@@ -84,7 +84,7 @@ class PropertyNameMappingPreprocessorTests {
         .preprocess();
 
     assertThat(q.hasSort()).isTrue();
-    assertThat(q.getSort().get(0).getPropertyName()).isEqualTo("prop2");
-    assertThat(q.getSort().get(1).getPropertyName()).isEqualTo("prop3");
+    assertThat(((SimpleSort) q.getSort().get(0)).getPropertyName()).isEqualTo("prop2");
+    assertThat(((SimpleSort) q.getSort().get(1)).getPropertyName()).isEqualTo("prop3");
   }
 }

@@ -60,7 +60,7 @@ public class MongodbQueryFactory<T> {
 
   private List<Sort.Order> getMongoDbSortOrder() {
     return query.getSort().stream()
-        .map(MongodbSort::new)
+        .map(MongodbSort::of)
         .map(MongodbSort::toMongoSortOrder)
         .toList();
   }
