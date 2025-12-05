@@ -63,7 +63,22 @@ class QuerityParserTests {
         Arguments.of("distinct orders.rows.quantity>10",
             Querity.query().distinct(true).filter(filterBy("orders.rows.quantity", GREATER_THAN, 10)).build()),
         Arguments.of("sort by lastName asc, age desc page 1,10",
-            Querity.query().sort(sortBy("lastName", ASC), sortBy("age", DESC)).pagination(1, 10).build())
+            Querity.query().sort(sortBy("lastName", ASC), sortBy("age", DESC)).pagination(1, 10).build()),
+        // Select tests
+        Arguments.of("select id, firstName, lastName",
+            Querity.query().selectBy("id", "firstName", "lastName").build()),
+        Arguments.of("select id",
+            Querity.query().selectBy("id").build()),
+        Arguments.of("select id, name lastName=\"Skywalker\"",
+            Querity.query().selectBy("id", "name").filter(filterBy("lastName", "Skywalker")).build()),
+        Arguments.of("select id, name lastName=\"Skywalker\" sort by name asc",
+            Querity.query().selectBy("id", "name").filter(filterBy("lastName", "Skywalker")).sort(sortBy("name", ASC)).build()),
+        Arguments.of("select id, name lastName=\"Skywalker\" sort by name asc page 1,10",
+            Querity.query().selectBy("id", "name").filter(filterBy("lastName", "Skywalker")).sort(sortBy("name", ASC)).pagination(1, 10).build()),
+        Arguments.of("distinct select id, firstName age>20",
+            Querity.query().distinct(true).selectBy("id", "firstName").filter(filterBy("age", GREATER_THAN, 20)).build()),
+        Arguments.of("select address.city, address.street",
+            Querity.query().selectBy("address.city", "address.street").build())
     );
   }
 
