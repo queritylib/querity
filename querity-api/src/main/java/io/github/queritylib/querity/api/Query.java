@@ -12,8 +12,8 @@ import java.util.concurrent.atomic.AtomicReference;
 @Builder(toBuilder = true)
 @Jacksonized
 @Getter
-@EqualsAndHashCode(of = {"filter", "pagination", "sort", "distinct"})
-@ToString(of = {"filter", "pagination", "sort", "distinct"})
+@EqualsAndHashCode(of = {"filter", "pagination", "sort", "distinct", "select"})
+@ToString(of = {"filter", "pagination", "sort", "distinct", "select"})
 public class Query {
   private final Condition filter;
   private final Pagination pagination;
@@ -23,6 +23,7 @@ public class Query {
   @JsonIgnore
   private List<QueryPreprocessor> preprocessors;
   private boolean distinct;
+  private final SimpleSelect select;
 
   public boolean hasFilter() {
     return filter != null && !filter.isEmpty();
@@ -34,6 +35,10 @@ public class Query {
 
   public boolean hasSort() {
     return Arrays.stream(sort).anyMatch(s -> true);
+  }
+
+  public boolean hasSelect() {
+    return select != null;
   }
 
   public List<Sort> getSort() {
@@ -50,6 +55,7 @@ public class Query {
     @SuppressWarnings({"java:S1068", "java:S1450"})
     private Sort[] sort = new Sort[0];
     private List<QueryPreprocessor> preprocessors = new ArrayList<>();
+    private SimpleSelect select;
 
     public QueryBuilder withPreprocessor(QueryPreprocessor preprocessor) {
       this.preprocessors.add(preprocessor);
@@ -68,6 +74,16 @@ public class Query {
 
     public QueryBuilder pagination(Integer page, Integer pageSize) {
       this.pagination = Querity.paged(page, pageSize);
+      return this;
+    }
+
+    public QueryBuilder select(SimpleSelect select) {
+      this.select = select;
+      return this;
+    }
+
+    public QueryBuilder selectBy(String... propertyNames) {
+      this.select = Querity.selectBy(propertyNames);
       return this;
     }
   }

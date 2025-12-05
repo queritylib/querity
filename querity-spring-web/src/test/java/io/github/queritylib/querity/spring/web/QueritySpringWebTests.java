@@ -36,6 +36,9 @@ class QueritySpringWebTests {
       /* not single condition */      "{\"filter\":{\"not\":{\"propertyName\":\"lastName\",\"operator\":\"EQUALS\",\"value\":\"Skywalker\"}}}",
       /* not conditions wrapper */    "{\"filter\":{\"not\":{\"and\":[{\"propertyName\":\"lastName\",\"operator\":\"EQUALS\",\"value\":\"Skywalker\"}]}}}",
       /* in array condition */        "{\"filter\":{\"propertyName\":\"lastName\",\"operator\":\"IN\",\"value\":[\"Skywalker\",\"Solo\"]}}",
+      /* simple select */             "{\"select\":{\"propertyNames\":[\"id\",\"firstName\",\"lastName\"]}}",
+      /* select with filter */        "{\"filter\":{\"propertyName\":\"lastName\",\"operator\":\"EQUALS\",\"value\":\"Skywalker\"},\"select\":{\"propertyNames\":[\"id\",\"name\"]}}",
+      /* select with sort */          "{\"select\":{\"propertyNames\":[\"id\"]},\"sort\":[{\"propertyName\":\"lastName\"}]}",
   })
   void givenJsonQuery_whenGetQuery_thenReturnsTheSameQueryAsResponse(String query) throws Exception {
     mockMvc.perform(get("/query")

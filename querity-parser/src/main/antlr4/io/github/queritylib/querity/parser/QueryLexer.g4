@@ -4,6 +4,7 @@ DISTINCT    : 'distinct';
 AND         : 'and';
 OR          : 'or';
 NOT         : 'not';
+SELECT      : 'select';
 SORT        : 'sort by';
 ASC         : 'asc';
 DESC        : 'desc';

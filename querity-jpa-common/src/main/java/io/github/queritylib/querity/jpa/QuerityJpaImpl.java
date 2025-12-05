@@ -8,6 +8,7 @@ import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 
 import java.util.List;
+import java.util.Map;
 
 public class QuerityJpaImpl implements Querity {
 
@@ -30,6 +31,11 @@ public class QuerityJpaImpl implements Querity {
     Query query = Querity.wrapConditionInQuery(condition);
     TypedQuery<Long> jpaQuery = getJpaQueryFactory(entityClass, query).getJpaCountQuery();
     return jpaQuery.getSingleResult();
+  }
+
+  @Override
+  public List<Map<String, Object>> findAllProjected(Class<?> entityClass, Query query) {
+    return getJpaQueryFactory(entityClass, query).getProjectedResults();
   }
 
   protected <T> JpaQueryFactory<T> getJpaQueryFactory(Class<T> entityClass, Query query) {

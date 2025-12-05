@@ -2,11 +2,23 @@ package io.github.queritylib.querity.api;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public interface Querity {
   <T> List<T> findAll(Class<T> entityClass, Query query);
 
   <T> Long count(Class<T> entityClass, Condition condition);
+
+  /**
+   * Execute a projection query returning a list of maps with the selected properties.
+   *
+   * @param entityClass the entity class to query
+   * @param query the query with select clause
+   * @return a list of maps containing the selected properties
+   */
+  default List<Map<String, Object>> findAllProjected(Class<?> entityClass, Query query) {
+    throw new UnsupportedOperationException("Projection queries are not supported by this implementation");
+  }
 
   static Query.QueryBuilder query() {
     return Query.builder();
@@ -67,6 +79,17 @@ public interface Querity {
   static <T> NativeSortWrapper<T> sortByNative(T nativeSort) {
     return NativeSortWrapper.<T>builder()
         .nativeSort(nativeSort)
+        .build();
+  }
+
+  static SimpleSelect selectBy(String... propertyNames) {
+    return SimpleSelect.of(propertyNames);
+  }
+
+  @SafeVarargs
+  static <T> NativeSelectWrapper<T> selectByNative(T... nativeSelections) {
+    return NativeSelectWrapper.<T>builder()
+        .nativeSelections(Arrays.asList(nativeSelections))
         .build();
   }
 
