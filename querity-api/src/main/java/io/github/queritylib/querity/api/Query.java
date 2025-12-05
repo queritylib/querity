@@ -23,7 +23,7 @@ public class Query {
   @JsonIgnore
   private List<QueryPreprocessor> preprocessors;
   private boolean distinct;
-  private final SimpleSelect select;
+  private final Select select;
 
   public boolean hasFilter() {
     return filter != null && !filter.isEmpty();
@@ -55,7 +55,7 @@ public class Query {
     @SuppressWarnings({"java:S1068", "java:S1450"})
     private Sort[] sort = new Sort[0];
     private List<QueryPreprocessor> preprocessors = new ArrayList<>();
-    private SimpleSelect select;
+    private Select select;
 
     public QueryBuilder withPreprocessor(QueryPreprocessor preprocessor) {
       this.preprocessors.add(preprocessor);
@@ -77,7 +77,7 @@ public class Query {
       return this;
     }
 
-    public QueryBuilder select(SimpleSelect select) {
+    public QueryBuilder select(Select select) {
       this.select = select;
       return this;
     }

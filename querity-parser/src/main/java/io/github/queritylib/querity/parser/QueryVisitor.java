@@ -10,7 +10,7 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
   @Override
   public Query visitQuery(QueryParser.QueryContext ctx) {
     boolean distinct = ctx.DISTINCT() != null;
-    SimpleSelect select = ctx.selectClause() != null ? (SimpleSelect) visit(ctx.selectClause()) : null;
+    Select select = ctx.selectClause() != null ? (Select) visit(ctx.selectClause()) : null;
     Condition filter = ctx.condition() != null ? (Condition) visit(ctx.condition()) : null;
     Sort[] sorts = ctx.SORT() != null ? (Sort[]) visit(ctx.sortFields()) : new Sort[0];
     Pagination pagination = ctx.PAGINATION() != null ? (Pagination) visit(ctx.paginationParams()) : null;
