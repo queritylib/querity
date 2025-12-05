@@ -71,8 +71,7 @@ class DeserializerTests {
     void givenSimpleSortJsonWithoutDirection_whenDeserialize_thenReturnSimpleSortWithDefaultAsc() throws Exception {
       String json = "{\"propertyName\":\"lastName\"}";
 
-      Sort sort = objectMapper.readValue(json, Sort.clas
-          s);
+      Sort sort = objectMapper.readValue(json, Sort.class);
 
       assertThat(sort).isInstanceOf(SimpleSort.class);
       SimpleSort simpleSort = (SimpleSort) sort;
