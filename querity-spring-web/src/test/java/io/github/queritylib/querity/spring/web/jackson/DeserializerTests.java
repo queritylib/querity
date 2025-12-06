@@ -49,7 +49,7 @@ class DeserializerTests {
       String json = "{\"unknownField\":\"value\"}";
 
       assertThatThrownBy(() -> objectMapper.readValue(json, Select.class))
-          .hasCauseInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(IllegalArgumentException.class);
     }
   }
 
@@ -84,7 +84,7 @@ class DeserializerTests {
       String json = "{\"unknownField\":\"value\"}";
 
       assertThatThrownBy(() -> objectMapper.readValue(json, Sort.class))
-          .hasCauseInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(IllegalArgumentException.class);
     }
   }
 

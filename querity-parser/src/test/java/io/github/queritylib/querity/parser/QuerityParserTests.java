@@ -2,6 +2,7 @@ package io.github.queritylib.querity.parser;
 
 import io.github.queritylib.querity.api.Querity;
 import io.github.queritylib.querity.api.Query;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -14,6 +15,7 @@ import static io.github.queritylib.querity.api.Querity.*;
 import static io.github.queritylib.querity.api.SimpleSort.Direction.ASC;
 import static io.github.queritylib.querity.api.SimpleSort.Direction.DESC;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class QuerityParserTests {
 
@@ -78,7 +80,30 @@ class QuerityParserTests {
         Arguments.of("distinct select id, firstName age>20",
             Querity.query().distinct(true).selectBy("id", "firstName").filter(filterBy("age", GREATER_THAN, 20)).build()),
         Arguments.of("select address.city, address.street",
-            Querity.query().selectBy("address.city", "address.street").build())
+            Querity.query().selectBy("address.city", "address.street").build()),
+        // Additional tests for better coverage
+        Arguments.of("deleted=true",
+            Querity.query().filter(filterBy("deleted", Boolean.TRUE)).build()),
+        Arguments.of("or(firstName=\"Luke\", firstName=\"Leia\")",
+            Querity.query().filter(or(filterBy("firstName", "Luke"), filterBy("firstName", "Leia"))).build()),
+        Arguments.of("not(deleted=true)",
+            Querity.query().filter(not(filterBy("deleted", Boolean.TRUE))).build()),
+        Arguments.of("age in (20, 30, 40)",
+            Querity.query().filter(filterBy("age", IN, new Object[]{20, 30, 40})).build()),
+        Arguments.of("price in (10.5, 20.5)",
+            Querity.query().filter(filterBy("price", IN, new Object[]{new BigDecimal("10.5"), new BigDecimal("20.5")})).build()),
+        Arguments.of("sort by lastName",
+            Querity.query().sort(sortBy("lastName", ASC)).build()),
+        Arguments.of("sort by lastName asc",
+            Querity.query().sort(sortBy("lastName", ASC)).build()),
+        Arguments.of("page 1,20",
+            Querity.query().pagination(1, 20).build()),
+        Arguments.of("page 0,50",
+            Querity.query().pagination(0, 50).build()),
+        Arguments.of("select id sort by id desc",
+            Querity.query().selectBy("id").sort(sortBy("id", DESC)).build()),
+        Arguments.of("select id page 1,5",
+            Querity.query().selectBy("id").pagination(1, 5).build())
     );
   }
 
@@ -87,5 +112,17 @@ class QuerityParserTests {
   void testParseQuery(String query, Query expected) {
     Query actual = QuerityParser.parseQuery(query);
     assertThat(actual).usingRecursiveComparison().isEqualTo(expected);
+  }
+
+  @Test
+  void givenInvalidQuery_whenParse_thenThrowException() {
+    assertThatThrownBy(() -> QuerityParser.parseQuery("invalid query syntax !!!"))
+        .isInstanceOf(RuntimeException.class);
+  }
+
+  @Test
+  void givenNullQuery_whenParse_thenThrowException() {
+    assertThatThrownBy(() -> QuerityParser.parseQuery(null))
+        .isInstanceOf(NullPointerException.class);
   }
 }
