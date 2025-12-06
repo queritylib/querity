@@ -2,6 +2,7 @@ package io.github.queritylib.querity.jpa;
 
 import io.github.queritylib.querity.api.NativeSelectWrapper;
 import io.github.queritylib.querity.common.util.SelectUtils;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Selection;
@@ -41,7 +42,7 @@ public abstract class JpaNativeSelectWrapper<T> implements JpaSelect {
   }
 
   @Override
-  public abstract List<Selection<?>> toSelections(Metamodel metamodel, Root<?> root, CriteriaQuery<?> cq);
+  public abstract List<Selection<?>> toSelections(Metamodel metamodel, Root<?> root, CriteriaQuery<?> cq, CriteriaBuilder cb);
 
   @Override
   public abstract List<String> getPropertyNames();

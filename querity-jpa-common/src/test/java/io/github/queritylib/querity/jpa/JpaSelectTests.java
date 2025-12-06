@@ -3,6 +3,7 @@ package io.github.queritylib.querity.jpa;
 import io.github.queritylib.querity.api.NativeSelectWrapper;
 import io.github.queritylib.querity.api.Select;
 import io.github.queritylib.querity.api.SimpleSelect;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Selection;
@@ -107,7 +108,7 @@ class JpaSelectTests {
     }
 
     @Override
-    public List<Selection<?>> toSelections(Metamodel metamodel, Root<?> root, CriteriaQuery<?> cq) {
+    public List<Selection<?>> toSelections(Metamodel metamodel, Root<?> root, CriteriaQuery<?> cq, CriteriaBuilder cb) {
       return List.of();
     }
 

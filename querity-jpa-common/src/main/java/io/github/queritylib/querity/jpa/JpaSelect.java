@@ -2,6 +2,7 @@ package io.github.queritylib.querity.jpa;
 
 import io.github.queritylib.querity.api.Select;
 import io.github.queritylib.querity.api.SimpleSelect;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Selection;
@@ -20,9 +21,10 @@ public interface JpaSelect {
    * @param metamodel the JPA metamodel
    * @param root      the root of the query
    * @param cq        the criteria query
+   * @param cb        the criteria builder
    * @return a list of JPA selections
    */
-  List<Selection<?>> toSelections(Metamodel metamodel, Root<?> root, CriteriaQuery<?> cq);
+  List<Selection<?>> toSelections(Metamodel metamodel, Root<?> root, CriteriaQuery<?> cq, CriteriaBuilder cb);
 
   /**
    * Get the property names for this select.

@@ -1,6 +1,11 @@
 package io.github.queritylib.querity.jpa;
 
-import io.github.queritylib.querity.api.*;
+import io.github.queritylib.querity.api.Condition;
+import io.github.queritylib.querity.api.NativeSelectWrapper;
+import io.github.queritylib.querity.api.Pagination;
+import io.github.queritylib.querity.api.Query;
+import io.github.queritylib.querity.api.Select;
+import io.github.queritylib.querity.api.Sort;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
@@ -66,7 +71,7 @@ public class JpaQueryFactory<T> {
     applyDistinct(cq);
     applyFilters(metamodel, root, cq, cb);
     applySorting(metamodel, root, cq, cb);
-    applyProjectionSelections(metamodel, cq, root);
+    applyProjectionSelections(metamodel, cq, root, cb);
 
     TypedQuery<Tuple> tq = createTypedQuery(cq);
 
@@ -86,7 +91,7 @@ public class JpaQueryFactory<T> {
     }
 
     TypedQuery<Tuple> tq = getJpaProjectionQuery();
-    JpaSelect jpaSelect = JpaSelect.of(query.getSelect());
+    JpaSelect jpaSelect = getJpaSelect(query.getSelect());
     List<String> propertyNames = jpaSelect.getPropertyNames();
 
     return tq.getResultList().stream()
@@ -109,12 +114,19 @@ public class JpaQueryFactory<T> {
   /**
    * Apply projection selections to the CriteriaQuery.
    */
-  private void applyProjectionSelections(Metamodel metamodel, CriteriaQuery<Tuple> cq, Root<T> root) {
+  private void applyProjectionSelections(Metamodel metamodel, CriteriaQuery<Tuple> cq, Root<T> root, CriteriaBuilder cb) {
     if (query != null && query.hasSelect()) {
-      JpaSelect jpaSelect = JpaSelect.of(query.getSelect());
-      List<Selection<?>> selections = jpaSelect.toSelections(metamodel, root, cq);
+      JpaSelect jpaSelect = getJpaSelect(query.getSelect());
+      List<Selection<?>> selections = jpaSelect.toSelections(metamodel, root, cq, cb);
       cq.multiselect(selections);
     }
+  }
+
+  private JpaSelect getJpaSelect(Select select) {
+    if (select instanceof NativeSelectWrapper<?> nativeSelectWrapper) {
+      return JpaNativeSelectWrapper.of(nativeSelectWrapper);
+    }
+    return JpaSelect.of(select);
   }
 
   /**

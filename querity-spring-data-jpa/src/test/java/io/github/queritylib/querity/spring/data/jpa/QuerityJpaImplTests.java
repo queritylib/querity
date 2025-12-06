@@ -143,5 +143,26 @@ public abstract class QuerityJpaImplTests extends QuerityGenericSpringTestSuite<
             .sorted(comparator)
             .toList());
   }
+
+  @Test
+  void givenNativeSortWithExpression_whenFindAll_thenReturnSortedByExpression() {
+    // Sort by length of lastName (expression-based sorting)
+    OrderSpecification<Person> orderSpec = (root, cb) -> cb.asc(cb.length(root.get("lastName")));
+    Query query = Querity.query()
+        .filter(filterBy("lastName", Operator.IS_NOT_NULL))
+        .sort(sortByNative(orderSpec), sortBy("id"))
+        .build();
+    List<Person> result = querity.findAll(getEntityClass(), query);
+    assertThat(result).isNotEmpty();
+    // Verify results are sorted by lastName length ascending, then by id
+    Comparator<Person> comparator = Comparator
+        .comparingInt((Person p) -> p.getLastName().length())
+        .thenComparing(Person::getId);
+    assertThat(result)
+        .containsExactlyElementsOf(entities.stream()
+            .filter(p -> p.getLastName() != null)
+            .sorted(comparator)
+            .toList());
+  }
 }
 

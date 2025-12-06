@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -849,6 +850,63 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
       int quantity = 8;
       Long count = querity.count(getEntityClass(), filterBy("orders.items.quantity", GREATER_THAN, quantity));
       assertThat(count).isEqualTo(findByOrderContainingItemMatching(i -> i.getQuantity() > quantity).size());
+    }
+
+  }
+
+  @Nested
+  class SelectTests {
+
+    @Test
+    void givenSelectByTwoFields_whenFindAllProjected_thenReturnOnlySelectedFields() {
+      Query query = Querity.query()
+          .selectBy(PROPERTY_FIRST_NAME, PROPERTY_LAST_NAME)
+          .build();
+      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).hasSize(entities.size());
+      assertThat(result).allSatisfy(map -> {
+        assertThat(map).containsKey("firstName");
+        assertThat(map).containsKey("lastName");
+      });
+    }
+
+    @Test
+    void givenSelectByWithFilter_whenFindAllProjected_thenReturnFilteredAndProjectedResults() {
+      Query query = Querity.query()
+          .filter(filterBy(PROPERTY_LAST_NAME, EQUALS, entity1.getLastName()))
+          .selectBy(PROPERTY_FIRST_NAME, PROPERTY_LAST_NAME)
+          .build();
+      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).allSatisfy(map -> {
+        assertThat(map.get("lastName")).isEqualTo(entity1.getLastName());
+      });
+    }
+
+    @Test
+    void givenSelectByNestedField_whenFindAllProjected_thenReturnNestedFieldValues() {
+      Query query = Querity.query()
+          .selectBy(PROPERTY_FIRST_NAME, PROPERTY_ADDRESS_CITY)
+          .build();
+      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).allSatisfy(map -> {
+        assertThat(map).containsKey("firstName");
+        assertThat(map).containsKey("city");
+      });
+    }
+
+    @Test
+    void givenSelectByWithPagination_whenFindAllProjected_thenReturnPaginatedProjectedResults() {
+      Query query = Querity.query()
+          .selectBy(PROPERTY_ID, PROPERTY_FIRST_NAME)
+          .sort(sortBy(PROPERTY_ID))
+          .pagination(2, 3)
+          .build();
+      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).hasSize(3);
     }
 
   }

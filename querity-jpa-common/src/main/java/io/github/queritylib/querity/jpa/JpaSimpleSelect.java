@@ -1,6 +1,7 @@
 package io.github.queritylib.querity.jpa;
 
 import io.github.queritylib.querity.api.SimpleSelect;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Root;
@@ -21,7 +22,7 @@ public class JpaSimpleSelect implements JpaSelect {
   }
 
   @Override
-  public List<Selection<?>> toSelections(Metamodel metamodel, Root<?> root, CriteriaQuery<?> cq) {
+  public List<Selection<?>> toSelections(Metamodel metamodel, Root<?> root, CriteriaQuery<?> cq, CriteriaBuilder cb) {
     return simpleSelect.getPropertyNames().stream()
         .map(propertyName -> {
           Path<?> path = JpaPropertyUtils.getPath(root, propertyName, metamodel);

@@ -30,9 +30,11 @@ Query features:
 * filtering
 * sorting
 * pagination
+* projections (select specific fields)
 * textual query language
 * support for REST APIs
 * support for DTO layer
+* native database expressions (JPA)
 * and more...
 
 All with ONE SINGLE LANGUAGE!
@@ -127,6 +129,51 @@ The `count` method returns the total filtered items count excluding pagination (
 Java 14).
 
 > Note the static imports to improve the readability.
+
+#### Projections
+
+Use `selectBy` to retrieve only specific fields instead of full entities:
+
+```java
+Query query = Querity.query()
+    .selectBy("firstName", "lastName", "address.city")
+    .filter(filterBy("lastName", EQUALS, "Skywalker"))
+    .build();
+List<Map<String, Object>> results = querity.findAllProjected(Person.class, query);
+// Each map contains only: {firstName: "...", lastName: "...", city: "..."}
+```
+
+#### Native expressions (JPA only)
+
+For advanced use cases, JPA modules support native expressions using `CriteriaBuilder`:
+
+**Native sort with expression:**
+
+```java
+// Sort by length of lastName
+OrderSpecification<Person> orderSpec = (root, cb) -> cb.asc(cb.length(root.get("lastName")));
+Query query = Querity.query()
+    .sort(sortByNative(orderSpec))
+    .build();
+List<Person> results = querity.findAll(Person.class, query);
+```
+
+**Native select with expression:**
+
+```java
+// Select concatenated full name
+SelectionSpecification<Person> fullNameSpec = AliasedSelectionSpecification.of(
+    (root, cb) -> cb.concat(cb.concat(root.get("firstName"), " "), root.get("lastName")),
+    "fullName"
+);
+Query query = Querity.query()
+    .select(selectByNative(fullNameSpec))
+    .build();
+List<Map<String, Object>> results = querity.findAllProjected(Person.class, query);
+// Each map contains: {fullName: "Luke Skywalker"}
+```
+
+> Native expressions are only available for JPA. MongoDB and Elasticsearch support `sortByNative` and `filterByNative` with their respective native types (`Order`, `Criteria`), but not expression-based projections.
 
 #### Query language
 
