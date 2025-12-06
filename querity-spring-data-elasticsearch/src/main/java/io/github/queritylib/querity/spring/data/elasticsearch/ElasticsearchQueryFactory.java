@@ -28,6 +28,26 @@ public class ElasticsearchQueryFactory<T> {
     return q;
   }
 
+  org.springframework.data.elasticsearch.core.query.Query getElasticsearchProjectedQuery() {
+    if (query == null || !query.hasSelect()) {
+      throw new IllegalArgumentException("Query must have a select clause for projection queries");
+    }
+    if (query.isDistinct()) {
+      log.debug("Distinct queries are not supported in Elasticsearch, ignoring the distinct flag");
+    }
+    org.springframework.data.elasticsearch.core.query.Query q = initElasticsearchQuery();
+    applyProjection(q);
+    q = applyPaginationAndSorting(q);
+    return q;
+  }
+
+  private void applyProjection(org.springframework.data.elasticsearch.core.query.Query q) {
+    List<String> fields = ElasticsearchSelect.of(query.getSelect()).getFields();
+    String[] includes = fields.toArray(new String[0]);
+    q.addSourceFilter(org.springframework.data.elasticsearch.core.query.FetchSourceFilter.of(
+        sourceFilterBuilder -> sourceFilterBuilder.withIncludes(includes)));
+  }
+
   private org.springframework.data.elasticsearch.core.query.Query initElasticsearchQuery() {
     return query == null || !query.hasFilter() ?
         new org.springframework.data.elasticsearch.core.query.CriteriaQuery(new Criteria()) :

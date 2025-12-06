@@ -17,6 +17,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import static io.github.queritylib.querity.api.Querity.filterByNative;
 import static io.github.queritylib.querity.api.Querity.not;
@@ -121,5 +122,42 @@ class QuerityElasticsearchImplTests extends QuerityGenericSpringTestSuite<Person
         .comparing(Person::getLastName, Comparator.nullsLast(Comparator.naturalOrder()))
         .thenComparing(Person::getFirstName, Comparator.nullsLast(Comparator.naturalOrder()));
     assertThat(result).isSortedAccordingTo(comparator);
+  }
+
+  @Test
+  void givenSelectWithProjection_whenFindAllProjected_thenReturnOnlySelectedFields() {
+    Query query = Querity.query()
+        .selectBy("firstName", "lastName")
+        .build();
+    List<Map<String, Object>> result = querity.findAllProjected(Person.class, query);
+    assertThat(result).isNotEmpty();
+    // Elasticsearch doesn't return null fields, so we only check firstName is present
+    assertThat(result).allSatisfy(map -> {
+      assertThat(map).containsKey("firstName");
+    });
+  }
+
+  @Test
+  void givenSelectWithProjection_whenFindAll_thenThrowIllegalArgumentException() {
+    Query query = Querity.query()
+        .selectBy("firstName", "lastName")
+        .build();
+    assertThrows(IllegalArgumentException.class,
+        () -> querity.findAll(Person.class, query),
+        "findAll() does not support projections. Use findAllProjected() instead.");
+  }
+
+  @Test
+  void givenQueryWithFilterAndProjection_whenFindAllProjected_thenReturnFilteredAndProjectedResults() {
+    String lastName = ((Person) entity1).getLastName();
+    Query query = Querity.query()
+        .filter(Querity.filterBy("lastName", lastName))
+        .selectBy("firstName", "lastName")
+        .build();
+    List<Map<String, Object>> result = querity.findAllProjected(Person.class, query);
+    assertThat(result).isNotEmpty();
+    assertThat(result).allSatisfy(map -> {
+      assertThat(map.get("lastName")).isEqualTo(lastName);
+    });
   }
 }

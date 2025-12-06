@@ -161,6 +161,17 @@
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>${jacoco-maven-plugin.version}</version>
+        <configuration>
+          <excludes>
+            <exclude>**/QueryLexer.*</exclude>
+            <exclude>**/QueryParser.*</exclude>
+            <exclude>**/QueryParser$*</exclude>
+            <exclude>**/QueryParserBaseListener.*</exclude>
+            <exclude>**/QueryParserBaseVisitor.*</exclude>
+            <exclude>**/QueryParserListener.*</exclude>
+            <exclude>**/QueryParserVisitor.*</exclude>
+          </excludes>
+        </configuration>
         <executions>
           <execution>
             <id>prepare-agent</id>

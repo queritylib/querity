@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.Deserializers;
 import io.github.queritylib.querity.api.Condition;
+import io.github.queritylib.querity.api.Select;
+import io.github.queritylib.querity.api.Sort;
 
 public class QuerityModule extends com.fasterxml.jackson.databind.Module {
   @Override
@@ -24,6 +26,12 @@ public class QuerityModule extends com.fasterxml.jackson.databind.Module {
         Class<?> raw = type.getRawClass();
         if (Condition.class.isAssignableFrom(raw)) {
           return new ConditionDeserializer(type);
+        }
+        if (Select.class.isAssignableFrom(raw)) {
+          return new SelectDeserializer(type);
+        }
+        if (Sort.class.isAssignableFrom(raw)) {
+          return new SortDeserializer(type);
         }
         return super.findBeanDeserializer(type, config, beanDesc);
       }
