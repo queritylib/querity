@@ -9,14 +9,14 @@ import lombok.extern.jackson.Jacksonized;
  * instead of comparing against a literal value.
  *
  * <p>Example usage:
- * <pre>
+ * <pre>{@code
  * // Compare startDate < endDate
  * SimpleCondition.builder()
  *     .propertyName("startDate")
  *     .operator(Operator.LESSER_THAN)
  *     .value(FieldReference.of("endDate"))
  *     .build();
- * </pre>
+ * }</pre>
  */
 @Getter
 @EqualsAndHashCode
