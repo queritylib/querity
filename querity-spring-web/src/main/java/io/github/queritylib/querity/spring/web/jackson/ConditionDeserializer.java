@@ -23,6 +23,7 @@ public class ConditionDeserializer extends StdDeserializer<Condition> {
   public static final String FIELD_SIMPLE_CONDITION_PROPERTY_NAME = "propertyName";
   public static final String FIELD_SIMPLE_CONDITION_OPERATOR = "operator";
   public static final String FIELD_SIMPLE_CONDITION_VALUE = "value";
+  public static final String FIELD_SIMPLE_CONDITION_FIELD_REF = "fieldRef";
   public static final String FIELD_NOT_CONDITION_CONDITION = "not";
 
   protected ConditionDeserializer(JavaType valueType) {
@@ -88,10 +89,17 @@ public class ConditionDeserializer extends StdDeserializer<Condition> {
     SimpleCondition.SimpleConditionBuilder builder = SimpleCondition.builder();
     builder = setIfNotNull(jsonNode, builder, FIELD_SIMPLE_CONDITION_PROPERTY_NAME, JsonNode::asText, builder::propertyName);
     builder = setIfNotNull(jsonNode, builder, FIELD_SIMPLE_CONDITION_OPERATOR, node -> Operator.valueOf(node.asText()), builder::operator);
-    if (isArray(jsonNode, FIELD_SIMPLE_CONDITION_VALUE))
+
+    // Check if this is a field reference
+    if (jsonNode.hasNonNull(FIELD_SIMPLE_CONDITION_FIELD_REF)) {
+      String fieldName = jsonNode.get(FIELD_SIMPLE_CONDITION_FIELD_REF).asText();
+      builder = builder.value(FieldReference.of(fieldName));
+    } else if (isArray(jsonNode, FIELD_SIMPLE_CONDITION_VALUE)) {
       builder = setArrayIfNotNull(jsonNode, builder, FIELD_SIMPLE_CONDITION_VALUE, JsonNode::asText, builder::value);
-    else
+    } else {
       builder = setIfNotNull(jsonNode, builder, FIELD_SIMPLE_CONDITION_VALUE, JsonNode::asText, builder::value);
+    }
+
     try {
       return builder.build();
     } catch (Exception ex) {

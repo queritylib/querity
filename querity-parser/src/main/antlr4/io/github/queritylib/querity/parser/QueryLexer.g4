@@ -29,6 +29,7 @@ COMMA       : ',';
 INT_VALUE     : [0-9]+;
 DECIMAL_VALUE : [0-9]+'.'[0-9]+;
 BOOLEAN_VALUE : 'true' | 'false';
+FIELD_REF     : '$' [a-zA-Z_][a-zA-Z0-9_.]*;
 PROPERTY      : [a-zA-Z_][a-zA-Z0-9_.]*;
 STRING_VALUE  : '"' (~["\\] | '\\' .)* '"';
 

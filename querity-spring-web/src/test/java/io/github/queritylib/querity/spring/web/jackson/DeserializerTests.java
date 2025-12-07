@@ -1,10 +1,7 @@
 package io.github.queritylib.querity.spring.web.jackson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.queritylib.querity.api.Select;
-import io.github.queritylib.querity.api.SimpleSelect;
-import io.github.queritylib.querity.api.SimpleSort;
-import io.github.queritylib.querity.api.Sort;
+import io.github.queritylib.querity.api.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -102,6 +99,166 @@ class DeserializerTests {
       QuerityModule module = new QuerityModule();
 
       assertThat(module.version()).isNotNull();
+    }
+  }
+
+  @Nested
+  class ConditionDeserializerTests {
+    @Test
+    void givenSimpleConditionWithFieldRef_whenDeserialize_thenReturnConditionWithFieldReference() throws Exception {
+      String json = "{\"propertyName\":\"startDate\",\"operator\":\"LESSER_THAN\",\"fieldRef\":\"endDate\"}";
+
+      Condition condition = objectMapper.readValue(json, Condition.class);
+
+      assertThat(condition).isInstanceOf(SimpleCondition.class);
+      SimpleCondition simpleCondition = (SimpleCondition) condition;
+      assertThat(simpleCondition.getPropertyName()).isEqualTo("startDate");
+      assertThat(simpleCondition.getOperator()).isEqualTo(Operator.LESSER_THAN);
+      assertThat(simpleCondition.isFieldReference()).isTrue();
+      assertThat(simpleCondition.getFieldReference().getFieldName()).isEqualTo("endDate");
+    }
+
+    @Test
+    void givenSimpleConditionWithFieldRefAndEquals_whenDeserialize_thenReturnConditionWithFieldReference() throws Exception {
+      String json = "{\"propertyName\":\"field1\",\"operator\":\"EQUALS\",\"fieldRef\":\"field2\"}";
+
+      Condition condition = objectMapper.readValue(json, Condition.class);
+
+      assertThat(condition).isInstanceOf(SimpleCondition.class);
+      SimpleCondition simpleCondition = (SimpleCondition) condition;
+      assertThat(simpleCondition.getPropertyName()).isEqualTo("field1");
+      assertThat(simpleCondition.getOperator()).isEqualTo(Operator.EQUALS);
+      assertThat(simpleCondition.isFieldReference()).isTrue();
+      assertThat(simpleCondition.getFieldReference().getFieldName()).isEqualTo("field2");
+    }
+
+    @Test
+    void givenSimpleConditionWithFieldRefAndNotEquals_whenDeserialize_thenReturnConditionWithFieldReference() throws Exception {
+      String json = "{\"propertyName\":\"field1\",\"operator\":\"NOT_EQUALS\",\"fieldRef\":\"field2\"}";
+
+      Condition condition = objectMapper.readValue(json, Condition.class);
+
+      SimpleCondition simpleCondition = (SimpleCondition) condition;
+      assertThat(simpleCondition.getOperator()).isEqualTo(Operator.NOT_EQUALS);
+      assertThat(simpleCondition.isFieldReference()).isTrue();
+    }
+
+    @Test
+    void givenSimpleConditionWithFieldRefAndGreaterThan_whenDeserialize_thenReturnConditionWithFieldReference() throws Exception {
+      String json = "{\"propertyName\":\"price\",\"operator\":\"GREATER_THAN\",\"fieldRef\":\"minPrice\"}";
+
+      Condition condition = objectMapper.readValue(json, Condition.class);
+
+      SimpleCondition simpleCondition = (SimpleCondition) condition;
+      assertThat(simpleCondition.getOperator()).isEqualTo(Operator.GREATER_THAN);
+      assertThat(simpleCondition.isFieldReference()).isTrue();
+      assertThat(simpleCondition.getFieldReference().getFieldName()).isEqualTo("minPrice");
+    }
+
+    @Test
+    void givenSimpleConditionWithFieldRefAndGreaterThanEquals_whenDeserialize_thenReturnConditionWithFieldReference() throws Exception {
+      String json = "{\"propertyName\":\"price\",\"operator\":\"GREATER_THAN_EQUALS\",\"fieldRef\":\"minPrice\"}";
+
+      Condition condition = objectMapper.readValue(json, Condition.class);
+
+      SimpleCondition simpleCondition = (SimpleCondition) condition;
+      assertThat(simpleCondition.getOperator()).isEqualTo(Operator.GREATER_THAN_EQUALS);
+      assertThat(simpleCondition.isFieldReference()).isTrue();
+    }
+
+    @Test
+    void givenSimpleConditionWithFieldRefAndLesserThanEquals_whenDeserialize_thenReturnConditionWithFieldReference() throws Exception {
+      String json = "{\"propertyName\":\"price\",\"operator\":\"LESSER_THAN_EQUALS\",\"fieldRef\":\"maxPrice\"}";
+
+      Condition condition = objectMapper.readValue(json, Condition.class);
+
+      SimpleCondition simpleCondition = (SimpleCondition) condition;
+      assertThat(simpleCondition.getOperator()).isEqualTo(Operator.LESSER_THAN_EQUALS);
+      assertThat(simpleCondition.isFieldReference()).isTrue();
+    }
+
+    @Test
+    void givenSimpleConditionWithValue_whenDeserialize_thenReturnConditionWithValue() throws Exception {
+      String json = "{\"propertyName\":\"lastName\",\"operator\":\"EQUALS\",\"value\":\"Skywalker\"}";
+
+      Condition condition = objectMapper.readValue(json, Condition.class);
+
+      assertThat(condition).isInstanceOf(SimpleCondition.class);
+      SimpleCondition simpleCondition = (SimpleCondition) condition;
+      assertThat(simpleCondition.getPropertyName()).isEqualTo("lastName");
+      assertThat(simpleCondition.getOperator()).isEqualTo(Operator.EQUALS);
+      assertThat(simpleCondition.isFieldReference()).isFalse();
+      assertThat(simpleCondition.getValue()).isEqualTo("Skywalker");
+    }
+
+    @Test
+    void givenAndConditionWithFieldRef_whenDeserialize_thenReturnAndCondition() throws Exception {
+      String json = "{\"and\":[{\"propertyName\":\"startDate\",\"operator\":\"LESSER_THAN\",\"fieldRef\":\"endDate\"},{\"propertyName\":\"status\",\"operator\":\"EQUALS\",\"value\":\"ACTIVE\"}]}";
+
+      Condition condition = objectMapper.readValue(json, Condition.class);
+
+      assertThat(condition).isInstanceOf(AndConditionsWrapper.class);
+      AndConditionsWrapper andCondition = (AndConditionsWrapper) condition;
+      assertThat(andCondition.getConditions()).hasSize(2);
+
+      SimpleCondition fieldRefCondition = (SimpleCondition) andCondition.getConditions().get(0);
+      assertThat(fieldRefCondition.isFieldReference()).isTrue();
+      assertThat(fieldRefCondition.getFieldReference().getFieldName()).isEqualTo("endDate");
+
+      SimpleCondition valueCondition = (SimpleCondition) andCondition.getConditions().get(1);
+      assertThat(valueCondition.isFieldReference()).isFalse();
+      assertThat(valueCondition.getValue()).isEqualTo("ACTIVE");
+    }
+
+    @Test
+    void givenOrConditionWithFieldRef_whenDeserialize_thenReturnOrCondition() throws Exception {
+      String json = "{\"or\":[{\"propertyName\":\"field1\",\"operator\":\"EQUALS\",\"fieldRef\":\"field2\"},{\"propertyName\":\"field3\",\"operator\":\"NOT_EQUALS\",\"fieldRef\":\"field4\"}]}";
+
+      Condition condition = objectMapper.readValue(json, Condition.class);
+
+      assertThat(condition).isInstanceOf(OrConditionsWrapper.class);
+      OrConditionsWrapper orCondition = (OrConditionsWrapper) condition;
+      assertThat(orCondition.getConditions()).hasSize(2);
+
+      SimpleCondition condition1 = (SimpleCondition) orCondition.getConditions().get(0);
+      assertThat(condition1.isFieldReference()).isTrue();
+
+      SimpleCondition condition2 = (SimpleCondition) orCondition.getConditions().get(1);
+      assertThat(condition2.isFieldReference()).isTrue();
+    }
+
+    @Test
+    void givenNotConditionWithFieldRef_whenDeserialize_thenReturnNotCondition() throws Exception {
+      String json = "{\"not\":{\"propertyName\":\"startDate\",\"operator\":\"GREATER_THAN\",\"fieldRef\":\"endDate\"}}";
+
+      Condition condition = objectMapper.readValue(json, Condition.class);
+
+      assertThat(condition).isInstanceOf(NotCondition.class);
+      NotCondition notCondition = (NotCondition) condition;
+
+      SimpleCondition innerCondition = (SimpleCondition) notCondition.getCondition();
+      assertThat(innerCondition.isFieldReference()).isTrue();
+      assertThat(innerCondition.getFieldReference().getFieldName()).isEqualTo("endDate");
+    }
+
+    @Test
+    void givenFieldRefWithUnsupportedOperator_whenDeserialize_thenThrowException() {
+      String json = "{\"propertyName\":\"field1\",\"operator\":\"IN\",\"fieldRef\":\"field2\"}";
+
+      assertThatThrownBy(() -> objectMapper.readValue(json, Condition.class))
+          .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void givenNestedFieldRef_whenDeserialize_thenReturnConditionWithNestedFieldReference() throws Exception {
+      String json = "{\"propertyName\":\"order.startDate\",\"operator\":\"LESSER_THAN\",\"fieldRef\":\"order.endDate\"}";
+
+      Condition condition = objectMapper.readValue(json, Condition.class);
+
+      SimpleCondition simpleCondition = (SimpleCondition) condition;
+      assertThat(simpleCondition.getPropertyName()).isEqualTo("order.startDate");
+      assertThat(simpleCondition.isFieldReference()).isTrue();
+      assertThat(simpleCondition.getFieldReference().getFieldName()).isEqualTo("order.endDate");
     }
   }
 }

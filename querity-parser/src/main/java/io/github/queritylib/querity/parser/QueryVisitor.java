@@ -92,6 +92,10 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
         value = visitArrayValue(ctx.arrayValue());
       } else if (ctx.simpleValue() != null) {
         value = visitSimpleValue(ctx.simpleValue());
+      } else if (ctx.FIELD_REF() != null) {
+        // Remove the leading $ to get the field name
+        String fieldName = ctx.FIELD_REF().getText().substring(1);
+        value = FieldReference.of(fieldName);
       }
     }
 

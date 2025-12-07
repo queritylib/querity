@@ -1,5 +1,6 @@
 package io.github.queritylib.querity.parser;
 
+import io.github.queritylib.querity.api.FieldReference;
 import io.github.queritylib.querity.api.Querity;
 import io.github.queritylib.querity.api.Query;
 import org.junit.jupiter.api.Test;
@@ -81,6 +82,44 @@ class QuerityParserTests {
             Querity.query().distinct(true).selectBy("id", "firstName").filter(filterBy("age", GREATER_THAN, 20)).build()),
         Arguments.of("select address.city, address.street",
             Querity.query().selectBy("address.city", "address.street").build()),
+        // Field-to-field comparison tests
+        Arguments.of("startDate<$endDate",
+            Querity.query().filter(filterByField("startDate", LESSER_THAN, field("endDate"))).build()),
+        Arguments.of("startDate<=$endDate",
+            Querity.query().filter(filterByField("startDate", LESSER_THAN_EQUALS, field("endDate"))).build()),
+        Arguments.of("price>$minPrice",
+            Querity.query().filter(filterByField("price", GREATER_THAN, field("minPrice"))).build()),
+        Arguments.of("price>=$minPrice",
+            Querity.query().filter(filterByField("price", GREATER_THAN_EQUALS, field("minPrice"))).build()),
+        Arguments.of("field1=$field2",
+            Querity.query().filter(filterByField("field1", EQUALS, field("field2"))).build()),
+        Arguments.of("field1!=$field2",
+            Querity.query().filter(filterByField("field1", NOT_EQUALS, field("field2"))).build()),
+        Arguments.of("nested.startDate<$nested.endDate",
+            Querity.query().filter(filterByField("nested.startDate", LESSER_THAN, field("nested.endDate"))).build()),
+        Arguments.of("and(startDate<$endDate, price>$minPrice)",
+            Querity.query().filter(and(
+                filterByField("startDate", LESSER_THAN, field("endDate")),
+                filterByField("price", GREATER_THAN, field("minPrice"))
+            )).build()),
+        Arguments.of("or(field1=$field2, field3!=$field4)",
+            Querity.query().filter(or(
+                filterByField("field1", EQUALS, field("field2")),
+                filterByField("field3", NOT_EQUALS, field("field4"))
+            )).build()),
+        Arguments.of("not(startDate>$endDate)",
+            Querity.query().filter(not(filterByField("startDate", GREATER_THAN, field("endDate")))).build()),
+        Arguments.of("and(startDate<$endDate, status=\"ACTIVE\")",
+            Querity.query().filter(and(
+                filterByField("startDate", LESSER_THAN, field("endDate")),
+                filterBy("status", "ACTIVE")
+            )).build()),
+        Arguments.of("startDate<$endDate sort by startDate asc",
+            Querity.query().filter(filterByField("startDate", LESSER_THAN, field("endDate"))).sort(sortBy("startDate", ASC)).build()),
+        Arguments.of("startDate<$endDate page 1,10",
+            Querity.query().filter(filterByField("startDate", LESSER_THAN, field("endDate"))).pagination(1, 10).build()),
+        Arguments.of("select id, startDate startDate<$endDate",
+            Querity.query().selectBy("id", "startDate").filter(filterByField("startDate", LESSER_THAN, field("endDate"))).build()),
         // Additional tests for better coverage
         Arguments.of("deleted=true",
             Querity.query().filter(filterBy("deleted", Boolean.TRUE)).build()),

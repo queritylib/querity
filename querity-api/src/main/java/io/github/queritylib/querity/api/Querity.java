@@ -98,4 +98,27 @@ public interface Querity {
         .filter(condition)
         .build();
   }
+
+  /**
+   * Create a reference to a field for use in field-to-field comparisons.
+   *
+   * @param fieldName the name of the field to reference
+   * @return a FieldReference for use as a value in SimpleCondition
+   */
+  static FieldReference field(String fieldName) {
+    return FieldReference.of(fieldName);
+  }
+
+  /**
+   * Filter by comparing one field against another field.
+   *
+   * @param propertyName the property name on the left side
+   * @param operator the comparison operator
+   * @param fieldReference reference to the field on the right side
+   * @return a SimpleCondition comparing two fields
+   */
+  static SimpleCondition filterByField(String propertyName, Operator operator, FieldReference fieldReference) {
+    return SimpleCondition.builder()
+        .propertyName(propertyName).operator(operator).value(fieldReference).build();
+  }
 }

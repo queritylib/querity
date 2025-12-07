@@ -2,8 +2,7 @@ package io.github.queritylib.querity.api;
 
 import org.junit.jupiter.api.Test;
 
-import static io.github.queritylib.querity.api.Operator.EQUALS;
-import static io.github.queritylib.querity.api.Operator.IS_NULL;
+import static io.github.queritylib.querity.api.Operator.*;
 import static io.github.queritylib.querity.api.Querity.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -103,5 +102,151 @@ class ConditionTests {
 
   private static SimpleCondition getIsNullCondition() {
     return filterBy("lastName", IS_NULL);
+  }
+
+  // Field Reference Tests
+
+  @Test
+  void givenFieldReference_whenBuildSimpleCondition_thenReturnConditionWithFieldReference() {
+    FieldReference fieldRef = field("endDate");
+    SimpleCondition condition = filterByField("startDate", LESSER_THAN, fieldRef);
+
+    assertThat(condition.getPropertyName()).isEqualTo("startDate");
+    assertThat(condition.getOperator()).isEqualTo(LESSER_THAN);
+    assertThat(condition.isFieldReference()).isTrue();
+    assertThat(condition.getFieldReference()).isEqualTo(fieldRef);
+    assertThat(condition.getValue()).isEqualTo(fieldRef);
+  }
+
+  @Test
+  void givenFieldReferenceWithEquals_whenBuildSimpleCondition_thenReturnConditionWithFieldReference() {
+    SimpleCondition condition = filterByField("field1", EQUALS, field("field2"));
+
+    assertThat(condition.isFieldReference()).isTrue();
+    assertThat(condition.getFieldReference().getFieldName()).isEqualTo("field2");
+  }
+
+  @Test
+  void givenFieldReferenceWithNotEquals_whenBuildSimpleCondition_thenReturnConditionWithFieldReference() {
+    SimpleCondition condition = filterByField("field1", NOT_EQUALS, field("field2"));
+
+    assertThat(condition.isFieldReference()).isTrue();
+    assertThat(condition.getOperator()).isEqualTo(NOT_EQUALS);
+  }
+
+  @Test
+  void givenFieldReferenceWithGreaterThan_whenBuildSimpleCondition_thenReturnConditionWithFieldReference() {
+    SimpleCondition condition = filterByField("price", GREATER_THAN, field("minPrice"));
+
+    assertThat(condition.isFieldReference()).isTrue();
+    assertThat(condition.getOperator()).isEqualTo(GREATER_THAN);
+  }
+
+  @Test
+  void givenFieldReferenceWithGreaterThanEquals_whenBuildSimpleCondition_thenReturnConditionWithFieldReference() {
+    SimpleCondition condition = filterByField("price", GREATER_THAN_EQUALS, field("minPrice"));
+
+    assertThat(condition.isFieldReference()).isTrue();
+    assertThat(condition.getOperator()).isEqualTo(GREATER_THAN_EQUALS);
+  }
+
+  @Test
+  void givenFieldReferenceWithLesserThan_whenBuildSimpleCondition_thenReturnConditionWithFieldReference() {
+    SimpleCondition condition = filterByField("price", LESSER_THAN, field("maxPrice"));
+
+    assertThat(condition.isFieldReference()).isTrue();
+    assertThat(condition.getOperator()).isEqualTo(LESSER_THAN);
+  }
+
+  @Test
+  void givenFieldReferenceWithLesserThanEquals_whenBuildSimpleCondition_thenReturnConditionWithFieldReference() {
+    SimpleCondition condition = filterByField("price", LESSER_THAN_EQUALS, field("maxPrice"));
+
+    assertThat(condition.isFieldReference()).isTrue();
+    assertThat(condition.getOperator()).isEqualTo(LESSER_THAN_EQUALS);
+  }
+
+  @Test
+  void givenFieldReferenceWithStartsWith_whenBuildSimpleCondition_thenThrowIllegalArgumentException() {
+    FieldReference fieldRef = field("otherField");
+    assertThrows(IllegalArgumentException.class,
+        () -> SimpleCondition.builder()
+            .propertyName("someField")
+            .operator(STARTS_WITH)
+            .value(fieldRef)
+            .build());
+  }
+
+  @Test
+  void givenFieldReferenceWithEndsWith_whenBuildSimpleCondition_thenThrowIllegalArgumentException() {
+    FieldReference fieldRef = field("otherField");
+    assertThrows(IllegalArgumentException.class,
+        () -> SimpleCondition.builder()
+            .propertyName("someField")
+            .operator(ENDS_WITH)
+            .value(fieldRef)
+            .build());
+  }
+
+  @Test
+  void givenFieldReferenceWithContains_whenBuildSimpleCondition_thenThrowIllegalArgumentException() {
+    FieldReference fieldRef = field("otherField");
+    assertThrows(IllegalArgumentException.class,
+        () -> SimpleCondition.builder()
+            .propertyName("someField")
+            .operator(CONTAINS)
+            .value(fieldRef)
+            .build());
+  }
+
+  @Test
+  void givenFieldReferenceWithIn_whenBuildSimpleCondition_thenThrowIllegalArgumentException() {
+    FieldReference fieldRef = field("otherField");
+    assertThrows(IllegalArgumentException.class,
+        () -> SimpleCondition.builder()
+            .propertyName("someField")
+            .operator(IN)
+            .value(fieldRef)
+            .build());
+  }
+
+  @Test
+  void givenFieldReferenceWithNotIn_whenBuildSimpleCondition_thenThrowIllegalArgumentException() {
+    FieldReference fieldRef = field("otherField");
+    assertThrows(IllegalArgumentException.class,
+        () -> SimpleCondition.builder()
+            .propertyName("someField")
+            .operator(NOT_IN)
+            .value(fieldRef)
+            .build());
+  }
+
+  @Test
+  void givenNonFieldReferenceValue_whenIsFieldReference_thenReturnFalse() {
+    SimpleCondition condition = filterBy("lastName", "Skywalker");
+
+    assertThat(condition.isFieldReference()).isFalse();
+    assertThat(condition.getFieldReference()).isNull();
+  }
+
+  @Test
+  void givenFieldReference_whenEquals_thenCompareByFieldName() {
+    FieldReference ref1 = field("endDate");
+    FieldReference ref2 = field("endDate");
+    FieldReference ref3 = field("startDate");
+
+    assertThat(ref1).isEqualTo(ref2);
+    assertThat(ref1).isNotEqualTo(ref3);
+  }
+
+  @Test
+  void givenFieldReference_whenToString_thenReturnReadableString() {
+    FieldReference ref = field("endDate");
+    assertThat(ref.toString()).contains("endDate");
+  }
+
+  @Test
+  void givenNullFieldName_whenCreateFieldReference_thenThrowNullPointerException() {
+    assertThrows(NullPointerException.class, () -> field(null));
   }
 }

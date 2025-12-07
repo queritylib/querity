@@ -55,6 +55,15 @@ class QuerityElasticsearchImplTests extends QuerityGenericSpringTestSuite<Person
     return Comparator.nullsLast(comparator);
   }
 
+  /**
+   * Elasticsearch does not support field-to-field comparison natively.
+   * This would require script queries which are not implemented.
+   */
+  @Override
+  protected boolean supportsFieldToFieldComparison() {
+    return false;
+  }
+
   @Test
   void givenElasticsearchNativeCondition_whenFindAll_thenReturnOnlyFilteredElements() {
     Criteria criteria = Criteria.where("lastName").is(entity1.getLastName());
