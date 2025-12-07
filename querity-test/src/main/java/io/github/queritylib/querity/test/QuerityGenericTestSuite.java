@@ -1071,6 +1071,56 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
           .toList();
       assertThat(result).containsExactlyElementsOf(expected);
     }
+
+    @Test
+    void givenNestedFieldToFieldComparison_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFieldToFieldComparison()) return;
+      // Compare nested field address.city with top-level field lastName
+      // This tests that nested field paths work correctly in field references
+      Query query = Querity.query()
+          .filter(filterByField(PROPERTY_ADDRESS_CITY, EQUALS, field(PROPERTY_LAST_NAME)))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      // Expect records where address.city equals lastName (unlikely but tests the feature)
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getAddress() != null && p.getAddress().getCity() != null &&
+                       p.getLastName() != null && p.getAddress().getCity().equals(p.getLastName()))
+          .toList());
+    }
+
+    @Test
+    void givenNestedFieldInFieldReference_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFieldToFieldComparison()) return;
+      // Compare top-level field firstName with nested field address.city using EQUALS
+      // Using EQUALS is simpler because equality with null is consistent: null == null is true, null == value is false
+      Query query = Querity.query()
+          .filter(filterByField(PROPERTY_FIRST_NAME, EQUALS, field(PROPERTY_ADDRESS_CITY)))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      // Expect records where firstName exactly equals address.city (unlikely but tests the feature)
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getFirstName() != null && p.getAddress() != null &&
+                       p.getAddress().getCity() != null &&
+                       p.getFirstName().equals(p.getAddress().getCity()))
+          .toList());
+    }
+
+    @Test
+    void givenNotConditionWithNestedFieldReference_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFieldToFieldComparison()) return;
+      // NOT (firstName = address.city) - should return records where firstName != address.city
+      Query query = Querity.query()
+          .filter(not(filterByField(PROPERTY_FIRST_NAME, EQUALS, field(PROPERTY_ADDRESS_CITY))))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      // NOT EQUALS returns records where the comparison is false (not null, not equal)
+      // Records with null values are typically excluded because NOT(NULL) is NULL (unknown), not TRUE
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getFirstName() != null && p.getAddress() != null &&
+                       p.getAddress().getCity() != null &&
+                       !p.getFirstName().equals(p.getAddress().getCity()))
+          .toList());
+    }
   }
 
   @Nested

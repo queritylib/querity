@@ -5,6 +5,38 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.util.Set;
 
+/**
+ * Represents a simple filter condition comparing a property to a value or another field.
+ *
+ * <p>A SimpleCondition consists of:
+ * <ul>
+ *   <li>{@code propertyName} - the property/field to filter on (supports nested paths like "address.city")</li>
+ *   <li>{@code operator} - the comparison operator (defaults to {@link Operator#EQUALS})</li>
+ *   <li>{@code value} - the value to compare against, or a {@link FieldReference} for field-to-field comparisons</li>
+ * </ul>
+ *
+ * <h2>Field-to-Field Comparison</h2>
+ * <p>To compare one field against another field (instead of a literal value), pass a
+ * {@link FieldReference} as the value:
+ * <pre>{@code
+ * // Find records where startDate < endDate
+ * SimpleCondition.builder()
+ *     .propertyName("startDate")
+ *     .operator(Operator.LESSER_THAN)
+ *     .value(FieldReference.of("endDate"))
+ *     .build();
+ *
+ * // Or using Querity factory methods
+ * Querity.filterByField("startDate", Operator.LESSER_THAN, Querity.field("endDate"))
+ * }</pre>
+ *
+ * <p>Use {@link #isFieldReference()} to check if this condition compares against another field,
+ * and {@link #getFieldReference()} to retrieve the field reference.
+ *
+ * @see FieldReference
+ * @see Querity#filterBy(String, Object)
+ * @see Querity#filterByField(String, Operator, FieldReference)
+ */
 @Getter
 @EqualsAndHashCode
 @ToString
