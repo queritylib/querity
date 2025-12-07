@@ -11,7 +11,7 @@ conditionWrapper : (AND | OR) LPAREN condition (COMMA condition)* RPAREN ;
 notCondition     : NOT LPAREN condition RPAREN ;
 simpleValue      : INT_VALUE | DECIMAL_VALUE | BOOLEAN_VALUE | STRING_VALUE;
 arrayValue       : LPAREN simpleValue (COMMA simpleValue)* RPAREN ;
-simpleCondition  : PROPERTY operator (simpleValue | arrayValue | FIELD_REF)? ;
+simpleCondition  : PROPERTY operator (simpleValue | arrayValue | PROPERTY)? ;
 direction        : ASC | DESC ;
 sortField        : PROPERTY (direction)? ;
 sortFields       : sortField (COMMA sortField)* ;
