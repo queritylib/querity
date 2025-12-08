@@ -860,15 +860,16 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     @Test
     void givenSelectByTwoFields_whenFindAllProjected_thenReturnOnlySelectedFields() {
       Query query = Querity.query()
+          .filter(filterBy(PROPERTY_LAST_NAME, IS_NOT_NULL))
           .selectBy(PROPERTY_FIRST_NAME, PROPERTY_LAST_NAME)
           .build();
       List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
       assertThat(result).isNotEmpty();
-      assertThat(result).hasSize(entities.size());
-      // Note: Some databases (MongoDB, Elasticsearch) don't include keys with null values in projections
+      long expectedCount = entities.stream().filter(e -> e.getLastName() != null).count();
+      assertThat(result).hasSize((int) expectedCount);
       assertThat(result).allSatisfy(map -> {
         assertThat(map).containsKey("firstName");
-        // lastName may be absent if the original value was null (database-specific behavior)
+        assertThat(map).containsKey("lastName");
       });
     }
 
