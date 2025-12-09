@@ -855,6 +855,70 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
 
   }
 
+  @Nested
+  class SelectTests {
+
+    @Test
+    void givenSelectByTwoFields_whenFindAllProjected_thenReturnOnlySelectedFields() {
+      Query query = Querity.query()
+          .filter(filterBy(PROPERTY_LAST_NAME, IS_NOT_NULL))
+          .selectBy(PROPERTY_FIRST_NAME, PROPERTY_LAST_NAME)
+          .build();
+      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      long expectedCount = entities.stream().filter(e -> e.getLastName() != null).count();
+      assertThat(result).hasSize((int) expectedCount);
+      assertThat(result).allSatisfy(map -> {
+        assertThat(map).containsKey("firstName");
+        assertThat(map).containsKey("lastName");
+      });
+    }
+
+    @Test
+    void givenSelectByWithFilter_whenFindAllProjected_thenReturnFilteredAndProjectedResults() {
+      Query query = Querity.query()
+          .filter(filterBy(PROPERTY_LAST_NAME, EQUALS, entity1.getLastName()))
+          .selectBy(PROPERTY_FIRST_NAME, PROPERTY_LAST_NAME)
+          .build();
+      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).allSatisfy(map -> {
+        assertThat(map.get("lastName")).isEqualTo(entity1.getLastName());
+      });
+    }
+
+    @Test
+    void givenSelectByNestedField_whenFindAllProjected_thenReturnNestedFieldValues() {
+      Query query = Querity.query()
+          .selectBy(PROPERTY_FIRST_NAME, PROPERTY_ADDRESS_CITY)
+          .build();
+      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).allSatisfy(map -> {
+        assertThat(map).containsKey("firstName");
+        // Nested field "address.city" may be returned as "city" (JPA) or nested as "address.city" (Elasticsearch)
+        boolean hasCityFlat = map.containsKey("city");
+        boolean hasCityNested = map.containsKey("address") && map.get("address") instanceof Map;
+        assertThat(hasCityFlat || hasCityNested)
+            .as("Expected 'city' key or nested 'address.city' structure")
+            .isTrue();
+      });
+    }
+
+    @Test
+    void givenSelectByWithPagination_whenFindAllProjected_thenReturnPaginatedProjectedResults() {
+      Query query = Querity.query()
+          .selectBy(PROPERTY_ID, PROPERTY_FIRST_NAME)
+          .sort(sortBy(PROPERTY_ID))
+          .pagination(2, 3)
+          .build();
+      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).hasSize(3);
+    }
+
+  }
+
   /**
    * Override this method to disable field-to-field comparison tests
    * for implementations that do not support this feature (e.g., Elasticsearch).

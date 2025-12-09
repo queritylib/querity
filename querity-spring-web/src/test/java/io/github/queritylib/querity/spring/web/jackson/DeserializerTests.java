@@ -2,6 +2,10 @@ package io.github.queritylib.querity.spring.web.jackson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.queritylib.querity.api.*;
+import io.github.queritylib.querity.api.Select;
+import io.github.queritylib.querity.api.SimpleSelect;
+import io.github.queritylib.querity.api.SimpleSort;
+import io.github.queritylib.querity.api.Sort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
