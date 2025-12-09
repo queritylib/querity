@@ -1,8 +1,10 @@
 package io.github.queritylib.querity.jpa;
 
 import io.github.queritylib.querity.api.Condition;
+import io.github.queritylib.querity.api.NativeSelectWrapper;
 import io.github.queritylib.querity.api.Pagination;
 import io.github.queritylib.querity.api.Query;
+import io.github.queritylib.querity.api.Select;
 import io.github.queritylib.querity.api.Sort;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
@@ -11,6 +13,7 @@ import jakarta.persistence.criteria.*;
 import jakarta.persistence.metamodel.Metamodel;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class JpaQueryFactory<T> {
@@ -50,6 +53,80 @@ public class JpaQueryFactory<T> {
     applyPagination(tq);
 
     return tq;
+  }
+
+  /**
+   * Create a JPA TypedQuery&lt;Tuple&gt; for projection queries.
+   * The query will select only the specified fields and return them as a Tuple.
+   *
+   * @return A TypedQuery that can be executed to retrieve projected results.
+   */
+  public TypedQuery<Tuple> getJpaProjectionQuery() {
+    CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+    CriteriaQuery<Tuple> cq = cb.createTupleQuery();
+    Root<T> root = cq.from(entityClass);
+
+    Metamodel metamodel = entityManager.getMetamodel();
+
+    applyDistinct(cq);
+    applyFilters(metamodel, root, cq, cb);
+    applySorting(metamodel, root, cq, cb);
+    applyProjectionSelections(metamodel, cq, root, cb);
+
+    TypedQuery<Tuple> tq = createTypedQuery(cq);
+
+    applyPagination(tq);
+
+    return tq;
+  }
+
+  /**
+   * Execute a projection query and return results as a list of maps.
+   *
+   * @return List of maps containing the projected property values
+   */
+  public List<Map<String, Object>> getProjectedResults() {
+    if (query == null || !query.hasSelect()) {
+      throw new IllegalStateException("Query must have a select clause for projection");
+    }
+
+    TypedQuery<Tuple> tq = getJpaProjectionQuery();
+    JpaSelect jpaSelect = getJpaSelect(query.getSelect());
+    List<String> propertyNames = jpaSelect.getPropertyNames();
+
+    return tq.getResultList().stream()
+        .map(tuple -> tupleToMap(tuple, propertyNames))
+        .toList();
+  }
+
+  private Map<String, Object> tupleToMap(Tuple tuple, List<String> propertyNames) {
+    java.util.LinkedHashMap<String, Object> map = new java.util.LinkedHashMap<>();
+    for (int i = 0; i < propertyNames.size(); i++) {
+      String propertyName = propertyNames.get(i);
+      // Use the last part of the property name as key (e.g., "address.city" -> "city")
+      String key = propertyName.contains(".") ?
+          propertyName.substring(propertyName.lastIndexOf('.') + 1) : propertyName;
+      map.put(key, tuple.get(i));
+    }
+    return map;
+  }
+
+  /**
+   * Apply projection selections to the CriteriaQuery.
+   */
+  private void applyProjectionSelections(Metamodel metamodel, CriteriaQuery<Tuple> cq, Root<T> root, CriteriaBuilder cb) {
+    if (query != null && query.hasSelect()) {
+      JpaSelect jpaSelect = getJpaSelect(query.getSelect());
+      List<Selection<?>> selections = jpaSelect.toSelections(metamodel, root, cq, cb);
+      cq.multiselect(selections);
+    }
+  }
+
+  private JpaSelect getJpaSelect(Select select) {
+    if (select instanceof NativeSelectWrapper<?> nativeSelectWrapper) {
+      return JpaNativeSelectWrapper.of(nativeSelectWrapper);
+    }
+    return JpaSelect.of(select);
   }
 
   /**

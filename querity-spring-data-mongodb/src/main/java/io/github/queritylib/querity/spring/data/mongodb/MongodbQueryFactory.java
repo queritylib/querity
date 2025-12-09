@@ -28,6 +28,23 @@ public class MongodbQueryFactory<T> {
     return q;
   }
 
+  org.springframework.data.mongodb.core.query.Query getMongodbProjectedQuery() {
+    if (query == null || !query.hasSelect()) {
+      throw new IllegalArgumentException("Query must have a select clause for projection queries");
+    }
+    if (query.isDistinct()) {
+      log.debug("Distinct queries are not supported in MongoDB, ignoring the distinct flag");
+    }
+    org.springframework.data.mongodb.core.query.Query q = initMongodbQuery();
+    applyProjection(q);
+    q = applyPaginationAndSorting(q);
+    return q;
+  }
+
+  private void applyProjection(org.springframework.data.mongodb.core.query.Query q) {
+    MongodbSelect.of(query.getSelect()).applyProjection(q.fields());
+  }
+
   private org.springframework.data.mongodb.core.query.Query initMongodbQuery() {
     return query == null || !query.hasFilter() ?
         new org.springframework.data.mongodb.core.query.Query() :

@@ -2,7 +2,9 @@ parser grammar QueryParser;
 
 options { tokenVocab=QueryLexer; }
 
-query            : DISTINCT? (condition)? (SORT sortFields)? (PAGINATION paginationParams)? ;
+query            : DISTINCT? (selectClause)? (condition)? (SORT sortFields)? (PAGINATION paginationParams)? ;
+selectClause     : SELECT selectFields ;
+selectFields     : PROPERTY (COMMA PROPERTY)* ;
 condition        : simpleCondition | conditionWrapper | notCondition;
 operator         : NEQ | LTE | GTE | EQ | LT | GT | STARTS_WITH | ENDS_WITH | CONTAINS | IS_NULL | IS_NOT_NULL | IN | NOT_IN ;
 conditionWrapper : (AND | OR) LPAREN condition (COMMA condition)* RPAREN ;
