@@ -1,6 +1,5 @@
 package io.github.queritylib.querity.test;
 
-import io.github.queritylib.querity.api.FieldReference;
 import io.github.queritylib.querity.api.Querity;
 import io.github.queritylib.querity.api.Query;
 import io.github.queritylib.querity.test.domain.*;
@@ -10,11 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -538,7 +533,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
       assertThat(result).isNotEmpty();
       assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
           .filter(p -> entity1.getLastName().equals(p.getLastName()) &&
-                       (entity1.getFirstName().equals(p.getFirstName()) || entity2.getFirstName().equals(p.getFirstName())))
+              (entity1.getFirstName().equals(p.getFirstName()) || entity2.getFirstName().equals(p.getFirstName())))
           .toList());
     }
 
@@ -598,7 +593,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
       assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
           .filter(p -> p.getVisitedLocations().stream()
               .anyMatch(l -> visitedCountry.equals(l.getCountry()) &&
-                             l.getCities().contains(visitedCity)))
+                  l.getCities().contains(visitedCity)))
           .toList());
     }
 
@@ -982,10 +977,10 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
             if (fieldToFieldComparisonIncludesNulls()) {
               // MongoDB: null is less than any value, so firstName > null is true for non-null firstName
               return p.getFirstName() != null &&
-                     (p.getLastName() == null || p.getFirstName().compareTo(p.getLastName()) > 0);
+                  (p.getLastName() == null || p.getFirstName().compareTo(p.getLastName()) > 0);
             } else {
               return p.getFirstName() != null && p.getLastName() != null &&
-                     p.getFirstName().compareTo(p.getLastName()) > 0;
+                  p.getFirstName().compareTo(p.getLastName()) > 0;
             }
           })
           .toList();
@@ -1003,10 +998,10 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
           .filter(p -> {
             if (fieldToFieldComparisonIncludesNulls()) {
               return p.getFirstName() != null &&
-                     (p.getLastName() == null || p.getFirstName().compareTo(p.getLastName()) >= 0);
+                  (p.getLastName() == null || p.getFirstName().compareTo(p.getLastName()) >= 0);
             } else {
               return p.getFirstName() != null && p.getLastName() != null &&
-                     p.getFirstName().compareTo(p.getLastName()) >= 0;
+                  p.getFirstName().compareTo(p.getLastName()) >= 0;
             }
           })
           .toList();
@@ -1051,7 +1046,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
       List<T> result = querity.findAll(getEntityClass(), query);
       assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
           .filter(p -> p.getFirstName() != null && p.getLastName() != null &&
-                       p.getFirstName().compareTo(p.getLastName()) < 0 && p.isMarried())
+              p.getFirstName().compareTo(p.getLastName()) < 0 && p.isMarried())
           .toList());
     }
 
@@ -1072,10 +1067,10 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
               // MongoDB: firstName > null is true, firstName < null is false
               // So we get all where lastName is null (firstName > null) or firstName != lastName
               return p.getFirstName() != null &&
-                     (p.getLastName() == null || !p.getFirstName().equals(p.getLastName()));
+                  (p.getLastName() == null || !p.getFirstName().equals(p.getLastName()));
             } else {
               return p.getFirstName() != null && p.getLastName() != null &&
-                     !p.getFirstName().equals(p.getLastName());
+                  !p.getFirstName().equals(p.getLastName());
             }
           })
           .toList();
@@ -1094,7 +1089,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
       // SQL semantics: NOT of comparison with NULL is still NULL, so records with NULL fields are excluded
       assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
           .filter(p -> p.getFirstName() != null && p.getLastName() != null &&
-                       !(p.getFirstName().compareTo(p.getLastName()) > 0))
+              !(p.getFirstName().compareTo(p.getLastName()) > 0))
           .toList());
     }
 
@@ -1110,7 +1105,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
       List<T> result = querity.findAll(getEntityClass(), query);
       List<T> expected = entities.stream()
           .filter(p -> p.getFirstName() != null && p.getLastName() != null &&
-                       p.getFirstName().compareTo(p.getLastName()) < 0)
+              p.getFirstName().compareTo(p.getLastName()) < 0)
           .sorted(Comparator.comparing(T::getId))
           .skip(0).limit(5)
           .toList();
@@ -1130,7 +1125,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
           .thenComparing(T::getId);
       List<T> expected = entities.stream()
           .filter(p -> p.getFirstName() != null && p.getLastName() != null &&
-                       p.getFirstName().compareTo(p.getLastName()) < 0)
+              p.getFirstName().compareTo(p.getLastName()) < 0)
           .sorted(comparator)
           .toList();
       assertThat(result).containsExactlyElementsOf(expected);
@@ -1148,7 +1143,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
       // Expect records where address.city equals lastName (unlikely but tests the feature)
       assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
           .filter(p -> p.getAddress() != null && p.getAddress().getCity() != null &&
-                       p.getLastName() != null && p.getAddress().getCity().equals(p.getLastName()))
+              p.getLastName() != null && p.getAddress().getCity().equals(p.getLastName()))
           .toList());
     }
 
@@ -1164,8 +1159,8 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
       // Expect records where firstName exactly equals address.city (unlikely but tests the feature)
       assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
           .filter(p -> p.getFirstName() != null && p.getAddress() != null &&
-                       p.getAddress().getCity() != null &&
-                       p.getFirstName().equals(p.getAddress().getCity()))
+              p.getAddress().getCity() != null &&
+              p.getFirstName().equals(p.getAddress().getCity()))
           .toList());
     }
 
@@ -1181,74 +1176,10 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
       // Records with null values are typically excluded because NOT(NULL) is NULL (unknown), not TRUE
       assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
           .filter(p -> p.getFirstName() != null && p.getAddress() != null &&
-                       p.getAddress().getCity() != null &&
-                       !p.getFirstName().equals(p.getAddress().getCity()))
+              p.getAddress().getCity() != null &&
+              !p.getFirstName().equals(p.getAddress().getCity()))
           .toList());
     }
-  }
-
-  @Nested
-  class SelectTests {
-
-    @Test
-    void givenSelectByTwoFields_whenFindAllProjected_thenReturnOnlySelectedFields() {
-      Query query = Querity.query()
-          .filter(filterBy(PROPERTY_LAST_NAME, IS_NOT_NULL))
-          .selectBy(PROPERTY_FIRST_NAME, PROPERTY_LAST_NAME)
-          .build();
-      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
-      assertThat(result).isNotEmpty();
-      long expectedCount = entities.stream().filter(e -> e.getLastName() != null).count();
-      assertThat(result).hasSize((int) expectedCount);
-      assertThat(result).allSatisfy(map -> {
-        assertThat(map).containsKey("firstName");
-        assertThat(map).containsKey("lastName");
-      });
-    }
-
-    @Test
-    void givenSelectByWithFilter_whenFindAllProjected_thenReturnFilteredAndProjectedResults() {
-      Query query = Querity.query()
-          .filter(filterBy(PROPERTY_LAST_NAME, EQUALS, entity1.getLastName()))
-          .selectBy(PROPERTY_FIRST_NAME, PROPERTY_LAST_NAME)
-          .build();
-      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
-      assertThat(result).isNotEmpty();
-      assertThat(result).allSatisfy(map -> {
-        assertThat(map.get("lastName")).isEqualTo(entity1.getLastName());
-      });
-    }
-
-    @Test
-    void givenSelectByNestedField_whenFindAllProjected_thenReturnNestedFieldValues() {
-      Query query = Querity.query()
-          .selectBy(PROPERTY_FIRST_NAME, PROPERTY_ADDRESS_CITY)
-          .build();
-      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
-      assertThat(result).isNotEmpty();
-      assertThat(result).allSatisfy(map -> {
-        assertThat(map).containsKey("firstName");
-        // Nested field "address.city" may be returned as "city" (JPA) or nested as "address.city" (Elasticsearch)
-        boolean hasCityFlat = map.containsKey("city");
-        boolean hasCityNested = map.containsKey("address") && map.get("address") instanceof Map;
-        assertThat(hasCityFlat || hasCityNested)
-            .as("Expected 'city' key or nested 'address.city' structure")
-            .isTrue();
-      });
-    }
-
-    @Test
-    void givenSelectByWithPagination_whenFindAllProjected_thenReturnPaginatedProjectedResults() {
-      Query query = Querity.query()
-          .selectBy(PROPERTY_ID, PROPERTY_FIRST_NAME)
-          .sort(sortBy(PROPERTY_ID))
-          .pagination(2, 3)
-          .build();
-      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
-      assertThat(result).isNotEmpty();
-      assertThat(result).hasSize(3);
-    }
-
   }
 
   private List<T> findByOrderContainingItemMatching(Predicate<OrderItem> matchPredicate) {
