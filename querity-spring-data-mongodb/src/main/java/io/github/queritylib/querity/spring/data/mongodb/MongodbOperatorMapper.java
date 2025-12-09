@@ -1,18 +1,22 @@
 package io.github.queritylib.querity.spring.data.mongodb;
 
+import io.github.queritylib.querity.api.FieldReference;
 import io.github.queritylib.querity.api.Operator;
 import io.github.queritylib.querity.api.SimpleCondition;
 import io.github.queritylib.querity.common.util.PropertyUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.bson.Document;
 import org.springframework.data.mongodb.core.query.Criteria;
 
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 class MongodbOperatorMapper {
   static final Map<Operator, MongodbOperatorCriteriaProvider> OPERATOR_CRITERIA_MAP = new EnumMap<>(Operator.class);
+  static final Map<Operator, String> FIELD_TO_FIELD_EXPR_OPERATORS = new EnumMap<>(Operator.class);
 
   static {
     OPERATOR_CRITERIA_MAP.put(Operator.EQUALS, MongodbOperatorMapper::getEquals);
@@ -28,6 +32,14 @@ class MongodbOperatorMapper {
     OPERATOR_CRITERIA_MAP.put(Operator.IS_NOT_NULL, (where, value, negate) -> getIsNull(where, !negate));
     OPERATOR_CRITERIA_MAP.put(Operator.IN, MongodbOperatorMapper::getIn);
     OPERATOR_CRITERIA_MAP.put(Operator.NOT_IN, MongodbOperatorMapper::getNotIn);
+
+    // Field-to-field comparison operators using MongoDB $expr
+    FIELD_TO_FIELD_EXPR_OPERATORS.put(Operator.EQUALS, "$eq");
+    FIELD_TO_FIELD_EXPR_OPERATORS.put(Operator.NOT_EQUALS, "$ne");
+    FIELD_TO_FIELD_EXPR_OPERATORS.put(Operator.GREATER_THAN, "$gt");
+    FIELD_TO_FIELD_EXPR_OPERATORS.put(Operator.GREATER_THAN_EQUALS, "$gte");
+    FIELD_TO_FIELD_EXPR_OPERATORS.put(Operator.LESSER_THAN, "$lt");
+    FIELD_TO_FIELD_EXPR_OPERATORS.put(Operator.LESSER_THAN_EQUALS, "$lte");
   }
 
   private static Criteria getIsNull(Criteria where, boolean negate) {
@@ -99,9 +111,41 @@ class MongodbOperatorMapper {
 
   public static <T> Criteria getCriteria(Class<T> entityClass, SimpleCondition condition, boolean negate) {
     String propertyPath = condition.getPropertyName();
+
+    if (condition.isFieldReference()) {
+      return getFieldToFieldCriteria(condition, negate);
+    }
+
     Criteria where = Criteria.where(propertyPath);
     Object value = PropertyUtils.getActualPropertyValue(entityClass, propertyPath, condition.getValue());
     return OPERATOR_CRITERIA_MAP.get(condition.getOperator())
         .getCriteria(where, value, negate);
+  }
+
+  private static Criteria getFieldToFieldCriteria(SimpleCondition condition, boolean negate) {
+    String leftField = "$" + condition.getPropertyName();
+    FieldReference fieldRef = condition.getFieldReference();
+    String rightField = "$" + fieldRef.getFieldName();
+
+    Operator operator = condition.getOperator();
+    if (negate) {
+      operator = getNegatedOperator(operator);
+    }
+
+    String mongoOp = FIELD_TO_FIELD_EXPR_OPERATORS.get(operator);
+    Document exprDoc = new Document(mongoOp, List.of(leftField, rightField));
+    return new Criteria("$expr").is(exprDoc);
+  }
+
+  private static Operator getNegatedOperator(Operator operator) {
+    return switch (operator) {
+      case EQUALS -> Operator.NOT_EQUALS;
+      case NOT_EQUALS -> Operator.EQUALS;
+      case GREATER_THAN -> Operator.LESSER_THAN_EQUALS;
+      case GREATER_THAN_EQUALS -> Operator.LESSER_THAN;
+      case LESSER_THAN -> Operator.GREATER_THAN_EQUALS;
+      case LESSER_THAN_EQUALS -> Operator.GREATER_THAN;
+      default -> throw new IllegalArgumentException("Operator " + operator + " does not support field-to-field comparison");
+    };
   }
 }

@@ -98,4 +98,63 @@ public interface Querity {
         .filter(condition)
         .build();
   }
+
+  /**
+   * Create a reference to a field for use in field-to-field comparisons.
+   *
+   * <p>Example:
+   * <pre>{@code
+   * // Compare startDate < endDate
+   * Querity.filterByField("startDate", Operator.LESSER_THAN, Querity.field("endDate"))
+   *
+   * // Nested fields are supported
+   * Querity.filterByField("address.city", Operator.EQUALS, Querity.field("billingAddress.city"))
+   * }</pre>
+   *
+   * @param fieldName the name of the field to reference (supports nested paths like "address.city")
+   * @return a FieldReference for use as a value in SimpleCondition
+   * @see FieldReference
+   * @see #filterByField(String, Operator, FieldReference)
+   */
+  static FieldReference field(String fieldName) {
+    return FieldReference.of(fieldName);
+  }
+
+  /**
+   * Filter by comparing one field against another field.
+   *
+   * <p>This enables queries like "find all records where startDate is before endDate"
+   * or "find all products where salePrice is less than originalPrice".
+   *
+   * <p>Example:
+   * <pre>{@code
+   * // Find products on sale (salePrice < originalPrice)
+   * Query query = Querity.query()
+   *     .filter(Querity.filterByField("salePrice", Operator.LESSER_THAN, Querity.field("originalPrice")))
+   *     .build();
+   *
+   * // Nested fields are supported
+   * Query query = Querity.query()
+   *     .filter(Querity.filterByField("shipping.city", Operator.NOT_EQUALS, Querity.field("billing.city")))
+   *     .build();
+   * }</pre>
+   *
+   * <p><b>Note:</b> Not all operators support field-to-field comparison. Supported operators are:
+   * {@code EQUALS}, {@code NOT_EQUALS}, {@code GREATER_THAN}, {@code GREATER_THAN_EQUALS},
+   * {@code LESSER_THAN}, {@code LESSER_THAN_EQUALS}.
+   *
+   * <p><b>Backend support:</b> JPA and MongoDB support this feature. Elasticsearch does not.
+   *
+   * @param propertyName the property name on the left side (supports nested paths)
+   * @param operator the comparison operator
+   * @param fieldReference reference to the field on the right side
+   * @return a SimpleCondition comparing two fields
+   * @throws IllegalArgumentException if the operator does not support field references
+   * @see FieldReference
+   * @see #field(String)
+   */
+  static SimpleCondition filterByField(String propertyName, Operator operator, FieldReference fieldReference) {
+    return SimpleCondition.builder()
+        .propertyName(propertyName).operator(operator).value(fieldReference).build();
+  }
 }

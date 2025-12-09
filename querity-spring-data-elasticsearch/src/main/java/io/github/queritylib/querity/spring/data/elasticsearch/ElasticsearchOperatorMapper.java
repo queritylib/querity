@@ -96,6 +96,12 @@ class ElasticsearchOperatorMapper {
   }
 
   public static <T> Criteria getCriteria(Class<T> entityClass, SimpleCondition condition, boolean negate) {
+    if (condition.isFieldReference()) {
+      throw new UnsupportedOperationException(
+          "Field-to-field comparison is not supported in Elasticsearch. " +
+          "Consider using script queries or denormalizing your data.");
+    }
+
     String propertyPath = condition.getPropertyName();
     Criteria where = Criteria.where(propertyPath);
     Object value = PropertyUtils.getActualPropertyValue(entityClass, propertyPath, condition.getValue());

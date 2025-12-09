@@ -84,7 +84,7 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
 
   @Override
   public Condition visitSimpleCondition(QueryParser.SimpleConditionContext ctx) {
-    String propertyName = ctx.PROPERTY().getText();
+    String propertyName = ctx.PROPERTY(0).getText();
     Operator operator = (Operator) visit(ctx.operator());
     Object value = null;
     if (operator.getRequiredValuesCount() > 0) {
@@ -92,6 +92,10 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
         value = visitArrayValue(ctx.arrayValue());
       } else if (ctx.simpleValue() != null) {
         value = visitSimpleValue(ctx.simpleValue());
+      } else if (ctx.PROPERTY().size() > 1) {
+        // Use second PROPERTY as field reference
+        String fieldName = ctx.PROPERTY(1).getText();
+        value = FieldReference.of(fieldName);
       }
     }
 

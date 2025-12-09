@@ -1,5 +1,6 @@
 package io.github.queritylib.querity.parser;
 
+import io.github.queritylib.querity.api.FieldReference;
 import io.github.queritylib.querity.api.Querity;
 import io.github.queritylib.querity.api.Query;
 import org.junit.jupiter.api.Test;
@@ -81,6 +82,67 @@ class QuerityParserTests {
             Querity.query().distinct(true).selectBy("id", "firstName").filter(filterBy("age", GREATER_THAN, 20)).build()),
         Arguments.of("select address.city, address.street",
             Querity.query().selectBy("address.city", "address.street").build()),
+        // Additional tests for better coverage
+        Arguments.of("deleted=true",
+            Querity.query().filter(filterBy("deleted", Boolean.TRUE)).build()),
+        Arguments.of("or(firstName=\"Luke\", firstName=\"Leia\")",
+            Querity.query().filter(or(filterBy("firstName", "Luke"), filterBy("firstName", "Leia"))).build()),
+        Arguments.of("not(deleted=true)",
+            Querity.query().filter(not(filterBy("deleted", Boolean.TRUE))).build()),
+        Arguments.of("age in (20, 30, 40)",
+            Querity.query().filter(filterBy("age", IN, new Object[]{20, 30, 40})).build()),
+        Arguments.of("price in (10.5, 20.5)",
+            Querity.query().filter(filterBy("price", IN, new Object[]{new BigDecimal("10.5"), new BigDecimal("20.5")})).build()),
+        Arguments.of("sort by lastName",
+            Querity.query().sort(sortBy("lastName", ASC)).build()),
+        Arguments.of("sort by lastName asc",
+            Querity.query().sort(sortBy("lastName", ASC)).build()),
+        Arguments.of("page 1,20",
+            Querity.query().pagination(1, 20).build()),
+        Arguments.of("page 0,50",
+            Querity.query().pagination(0, 50).build()),
+        Arguments.of("select id sort by id desc",
+            Querity.query().selectBy("id").sort(sortBy("id", DESC)).build()),
+        Arguments.of("select id page 1,5",
+            Querity.query().selectBy("id").pagination(1, 5).build()),
+        // Field-to-field comparison tests
+        Arguments.of("startDate<endDate",
+            Querity.query().filter(filterByField("startDate", LESSER_THAN, field("endDate"))).build()),
+        Arguments.of("startDate<=endDate",
+            Querity.query().filter(filterByField("startDate", LESSER_THAN_EQUALS, field("endDate"))).build()),
+        Arguments.of("price>minPrice",
+            Querity.query().filter(filterByField("price", GREATER_THAN, field("minPrice"))).build()),
+        Arguments.of("price>=minPrice",
+            Querity.query().filter(filterByField("price", GREATER_THAN_EQUALS, field("minPrice"))).build()),
+        Arguments.of("field1=field2",
+            Querity.query().filter(filterByField("field1", EQUALS, field("field2"))).build()),
+        Arguments.of("field1!=field2",
+            Querity.query().filter(filterByField("field1", NOT_EQUALS, field("field2"))).build()),
+        Arguments.of("nested.startDate<nested.endDate",
+            Querity.query().filter(filterByField("nested.startDate", LESSER_THAN, field("nested.endDate"))).build()),
+        Arguments.of("and(startDate<endDate, price>minPrice)",
+            Querity.query().filter(and(
+                filterByField("startDate", LESSER_THAN, field("endDate")),
+                filterByField("price", GREATER_THAN, field("minPrice"))
+            )).build()),
+        Arguments.of("or(field1=field2, field3!=field4)",
+            Querity.query().filter(or(
+                filterByField("field1", EQUALS, field("field2")),
+                filterByField("field3", NOT_EQUALS, field("field4"))
+            )).build()),
+        Arguments.of("not(startDate>endDate)",
+            Querity.query().filter(not(filterByField("startDate", GREATER_THAN, field("endDate")))).build()),
+        Arguments.of("and(startDate<endDate, status=\"ACTIVE\")",
+            Querity.query().filter(and(
+                filterByField("startDate", LESSER_THAN, field("endDate")),
+                filterBy("status", "ACTIVE")
+            )).build()),
+        Arguments.of("startDate<endDate sort by startDate asc",
+            Querity.query().filter(filterByField("startDate", LESSER_THAN, field("endDate"))).sort(sortBy("startDate", ASC)).build()),
+        Arguments.of("startDate<endDate page 1,10",
+            Querity.query().filter(filterByField("startDate", LESSER_THAN, field("endDate"))).pagination(1, 10).build()),
+        Arguments.of("select id, startDate startDate<endDate",
+            Querity.query().selectBy("id", "startDate").filter(filterByField("startDate", LESSER_THAN, field("endDate"))).build()),
         // Additional tests for better coverage
         Arguments.of("deleted=true",
             Querity.query().filter(filterBy("deleted", Boolean.TRUE)).build()),

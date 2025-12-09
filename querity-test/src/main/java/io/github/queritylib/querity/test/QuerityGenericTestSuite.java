@@ -9,11 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -537,7 +533,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
       assertThat(result).isNotEmpty();
       assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
           .filter(p -> entity1.getLastName().equals(p.getLastName()) &&
-                       (entity1.getFirstName().equals(p.getFirstName()) || entity2.getFirstName().equals(p.getFirstName())))
+              (entity1.getFirstName().equals(p.getFirstName()) || entity2.getFirstName().equals(p.getFirstName())))
           .toList());
     }
 
@@ -597,7 +593,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
       assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
           .filter(p -> p.getVisitedLocations().stream()
               .anyMatch(l -> visitedCountry.equals(l.getCountry()) &&
-                             l.getCities().contains(visitedCity)))
+                  l.getCities().contains(visitedCity)))
           .toList());
     }
 
@@ -916,6 +912,274 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
       assertThat(result).hasSize(3);
     }
 
+  }
+
+  /**
+   * Override this method to disable field-to-field comparison tests
+   * for implementations that do not support this feature (e.g., Elasticsearch).
+   *
+   * @return true if field-to-field comparison is supported
+   */
+  protected boolean supportsFieldToFieldComparison() {
+    return true;
+  }
+
+  /**
+   * Override this method to indicate that the database includes records with null fields
+   * in field-to-field comparisons. MongoDB, for example, includes records where one field
+   * is null when comparing with $gt/$lt because null is considered "less than" any value.
+   *
+   * @return true if the database includes null values in field-to-field comparisons
+   */
+  protected boolean fieldToFieldComparisonIncludesNulls() {
+    return false;
+  }
+
+  @Nested
+  class FieldToFieldComparisonTests {
+
+    @Test
+    void givenFieldToFieldEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFieldToFieldComparison()) return;
+      // Find persons where firstName equals lastName (unlikely but testable)
+      Query query = Querity.query()
+          .filter(filterByField(PROPERTY_FIRST_NAME, EQUALS, field(PROPERTY_LAST_NAME)))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getFirstName() != null && p.getLastName() != null && p.getFirstName().equals(p.getLastName()))
+          .toList());
+    }
+
+    @Test
+    void givenFieldToFieldNotEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFieldToFieldComparison()) return;
+      // Find persons where firstName does not equal lastName
+      Query query = Querity.query()
+          .filter(filterByField(PROPERTY_FIRST_NAME, NOT_EQUALS, field(PROPERTY_LAST_NAME)))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getFirstName() == null || p.getLastName() == null || !p.getFirstName().equals(p.getLastName()))
+          .toList());
+    }
+
+    @Test
+    void givenFieldToFieldGreaterThanCondition_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFieldToFieldComparison()) return;
+      // Find persons where firstName > lastName (lexicographically)
+      Query query = Querity.query()
+          .filter(filterByField(PROPERTY_FIRST_NAME, GREATER_THAN, field(PROPERTY_LAST_NAME)))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      List<T> expected = entities.stream()
+          .filter(p -> {
+            if (fieldToFieldComparisonIncludesNulls()) {
+              // MongoDB: null is less than any value, so firstName > null is true for non-null firstName
+              return p.getFirstName() != null &&
+                  (p.getLastName() == null || p.getFirstName().compareTo(p.getLastName()) > 0);
+            } else {
+              return p.getFirstName() != null && p.getLastName() != null &&
+                  p.getFirstName().compareTo(p.getLastName()) > 0;
+            }
+          })
+          .toList();
+      assertThat(result).containsExactlyInAnyOrderElementsOf(expected);
+    }
+
+    @Test
+    void givenFieldToFieldGreaterThanEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFieldToFieldComparison()) return;
+      Query query = Querity.query()
+          .filter(filterByField(PROPERTY_FIRST_NAME, GREATER_THAN_EQUALS, field(PROPERTY_LAST_NAME)))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      List<T> expected = entities.stream()
+          .filter(p -> {
+            if (fieldToFieldComparisonIncludesNulls()) {
+              return p.getFirstName() != null &&
+                  (p.getLastName() == null || p.getFirstName().compareTo(p.getLastName()) >= 0);
+            } else {
+              return p.getFirstName() != null && p.getLastName() != null &&
+                  p.getFirstName().compareTo(p.getLastName()) >= 0;
+            }
+          })
+          .toList();
+      assertThat(result).containsExactlyInAnyOrderElementsOf(expected);
+    }
+
+    @Test
+    void givenFieldToFieldLesserThanCondition_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFieldToFieldComparison()) return;
+      // Find persons where firstName < lastName (lexicographically)
+      Query query = Querity.query()
+          .filter(filterByField(PROPERTY_FIRST_NAME, LESSER_THAN, field(PROPERTY_LAST_NAME)))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getFirstName() != null && p.getLastName() != null && p.getFirstName().compareTo(p.getLastName()) < 0)
+          .toList());
+    }
+
+    @Test
+    void givenFieldToFieldLesserThanEqualsCondition_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFieldToFieldComparison()) return;
+      Query query = Querity.query()
+          .filter(filterByField(PROPERTY_FIRST_NAME, LESSER_THAN_EQUALS, field(PROPERTY_LAST_NAME)))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getFirstName() != null && p.getLastName() != null && p.getFirstName().compareTo(p.getLastName()) <= 0)
+          .toList());
+    }
+
+    @Test
+    void givenFieldToFieldConditionWithAndLogic_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFieldToFieldComparison()) return;
+      // Find persons where firstName < lastName AND married = true
+      Query query = Querity.query()
+          .filter(and(
+              filterByField(PROPERTY_FIRST_NAME, LESSER_THAN, field(PROPERTY_LAST_NAME)),
+              filterBy(PROPERTY_MARRIED, EQUALS, true)
+          ))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getFirstName() != null && p.getLastName() != null &&
+              p.getFirstName().compareTo(p.getLastName()) < 0 && p.isMarried())
+          .toList());
+    }
+
+    @Test
+    void givenFieldToFieldConditionWithOrLogic_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFieldToFieldComparison()) return;
+      // Find persons where firstName > lastName OR firstName < lastName (i.e., firstName != lastName)
+      Query query = Querity.query()
+          .filter(or(
+              filterByField(PROPERTY_FIRST_NAME, GREATER_THAN, field(PROPERTY_LAST_NAME)),
+              filterByField(PROPERTY_FIRST_NAME, LESSER_THAN, field(PROPERTY_LAST_NAME))
+          ))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      List<T> expected = entities.stream()
+          .filter(p -> {
+            if (fieldToFieldComparisonIncludesNulls()) {
+              // MongoDB: firstName > null is true, firstName < null is false
+              // So we get all where lastName is null (firstName > null) or firstName != lastName
+              return p.getFirstName() != null &&
+                  (p.getLastName() == null || !p.getFirstName().equals(p.getLastName()));
+            } else {
+              return p.getFirstName() != null && p.getLastName() != null &&
+                  !p.getFirstName().equals(p.getLastName());
+            }
+          })
+          .toList();
+      assertThat(result).containsExactlyInAnyOrderElementsOf(expected);
+    }
+
+    @Test
+    void givenNotFieldToFieldCondition_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFieldToFieldComparison()) return;
+      // Find persons where NOT (firstName > lastName)
+      // Note: In SQL, NOT (NULL > x) is also NULL (not TRUE), so we expect only non-null comparisons
+      Query query = Querity.query()
+          .filter(not(filterByField(PROPERTY_FIRST_NAME, GREATER_THAN, field(PROPERTY_LAST_NAME))))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      // SQL semantics: NOT of comparison with NULL is still NULL, so records with NULL fields are excluded
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getFirstName() != null && p.getLastName() != null &&
+              !(p.getFirstName().compareTo(p.getLastName()) > 0))
+          .toList());
+    }
+
+    @Test
+    void givenFieldToFieldConditionWithPagination_whenFindAll_thenReturnPagedResults() {
+      if (!supportsFieldToFieldComparison()) return;
+      // Find persons where firstName < lastName with pagination
+      Query query = Querity.query()
+          .filter(filterByField(PROPERTY_FIRST_NAME, LESSER_THAN, field(PROPERTY_LAST_NAME)))
+          .sort(sortBy(PROPERTY_ID))
+          .pagination(1, 5)
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      List<T> expected = entities.stream()
+          .filter(p -> p.getFirstName() != null && p.getLastName() != null &&
+              p.getFirstName().compareTo(p.getLastName()) < 0)
+          .sorted(Comparator.comparing(T::getId))
+          .skip(0).limit(5)
+          .toList();
+      assertThat(result).containsExactlyElementsOf(expected);
+    }
+
+    @Test
+    void givenFieldToFieldConditionWithSort_whenFindAll_thenReturnSortedResults() {
+      if (!supportsFieldToFieldComparison()) return;
+      // Find persons where firstName < lastName sorted by lastName
+      Query query = Querity.query()
+          .filter(filterByField(PROPERTY_FIRST_NAME, LESSER_THAN, field(PROPERTY_LAST_NAME)))
+          .sort(sortBy(PROPERTY_LAST_NAME), sortBy(PROPERTY_ID))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      Comparator<T> comparator = getStringComparator((T p) -> p.getLastName())
+          .thenComparing(T::getId);
+      List<T> expected = entities.stream()
+          .filter(p -> p.getFirstName() != null && p.getLastName() != null &&
+              p.getFirstName().compareTo(p.getLastName()) < 0)
+          .sorted(comparator)
+          .toList();
+      assertThat(result).containsExactlyElementsOf(expected);
+    }
+
+    @Test
+    void givenNestedFieldToFieldComparison_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFieldToFieldComparison()) return;
+      // Compare nested field address.city with top-level field lastName
+      // This tests that nested field paths work correctly in field references
+      Query query = Querity.query()
+          .filter(filterByField(PROPERTY_ADDRESS_CITY, EQUALS, field(PROPERTY_LAST_NAME)))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      // Expect records where address.city equals lastName (unlikely but tests the feature)
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getAddress() != null && p.getAddress().getCity() != null &&
+              p.getLastName() != null && p.getAddress().getCity().equals(p.getLastName()))
+          .toList());
+    }
+
+    @Test
+    void givenNestedFieldInFieldReference_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFieldToFieldComparison()) return;
+      // Compare top-level field firstName with nested field address.city using EQUALS
+      // Using EQUALS is simpler because equality with null is consistent: null == null is true, null == value is false
+      Query query = Querity.query()
+          .filter(filterByField(PROPERTY_FIRST_NAME, EQUALS, field(PROPERTY_ADDRESS_CITY)))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      // Expect records where firstName exactly equals address.city (unlikely but tests the feature)
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getFirstName() != null && p.getAddress() != null &&
+              p.getAddress().getCity() != null &&
+              p.getFirstName().equals(p.getAddress().getCity()))
+          .toList());
+    }
+
+    @Test
+    void givenNotConditionWithNestedFieldReference_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFieldToFieldComparison()) return;
+      // NOT (firstName = address.city) - should return records where firstName != address.city
+      Query query = Querity.query()
+          .filter(not(filterByField(PROPERTY_FIRST_NAME, EQUALS, field(PROPERTY_ADDRESS_CITY))))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      // NOT EQUALS returns records where the comparison is false (not null, not equal)
+      // Records with null values are typically excluded because NOT(NULL) is NULL (unknown), not TRUE
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getFirstName() != null && p.getAddress() != null &&
+              p.getAddress().getCity() != null &&
+              !p.getFirstName().equals(p.getAddress().getCity()))
+          .toList());
+    }
   }
 
   private List<T> findByOrderContainingItemMatching(Predicate<OrderItem> matchPredicate) {

@@ -54,6 +54,14 @@ class QuerityMongodbImplTests extends QuerityGenericSpringTestSuite<Person, Stri
     return comparator;
   }
 
+  /**
+   * MongoDB $expr comparisons include null values because null is considered "less than" any value.
+   */
+  @Override
+  protected boolean fieldToFieldComparisonIncludesNulls() {
+    return true;
+  }
+
   @Test
   void givenMongodbNativeCondition_whenFindAll_thenReturnOnlyFilteredElements() {
     Criteria criteria = Criteria.where("lastName").is(entity1.getLastName());
