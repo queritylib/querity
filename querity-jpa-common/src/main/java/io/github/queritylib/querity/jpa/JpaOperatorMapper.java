@@ -2,6 +2,8 @@ package io.github.queritylib.querity.jpa;
 
 import io.github.queritylib.querity.api.FieldReference;
 import io.github.queritylib.querity.api.Operator;
+import io.github.queritylib.querity.api.PropertyExpression;
+import io.github.queritylib.querity.api.PropertyReference;
 import io.github.queritylib.querity.api.SimpleCondition;
 import io.github.queritylib.querity.common.util.PropertyUtils;
 import jakarta.persistence.criteria.*;
@@ -27,8 +29,8 @@ class JpaOperatorMapper {
     OPERATOR_PREDICATE_MAP.put(Operator.GREATER_THAN_EQUALS, JpaOperatorMapper::getGreaterThanEquals);
     OPERATOR_PREDICATE_MAP.put(Operator.LESSER_THAN, JpaOperatorMapper::getLesserThan);
     OPERATOR_PREDICATE_MAP.put(Operator.LESSER_THAN_EQUALS, JpaOperatorMapper::getLesserThanEquals);
-    OPERATOR_PREDICATE_MAP.put(Operator.IS_NULL, (path, value, cb) -> getIsNull(path, cb));
-    OPERATOR_PREDICATE_MAP.put(Operator.IS_NOT_NULL, (path, value, cb) -> getIsNotNull(path, cb));
+    OPERATOR_PREDICATE_MAP.put(Operator.IS_NULL, (expr, value, cb) -> getIsNull(expr, cb));
+    OPERATOR_PREDICATE_MAP.put(Operator.IS_NOT_NULL, (expr, value, cb) -> getIsNotNull(expr, cb));
     OPERATOR_PREDICATE_MAP.put(Operator.IN, JpaOperatorMapper::getIn);
     OPERATOR_PREDICATE_MAP.put(Operator.NOT_IN, JpaOperatorMapper::getNotIn);
 
@@ -41,122 +43,146 @@ class JpaOperatorMapper {
     FIELD_TO_FIELD_PREDICATE_MAP.put(Operator.LESSER_THAN_EQUALS, JpaOperatorMapper::getFieldLesserThanEquals);
   }
 
-  private static Predicate getIsNull(Path<?> path, CriteriaBuilder cb) {
-    return cb.isNull(path);
+  private static Predicate getIsNull(Expression<?> expr, CriteriaBuilder cb) {
+    return cb.isNull(expr);
   }
 
-  private static Predicate getIsNotNull(Path<?> path, CriteriaBuilder cb) {
-    return cb.isNotNull(path);
+  private static Predicate getIsNotNull(Expression<?> expr, CriteriaBuilder cb) {
+    return cb.isNotNull(expr);
   }
 
-  private static Predicate getNotEquals(Path<?> path, Object value, CriteriaBuilder cb) {
-    return cb.or(cb.notEqual(path, value), getIsNull(path, cb));
+  private static Predicate getNotEquals(Expression<?> expr, Object value, CriteriaBuilder cb) {
+    return cb.or(cb.notEqual(expr, value), getIsNull(expr, cb));
   }
 
-  private static Predicate getEquals(Path<?> path, Object value, CriteriaBuilder cb) {
-    return cb.and(cb.equal(path, value), getIsNotNull(path, cb));
+  private static Predicate getEquals(Expression<?> expr, Object value, CriteriaBuilder cb) {
+    return cb.and(cb.equal(expr, value), getIsNotNull(expr, cb));
   }
 
-  private static Predicate getStartsWith(Path<?> path, Object value, CriteriaBuilder cb) {
-    return getLike(path, value.toString() + "%", cb);
+  @SuppressWarnings("unchecked")
+  private static Predicate getStartsWith(Expression<?> expr, Object value, CriteriaBuilder cb) {
+    return getLike((Expression<String>) expr, value.toString() + "%", cb);
   }
 
-  private static Predicate getEndsWith(Path<?> path, Object value, CriteriaBuilder cb) {
-    return getLike(path, "%" + value.toString(), cb);
+  @SuppressWarnings("unchecked")
+  private static Predicate getEndsWith(Expression<?> expr, Object value, CriteriaBuilder cb) {
+    return getLike((Expression<String>) expr, "%" + value.toString(), cb);
   }
 
-  private static Predicate getContains(Path<?> path, Object value, CriteriaBuilder cb) {
-    return getLike(path, "%" + value.toString() + "%", cb);
+  @SuppressWarnings("unchecked")
+  private static Predicate getContains(Expression<?> expr, Object value, CriteriaBuilder cb) {
+    return getLike((Expression<String>) expr, "%" + value.toString() + "%", cb);
   }
 
-  private static Predicate getLike(Path<?> path, Object value, CriteriaBuilder cb) {
-    return cb.and(cb.like(cb.lower(path.as(String.class)), value.toString().toLowerCase()), getIsNotNull(path, cb));
-  }
-
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  private static Predicate getGreaterThan(Path<?> path, Object value, CriteriaBuilder cb) {
-    return cb.greaterThan((Expression) path, (Comparable) value);
-  }
-
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  private static Predicate getGreaterThanEquals(Path<?> path, Object value, CriteriaBuilder cb) {
-    return cb.greaterThanOrEqualTo((Expression) path, (Comparable) value);
+  private static Predicate getLike(Expression<String> expr, Object value, CriteriaBuilder cb) {
+    return cb.and(cb.like(cb.lower(expr), value.toString().toLowerCase()), getIsNotNull(expr, cb));
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  private static Predicate getLesserThan(Path<?> path, Object value, CriteriaBuilder cb) {
-    return cb.lessThan((Expression) path, (Comparable) value);
+  private static Predicate getGreaterThan(Expression<?> expr, Object value, CriteriaBuilder cb) {
+    return cb.greaterThan((Expression) expr, (Comparable) value);
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  private static Predicate getLesserThanEquals(Path<?> path, Object value, CriteriaBuilder cb) {
-    return cb.lessThanOrEqualTo((Expression) path, (Comparable) value);
+  private static Predicate getGreaterThanEquals(Expression<?> expr, Object value, CriteriaBuilder cb) {
+    return cb.greaterThanOrEqualTo((Expression) expr, (Comparable) value);
   }
 
-  private static Predicate getIn(Path<?> path, Object value, CriteriaBuilder cb) {
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private static Predicate getLesserThan(Expression<?> expr, Object value, CriteriaBuilder cb) {
+    return cb.lessThan((Expression) expr, (Comparable) value);
+  }
+
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private static Predicate getLesserThanEquals(Expression<?> expr, Object value, CriteriaBuilder cb) {
+    return cb.lessThanOrEqualTo((Expression) expr, (Comparable) value);
+  }
+
+  private static Predicate getIn(Expression<?> expr, Object value, CriteriaBuilder cb) {
     if (value.getClass().isArray()) {
-      return cb.and(path.in((Object[]) value), getIsNotNull(path, cb));
+      return cb.and(expr.in((Object[]) value), getIsNotNull(expr, cb));
     } else {
       throw new IllegalArgumentException("Value must be an array");
     }
   }
 
-  private static Predicate getNotIn(Path<?> path, Object value, CriteriaBuilder cb) {
-    return getIn(path, value, cb).not();
+  private static Predicate getNotIn(Expression<?> expr, Object value, CriteriaBuilder cb) {
+    return getIn(expr, value, cb).not();
   }
 
   // Field-to-field comparison methods
-  private static Predicate getFieldEquals(Path<?> leftPath, Path<?> rightPath, CriteriaBuilder cb) {
-    return cb.and(cb.equal(leftPath, rightPath), getIsNotNull(leftPath, cb), getIsNotNull(rightPath, cb));
+  private static Predicate getFieldEquals(Expression<?> leftExpr, Expression<?> rightExpr, CriteriaBuilder cb) {
+    return cb.and(cb.equal(leftExpr, rightExpr), getIsNotNull(leftExpr, cb), getIsNotNull(rightExpr, cb));
   }
 
-  private static Predicate getFieldNotEquals(Path<?> leftPath, Path<?> rightPath, CriteriaBuilder cb) {
-    return cb.or(cb.notEqual(leftPath, rightPath), getIsNull(leftPath, cb), getIsNull(rightPath, cb));
-  }
-
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  private static Predicate getFieldGreaterThan(Path<?> leftPath, Path<?> rightPath, CriteriaBuilder cb) {
-    return cb.greaterThan((Expression) leftPath, (Expression) rightPath);
+  private static Predicate getFieldNotEquals(Expression<?> leftExpr, Expression<?> rightExpr, CriteriaBuilder cb) {
+    return cb.or(cb.notEqual(leftExpr, rightExpr), getIsNull(leftExpr, cb), getIsNull(rightExpr, cb));
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  private static Predicate getFieldGreaterThanEquals(Path<?> leftPath, Path<?> rightPath, CriteriaBuilder cb) {
-    return cb.greaterThanOrEqualTo((Expression) leftPath, (Expression) rightPath);
+  private static Predicate getFieldGreaterThan(Expression<?> leftExpr, Expression<?> rightExpr, CriteriaBuilder cb) {
+    return cb.greaterThan((Expression) leftExpr, (Expression) rightExpr);
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  private static Predicate getFieldLesserThan(Path<?> leftPath, Path<?> rightPath, CriteriaBuilder cb) {
-    return cb.lessThan((Expression) leftPath, (Expression) rightPath);
+  private static Predicate getFieldGreaterThanEquals(Expression<?> leftExpr, Expression<?> rightExpr, CriteriaBuilder cb) {
+    return cb.greaterThanOrEqualTo((Expression) leftExpr, (Expression) rightExpr);
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  private static Predicate getFieldLesserThanEquals(Path<?> leftPath, Path<?> rightPath, CriteriaBuilder cb) {
-    return cb.lessThanOrEqualTo((Expression) leftPath, (Expression) rightPath);
+  private static Predicate getFieldLesserThan(Expression<?> leftExpr, Expression<?> rightExpr, CriteriaBuilder cb) {
+    return cb.lessThan((Expression) leftExpr, (Expression) rightExpr);
+  }
+
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private static Predicate getFieldLesserThanEquals(Expression<?> leftExpr, Expression<?> rightExpr, CriteriaBuilder cb) {
+    return cb.lessThanOrEqualTo((Expression) leftExpr, (Expression) rightExpr);
   }
 
   @FunctionalInterface
   private interface JpaOperatorPredicateProvider {
-    Predicate getPredicate(Path<?> path, Object value, CriteriaBuilder cb);
+    Predicate getPredicate(Expression<?> expr, Object value, CriteriaBuilder cb);
   }
 
   @FunctionalInterface
   private interface JpaFieldToFieldPredicateProvider {
-    Predicate getPredicate(Path<?> leftPath, Path<?> rightPath, CriteriaBuilder cb);
+    Predicate getPredicate(Expression<?> leftExpr, Expression<?> rightExpr, CriteriaBuilder cb);
   }
 
   public static <T> Predicate getPredicate(Class<T> entityClass, SimpleCondition condition, Metamodel metamodel, Root<?> root, CriteriaBuilder cb) {
-    String propertyPath = condition.getPropertyName();
-    Path<?> leftPath = JpaPropertyUtils.getPath(root, propertyPath, metamodel);
+    // Get the left side expression (either from leftExpression or propertyName)
+    Expression<?> leftExpression;
+    String propertyPath;
+
+    if (condition.hasLeftExpression()) {
+      PropertyExpression leftExpr = condition.getLeftExpression();
+      leftExpression = JpaFunctionMapper.toExpression(leftExpr, root, cb, metamodel);
+      // For value conversion, try to get propertyPath from PropertyReference
+      if (leftExpr instanceof PropertyReference pr) {
+        propertyPath = pr.getPropertyName();
+      } else {
+        propertyPath = null;
+      }
+    } else {
+      propertyPath = condition.getPropertyName();
+      leftExpression = JpaPropertyUtils.getPath(root, propertyPath, metamodel);
+    }
 
     if (condition.isFieldReference()) {
       FieldReference fieldRef = condition.getFieldReference();
-      Path<?> rightPath = JpaPropertyUtils.getPath(root, fieldRef.getFieldName(), metamodel);
+      Expression<?> rightExpression = JpaPropertyUtils.getPath(root, fieldRef.getFieldName(), metamodel);
       return FIELD_TO_FIELD_PREDICATE_MAP.get(condition.getOperator())
-          .getPredicate(leftPath, rightPath, cb);
+          .getPredicate(leftExpression, rightExpression, cb);
     }
 
-    Object value = PropertyUtils.getActualPropertyValue(entityClass, propertyPath, condition.getValue());
+    Object value;
+    if (propertyPath != null) {
+      value = PropertyUtils.getActualPropertyValue(entityClass, propertyPath, condition.getValue());
+    } else {
+      // For function expressions, use the raw value
+      value = condition.getValue();
+    }
     return OPERATOR_PREDICATE_MAP.get(condition.getOperator())
-        .getPredicate(leftPath, value, cb);
+        .getPredicate(leftExpression, value, cb);
   }
 }

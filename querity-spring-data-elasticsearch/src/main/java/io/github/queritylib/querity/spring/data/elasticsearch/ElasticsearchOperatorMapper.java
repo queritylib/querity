@@ -1,6 +1,8 @@
 package io.github.queritylib.querity.spring.data.elasticsearch;
 
 import io.github.queritylib.querity.api.Operator;
+import io.github.queritylib.querity.api.PropertyExpression;
+import io.github.queritylib.querity.api.PropertyReference;
 import io.github.queritylib.querity.api.SimpleCondition;
 import io.github.queritylib.querity.common.util.PropertyUtils;
 import lombok.AccessLevel;
@@ -96,13 +98,27 @@ class ElasticsearchOperatorMapper {
   }
 
   public static <T> Criteria getCriteria(Class<T> entityClass, SimpleCondition condition, boolean negate) {
+    // Check for function expressions
+    if (condition.hasLeftExpression()) {
+      PropertyExpression leftExpr = condition.getLeftExpression();
+      ElasticsearchFunctionMapper.validateNoFunctions(leftExpr);
+      // If it's just a PropertyReference, continue with normal processing
+      if (leftExpr instanceof PropertyReference pr) {
+        return getCriteriaForProperty(entityClass, pr.getPropertyName(), condition, negate);
+      }
+    }
+
+    String propertyPath = condition.getPropertyName();
+    return getCriteriaForProperty(entityClass, propertyPath, condition, negate);
+  }
+
+  private static <T> Criteria getCriteriaForProperty(Class<T> entityClass, String propertyPath, SimpleCondition condition, boolean negate) {
     if (condition.isFieldReference()) {
       throw new UnsupportedOperationException(
           "Field-to-field comparison is not supported in Elasticsearch. " +
           "Consider using script queries or denormalizing your data.");
     }
 
-    String propertyPath = condition.getPropertyName();
     Criteria where = Criteria.where(propertyPath);
     Object value = PropertyUtils.getActualPropertyValue(entityClass, propertyPath, condition.getValue());
     return OPERATOR_CRITERIA_MAP.get(condition.getOperator())

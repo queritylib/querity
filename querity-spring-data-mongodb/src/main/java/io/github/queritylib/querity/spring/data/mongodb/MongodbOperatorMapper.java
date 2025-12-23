@@ -2,6 +2,8 @@ package io.github.queritylib.querity.spring.data.mongodb;
 
 import io.github.queritylib.querity.api.FieldReference;
 import io.github.queritylib.querity.api.Operator;
+import io.github.queritylib.querity.api.PropertyExpression;
+import io.github.queritylib.querity.api.PropertyReference;
 import io.github.queritylib.querity.api.SimpleCondition;
 import io.github.queritylib.querity.common.util.PropertyUtils;
 import lombok.AccessLevel;
@@ -110,8 +112,23 @@ class MongodbOperatorMapper {
   }
 
   public static <T> Criteria getCriteria(Class<T> entityClass, SimpleCondition condition, boolean negate) {
-    String propertyPath = condition.getPropertyName();
+    // Check if we have a function expression on the left side
+    if (condition.hasLeftExpression()) {
+      PropertyExpression leftExpr = condition.getLeftExpression();
+      if (MongodbFunctionMapper.containsFunction(leftExpr)) {
+        return getFunctionExpressionCriteria(condition, negate);
+      }
+      // If it's just a PropertyReference, continue with normal processing
+      if (leftExpr instanceof PropertyReference pr) {
+        return getCriteriaForProperty(entityClass, pr.getPropertyName(), condition, negate);
+      }
+    }
 
+    String propertyPath = condition.getPropertyName();
+    return getCriteriaForProperty(entityClass, propertyPath, condition, negate);
+  }
+
+  private static <T> Criteria getCriteriaForProperty(Class<T> entityClass, String propertyPath, SimpleCondition condition, boolean negate) {
     if (condition.isFieldReference()) {
       return getFieldToFieldCriteria(condition, negate);
     }
@@ -120,6 +137,45 @@ class MongodbOperatorMapper {
     Object value = PropertyUtils.getActualPropertyValue(entityClass, propertyPath, condition.getValue());
     return OPERATOR_CRITERIA_MAP.get(condition.getOperator())
         .getCriteria(where, value, negate);
+  }
+
+  private static Criteria getFunctionExpressionCriteria(SimpleCondition condition, boolean negate) {
+    // For function expressions, we need to use $expr with aggregation operators
+    Object leftExpr = MongodbFunctionMapper.toExpression(condition.getEffectiveLeftExpression());
+    Object value = condition.getValue();
+    Operator operator = condition.getOperator();
+
+    if (negate) {
+      operator = getNegatedOperator(operator);
+    }
+
+    // Build the comparison expression
+    Document comparisonExpr = buildComparisonExpression(leftExpr, value, operator);
+    return new Criteria("$expr").is(comparisonExpr);
+  }
+
+  private static Document buildComparisonExpression(Object leftExpr, Object value, Operator operator) {
+    String mongoOp = switch (operator) {
+      case EQUALS -> "$eq";
+      case NOT_EQUALS -> "$ne";
+      case GREATER_THAN -> "$gt";
+      case GREATER_THAN_EQUALS -> "$gte";
+      case LESSER_THAN -> "$lt";
+      case LESSER_THAN_EQUALS -> "$lte";
+      case IS_NULL -> "$eq";
+      case IS_NOT_NULL -> "$ne";
+      default -> throw new UnsupportedOperationException(
+          "Operator " + operator + " is not supported with function expressions in MongoDB");
+    };
+
+    Object rightValue;
+    if (operator == Operator.IS_NULL || operator == Operator.IS_NOT_NULL) {
+      rightValue = null;
+    } else {
+      rightValue = value;
+    }
+
+    return new Document(mongoOp, List.of(leftExpr, rightValue));
   }
 
   private static Criteria getFieldToFieldCriteria(SimpleCondition condition, boolean negate) {

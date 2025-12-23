@@ -1,8 +1,7 @@
-package io.github.queritylib.querity.spring.data.mongodb;
+package io.github.queritylib.querity.spring.data.elasticsearch;
 
-import io.github.queritylib.querity.api.FieldReference;
-import io.github.queritylib.querity.api.Function;
 import io.github.queritylib.querity.api.FunctionCall;
+import io.github.queritylib.querity.api.Function;
 import io.github.queritylib.querity.api.Operator;
 import io.github.queritylib.querity.api.PropertyReference;
 import io.github.queritylib.querity.api.SimpleCondition;
@@ -11,39 +10,21 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.elasticsearch.core.query.Criteria;
 
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class MongodbOperatorMapperTests {
-  private static final Set<Operator> FIELD_TO_FIELD_SUPPORTED_OPERATORS = Set.of(
-      Operator.EQUALS,
-      Operator.NOT_EQUALS,
-      Operator.GREATER_THAN,
-      Operator.GREATER_THAN_EQUALS,
-      Operator.LESSER_THAN,
-      Operator.LESSER_THAN_EQUALS
-  );
+class ElasticsearchOperatorMapperTests {
+
+  private static final Set<Operator> ALL_OPERATORS = Set.of(Operator.values());
 
   @Test
   void testAllOperatorsSupported() {
-    assertThat(Operator.values())
-        .allMatch(MongodbOperatorMapper.OPERATOR_CRITERIA_MAP::containsKey);
-  }
-
-  @Test
-  void testFieldToFieldOperatorsSupported() {
-    assertThat(FIELD_TO_FIELD_SUPPORTED_OPERATORS)
-        .allMatch(MongodbOperatorMapper.FIELD_TO_FIELD_EXPR_OPERATORS::containsKey);
-  }
-
-  @Test
-  void testFieldToFieldMapContainsOnlySupportedOperators() {
-    assertThat(MongodbOperatorMapper.FIELD_TO_FIELD_EXPR_OPERATORS.keySet())
-        .containsExactlyInAnyOrderElementsOf(FIELD_TO_FIELD_SUPPORTED_OPERATORS);
+    assertThat(ALL_OPERATORS)
+        .allMatch(ElasticsearchOperatorMapper.OPERATOR_CRITERIA_MAP::containsKey);
   }
 
   @Nested
@@ -57,7 +38,7 @@ class MongodbOperatorMapperTests {
           .value("test")
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false);
 
       assertThat(result).isNotNull();
     }
@@ -70,46 +51,46 @@ class MongodbOperatorMapperTests {
           .value("test")
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false);
 
       assertThat(result).isNotNull();
     }
 
     @Test
-    void givenStartsWithCondition_whenGetCriteria_thenReturnRegexCriteria() {
+    void givenStartsWithCondition_whenGetCriteria_thenReturnCriteria() {
       SimpleCondition condition = SimpleCondition.builder()
           .propertyName("name")
           .operator(Operator.STARTS_WITH)
           .value("test")
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false);
 
       assertThat(result).isNotNull();
     }
 
     @Test
-    void givenEndsWithCondition_whenGetCriteria_thenReturnRegexCriteria() {
+    void givenEndsWithCondition_whenGetCriteria_thenReturnCriteria() {
       SimpleCondition condition = SimpleCondition.builder()
           .propertyName("name")
           .operator(Operator.ENDS_WITH)
           .value("test")
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false);
 
       assertThat(result).isNotNull();
     }
 
     @Test
-    void givenContainsCondition_whenGetCriteria_thenReturnRegexCriteria() {
+    void givenContainsCondition_whenGetCriteria_thenReturnCriteria() {
       SimpleCondition condition = SimpleCondition.builder()
           .propertyName("name")
           .operator(Operator.CONTAINS)
           .value("test")
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false);
 
       assertThat(result).isNotNull();
     }
@@ -122,7 +103,7 @@ class MongodbOperatorMapperTests {
           .value(18)
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false);
 
       assertThat(result).isNotNull();
     }
@@ -135,7 +116,7 @@ class MongodbOperatorMapperTests {
           .value(18)
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false);
 
       assertThat(result).isNotNull();
     }
@@ -148,7 +129,7 @@ class MongodbOperatorMapperTests {
           .value(65)
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false);
 
       assertThat(result).isNotNull();
     }
@@ -161,7 +142,7 @@ class MongodbOperatorMapperTests {
           .value(65)
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false);
 
       assertThat(result).isNotNull();
     }
@@ -173,7 +154,7 @@ class MongodbOperatorMapperTests {
           .operator(Operator.IS_NULL)
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false);
 
       assertThat(result).isNotNull();
     }
@@ -185,7 +166,7 @@ class MongodbOperatorMapperTests {
           .operator(Operator.IS_NOT_NULL)
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false);
 
       assertThat(result).isNotNull();
     }
@@ -198,7 +179,7 @@ class MongodbOperatorMapperTests {
           .value(new String[]{"ACTIVE", "PENDING"})
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false);
 
       assertThat(result).isNotNull();
     }
@@ -211,7 +192,7 @@ class MongodbOperatorMapperTests {
           .value(new String[]{"DELETED", "ARCHIVED"})
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false);
 
       assertThat(result).isNotNull();
     }
@@ -224,7 +205,7 @@ class MongodbOperatorMapperTests {
           .value("ACTIVE")
           .build();
 
-      assertThatThrownBy(() -> MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false))
+      assertThatThrownBy(() -> ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageContaining("Value must be an array");
     }
@@ -237,7 +218,7 @@ class MongodbOperatorMapperTests {
           .value("DELETED")
           .build();
 
-      assertThatThrownBy(() -> MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false))
+      assertThatThrownBy(() -> ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageContaining("Value must be an array");
     }
@@ -247,66 +228,66 @@ class MongodbOperatorMapperTests {
   class NegatedCriteriaTests {
 
     @Test
-    void givenEqualsConditionNegated_whenGetCriteria_thenReturnNotEqualsCriteria() {
+    void givenEqualsConditionNegated_whenGetCriteria_thenReturnNegatedCriteria() {
       SimpleCondition condition = SimpleCondition.builder()
           .propertyName("name")
           .operator(Operator.EQUALS)
           .value("test")
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, true);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, true);
 
       assertThat(result).isNotNull();
     }
 
     @Test
-    void givenNotEqualsConditionNegated_whenGetCriteria_thenReturnEqualsCriteria() {
+    void givenNotEqualsConditionNegated_whenGetCriteria_thenReturnNegatedCriteria() {
       SimpleCondition condition = SimpleCondition.builder()
           .propertyName("name")
           .operator(Operator.NOT_EQUALS)
           .value("test")
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, true);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, true);
 
       assertThat(result).isNotNull();
     }
 
     @Test
-    void givenStartsWithConditionNegated_whenGetCriteria_thenReturnNegatedRegexCriteria() {
+    void givenStartsWithConditionNegated_whenGetCriteria_thenReturnNegatedCriteria() {
       SimpleCondition condition = SimpleCondition.builder()
           .propertyName("name")
           .operator(Operator.STARTS_WITH)
           .value("test")
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, true);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, true);
 
       assertThat(result).isNotNull();
     }
 
     @Test
-    void givenEndsWithConditionNegated_whenGetCriteria_thenReturnNegatedRegexCriteria() {
+    void givenEndsWithConditionNegated_whenGetCriteria_thenReturnNegatedCriteria() {
       SimpleCondition condition = SimpleCondition.builder()
           .propertyName("name")
           .operator(Operator.ENDS_WITH)
           .value("test")
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, true);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, true);
 
       assertThat(result).isNotNull();
     }
 
     @Test
-    void givenContainsConditionNegated_whenGetCriteria_thenReturnNegatedRegexCriteria() {
+    void givenContainsConditionNegated_whenGetCriteria_thenReturnNegatedCriteria() {
       SimpleCondition condition = SimpleCondition.builder()
           .propertyName("name")
           .operator(Operator.CONTAINS)
           .value("test")
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, true);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, true);
 
       assertThat(result).isNotNull();
     }
@@ -319,7 +300,7 @@ class MongodbOperatorMapperTests {
           .value(18)
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, true);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, true);
 
       assertThat(result).isNotNull();
     }
@@ -332,7 +313,7 @@ class MongodbOperatorMapperTests {
           .value(18)
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, true);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, true);
 
       assertThat(result).isNotNull();
     }
@@ -345,7 +326,7 @@ class MongodbOperatorMapperTests {
           .value(65)
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, true);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, true);
 
       assertThat(result).isNotNull();
     }
@@ -358,31 +339,31 @@ class MongodbOperatorMapperTests {
           .value(65)
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, true);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, true);
 
       assertThat(result).isNotNull();
     }
 
     @Test
-    void givenIsNullConditionNegated_whenGetCriteria_thenReturnIsNotNullCriteria() {
+    void givenIsNullConditionNegated_whenGetCriteria_thenReturnExistsCriteria() {
       SimpleCondition condition = SimpleCondition.builder()
           .propertyName("middleName")
           .operator(Operator.IS_NULL)
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, true);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, true);
 
       assertThat(result).isNotNull();
     }
 
     @Test
-    void givenIsNotNullConditionNegated_whenGetCriteria_thenReturnIsNullCriteria() {
+    void givenIsNotNullConditionNegated_whenGetCriteria_thenReturnNotExistsCriteria() {
       SimpleCondition condition = SimpleCondition.builder()
           .propertyName("middleName")
           .operator(Operator.IS_NOT_NULL)
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, true);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, true);
 
       assertThat(result).isNotNull();
     }
@@ -395,7 +376,7 @@ class MongodbOperatorMapperTests {
           .value(new String[]{"ACTIVE", "PENDING"})
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, true);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, true);
 
       assertThat(result).isNotNull();
     }
@@ -408,105 +389,9 @@ class MongodbOperatorMapperTests {
           .value(new String[]{"DELETED", "ARCHIVED"})
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, true);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, true);
 
       assertThat(result).isNotNull();
-    }
-  }
-
-  @Nested
-  class FieldToFieldComparisonTests {
-
-    @ParameterizedTest
-    @EnumSource(value = Operator.class, names = {"EQUALS", "NOT_EQUALS", "GREATER_THAN",
-        "GREATER_THAN_EQUALS", "LESSER_THAN", "LESSER_THAN_EQUALS"})
-    void givenFieldToFieldComparison_whenGetCriteria_thenReturnExprCriteria(Operator operator) {
-      SimpleCondition condition = SimpleCondition.builder()
-          .propertyName("startDate")
-          .operator(operator)
-          .value(FieldReference.of("endDate"))
-          .build();
-
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false);
-
-      assertThat(result).isNotNull();
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = Operator.class, names = {"EQUALS", "NOT_EQUALS", "GREATER_THAN",
-        "GREATER_THAN_EQUALS", "LESSER_THAN", "LESSER_THAN_EQUALS"})
-    void givenFieldToFieldComparisonNegated_whenGetCriteria_thenReturnExprCriteria(Operator operator) {
-      SimpleCondition condition = SimpleCondition.builder()
-          .propertyName("startDate")
-          .operator(operator)
-          .value(FieldReference.of("endDate"))
-          .build();
-
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, true);
-
-      assertThat(result).isNotNull();
-    }
-  }
-
-  @Nested
-  class FunctionExpressionTests {
-
-    @Test
-    void givenFunctionExpression_whenGetCriteria_thenReturnExprCriteria() {
-      FunctionCall functionCall = FunctionCall.of(Function.UPPER, PropertyReference.of("name"));
-      SimpleCondition condition = SimpleCondition.builder()
-          .leftExpression(functionCall)
-          .operator(Operator.EQUALS)
-          .value("TEST")
-          .build();
-
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false);
-
-      assertThat(result).isNotNull();
-    }
-
-    @Test
-    void givenFunctionExpressionNegated_whenGetCriteria_thenReturnExprCriteria() {
-      FunctionCall functionCall = FunctionCall.of(Function.UPPER, PropertyReference.of("name"));
-      SimpleCondition condition = SimpleCondition.builder()
-          .leftExpression(functionCall)
-          .operator(Operator.EQUALS)
-          .value("TEST")
-          .build();
-
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, true);
-
-      assertThat(result).isNotNull();
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = Operator.class, names = {"EQUALS", "NOT_EQUALS", "GREATER_THAN",
-        "GREATER_THAN_EQUALS", "LESSER_THAN", "LESSER_THAN_EQUALS"})
-    void givenFunctionExpressionWithSupportedOperator_whenGetCriteria_thenReturnCriteria(Operator operator) {
-      FunctionCall functionCall = FunctionCall.of(Function.LENGTH, PropertyReference.of("name"));
-      SimpleCondition condition = SimpleCondition.builder()
-          .leftExpression(functionCall)
-          .operator(operator)
-          .value(10)
-          .build();
-
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false);
-
-      assertThat(result).isNotNull();
-    }
-
-    @Test
-    void givenFunctionExpressionWithUnsupportedOperator_whenGetCriteria_thenThrowUnsupportedOperationException() {
-      FunctionCall functionCall = FunctionCall.of(Function.UPPER, PropertyReference.of("name"));
-      SimpleCondition condition = SimpleCondition.builder()
-          .leftExpression(functionCall)
-          .operator(Operator.STARTS_WITH)
-          .value("TEST")
-          .build();
-
-      assertThatThrownBy(() -> MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false))
-          .isInstanceOf(UnsupportedOperationException.class)
-          .hasMessageContaining("is not supported with function expressions");
     }
   }
 
@@ -521,7 +406,7 @@ class MongodbOperatorMapperTests {
           .value("test")
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false);
 
       assertThat(result).isNotNull();
     }
@@ -534,7 +419,67 @@ class MongodbOperatorMapperTests {
           .value("Rome")
           .build();
 
-      Criteria result = MongodbOperatorMapper.getCriteria(TestEntity.class, condition, false);
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false);
+
+      assertThat(result).isNotNull();
+    }
+
+    @Test
+    void givenFunctionExpression_whenGetCriteria_thenThrowUnsupportedOperationException() {
+      FunctionCall functionCall = FunctionCall.of(Function.UPPER, PropertyReference.of("name"));
+      SimpleCondition condition = SimpleCondition.builder()
+          .leftExpression(functionCall)
+          .operator(Operator.EQUALS)
+          .value("TEST")
+          .build();
+
+      assertThatThrownBy(() -> ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false))
+          .isInstanceOf(UnsupportedOperationException.class)
+          .hasMessageContaining("Function UPPER is not supported in Elasticsearch");
+    }
+  }
+
+  @Nested
+  class AllOperatorsParameterizedTests {
+
+    @ParameterizedTest
+    @EnumSource(value = Operator.class, names = {"EQUALS", "NOT_EQUALS", "STARTS_WITH", "ENDS_WITH",
+        "CONTAINS", "GREATER_THAN", "GREATER_THAN_EQUALS", "LESSER_THAN", "LESSER_THAN_EQUALS"})
+    void givenSingleValueOperator_whenGetCriteria_thenReturnCriteria(Operator operator) {
+      SimpleCondition condition = SimpleCondition.builder()
+          .propertyName("field")
+          .operator(operator)
+          .value("testValue")
+          .build();
+
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false);
+
+      assertThat(result).isNotNull();
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = Operator.class, names = {"IS_NULL", "IS_NOT_NULL"})
+    void givenNullaryOperator_whenGetCriteria_thenReturnCriteria(Operator operator) {
+      SimpleCondition condition = SimpleCondition.builder()
+          .propertyName("field")
+          .operator(operator)
+          .build();
+
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false);
+
+      assertThat(result).isNotNull();
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = Operator.class, names = {"IN", "NOT_IN"})
+    void givenArrayOperator_whenGetCriteria_thenReturnCriteria(Operator operator) {
+      SimpleCondition condition = SimpleCondition.builder()
+          .propertyName("field")
+          .operator(operator)
+          .value(new String[]{"val1", "val2"})
+          .build();
+
+      Criteria result = ElasticsearchOperatorMapper.getCriteria(TestEntity.class, condition, false);
 
       assertThat(result).isNotNull();
     }
@@ -546,9 +491,7 @@ class MongodbOperatorMapperTests {
     private String middleName;
     private Integer age;
     private String status;
-    private String startDate;
-    private String endDate;
-    private String nickname;
+    private String field;
     private Address address;
   }
 

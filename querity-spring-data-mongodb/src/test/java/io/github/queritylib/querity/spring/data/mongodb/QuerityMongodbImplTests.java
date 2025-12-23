@@ -62,6 +62,22 @@ class QuerityMongodbImplTests extends QuerityGenericSpringTestSuite<Person, Stri
     return true;
   }
 
+  /**
+   * MongoDB does not support function expressions in sorting without aggregation pipeline.
+   */
+  @Override
+  protected boolean supportsFunctionExpressionsInSorting() {
+    return false;
+  }
+
+  /**
+   * MongoDB does not support function expressions in projections without aggregation pipeline.
+   */
+  @Override
+  protected boolean supportsFunctionExpressionsInProjections() {
+    return false;
+  }
+
   @Test
   void givenMongodbNativeCondition_whenFindAll_thenReturnOnlyFilteredElements() {
     Criteria criteria = Criteria.where("lastName").is(entity1.getLastName());
