@@ -1,6 +1,9 @@
 package io.github.queritylib.querity.spring.data.mongodb;
 
+import io.github.queritylib.querity.api.Function;
+import io.github.queritylib.querity.api.FunctionCall;
 import io.github.queritylib.querity.api.NativeSortWrapper;
+import io.github.queritylib.querity.api.PropertyReference;
 import io.github.queritylib.querity.api.SimpleSort;
 import io.github.queritylib.querity.api.Sort;
 import org.junit.jupiter.api.Nested;
@@ -149,6 +152,39 @@ class MongodbSortTests {
       MongodbSimpleSort mongodbSimpleSort = new MongodbSimpleSort(simpleSort);
 
       assertThat(mongodbSimpleSort.getDirection()).isEqualTo(io.github.queritylib.querity.api.SimpleSort.Direction.DESC);
+    }
+
+    @Test
+    void givenSimpleSortWithIdField_whenToMongoSortOrder_thenMapToMongoId() {
+      SimpleSort simpleSort = sortBy("id");
+
+      MongodbSort mongodbSort = MongodbSort.of(simpleSort);
+      Order result = mongodbSort.toMongoSortOrder();
+
+      assertThat(result.getProperty()).isEqualTo("_id");
+    }
+
+    @Test
+    void givenSimpleSortWithPropertyExpression_whenToMongoSortOrder_thenReturnOrder() {
+      SimpleSort simpleSort = sortBy(PropertyReference.of("email"), SimpleSort.Direction.ASC);
+
+      MongodbSort mongodbSort = MongodbSort.of(simpleSort);
+      Order result = mongodbSort.toMongoSortOrder();
+
+      assertThat(result.getProperty()).isEqualTo("email");
+      assertThat(result.getDirection()).isEqualTo(Direction.ASC);
+    }
+
+    @Test
+    void givenSimpleSortWithFunctionExpression_whenToMongoSortOrder_thenThrowUnsupportedOperationException() {
+      FunctionCall lowerName = FunctionCall.of(Function.LOWER, PropertyReference.of("name"));
+      SimpleSort simpleSort = sortBy(lowerName, SimpleSort.Direction.ASC);
+
+      MongodbSort mongodbSort = MongodbSort.of(simpleSort);
+
+      assertThatThrownBy(() -> mongodbSort.toMongoSortOrder())
+          .isInstanceOf(UnsupportedOperationException.class)
+          .hasMessageContaining("aggregation pipeline");
     }
   }
 

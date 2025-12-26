@@ -31,6 +31,7 @@ Query features:
 * sorting
 * pagination
 * projections (select specific fields)
+* function expressions (UPPER, LOWER, LENGTH, CONCAT, etc.)
 * textual query language
 * support for REST APIs
 * support for DTO layer
@@ -174,6 +175,128 @@ List<Map<String, Object>> results = querity.findAllProjected(Person.class, query
 ```
 
 > Native expressions are only available for JPA. MongoDB and Elasticsearch support `sortByNative` and `filterByNative` with their respective native types (`Order`, `Criteria`), but not expression-based projections.
+
+#### Function Expressions
+
+Querity supports SQL-like functions in filters, sorting, and projections. Use `prop()` for property references and `lit()` for literal values:
+
+```java
+import static io.github.queritylib.querity.api.Querity.*;
+
+// Filter by uppercase lastName
+Query query = Querity.query()
+    .filter(filterBy(upper(prop("lastName")), EQUALS, "SKYWALKER"))
+    .build();
+
+// Sort by string length
+Query query = Querity.query()
+    .sort(sortBy(length(prop("lastName")), DESC))
+    .build();
+
+// Select with function expressions
+Query query = Querity.query()
+    .select(selectBy(
+        prop("id"),
+        upper(prop("lastName")).as("upperLastName"),
+        concat(prop("firstName"), lit(" "), prop("lastName")).as("fullName")
+    ))
+    .build();
+```
+
+**Available functions:**
+
+| Category | Functions |
+|----------|-----------|
+| Arithmetic | `abs()`, `sqrt()`, `mod()` |
+| String | `concat()`, `substring()`, `trim()`, `ltrim()`, `rtrim()`, `lower()`, `upper()`, `length()`, `locate()` |
+| Date/Time | `currentDate()`, `currentTime()`, `currentTimestamp()` |
+| Conditional | `coalesce()`, `nullif()` |
+| Aggregate | `count()`, `sum()`, `avg()`, `min()`, `max()` |
+
+**Type-safe arguments:**
+
+Function arguments must be either property references or literals:
+- `prop("fieldName")` - reference to an entity property (alias for `property()`)
+- `lit(value)` - literal value (String, Number, or Boolean)
+
+```java
+// Combine functions
+coalesce(prop("nickname"), lit("Anonymous"))
+mod(prop("quantity"), lit(10))
+concat(prop("firstName"), lit(" - "), prop("lastName"))
+
+// Nested functions
+upper(trim(prop("name")))  // UPPER(TRIM(name))
+length(lower(prop("email")))  // LENGTH(LOWER(email))
+
+// Nested properties (e.g., address.city)
+upper(prop("address.city"))
+coalesce(prop("contact.email"), prop("contact.phone"), lit("N/A"))
+```
+
+**Query language support:**
+
+Functions can also be used in the textual query language:
+
+```java
+Query query = QuerityParser.parseQuery(
+    "UPPER(lastName)=\"SKYWALKER\" sort by LENGTH(firstName) select id, UPPER(lastName) as upperName"
+);
+```
+
+> **Backend support:**
+> - **JPA**: Full support for all functions in filters, sorting, and projections
+> - **MongoDB**: Functions supported in filters only (via `$expr`). Using functions in sort or select throws `UnsupportedOperationException`
+> - **Elasticsearch**: Functions are **not supported** (would require script queries). Using functions throws `UnsupportedOperationException`
+
+**Function support by implementation:**
+
+**Arithmetic functions**
+
+| Function | JPA | MongoDB | Elasticsearch |
+|----------|-----|---------|---------------|
+| `ABS` | Yes | Filters only | No |
+| `SQRT` | Yes | Filters only | No |
+| `MOD` | Yes | Filters only | No |
+
+**String functions**
+
+| Function | JPA | MongoDB | Elasticsearch |
+|----------|-----|---------|---------------|
+| `CONCAT` | Yes | Filters only | No |
+| `SUBSTRING` | Yes | Filters only | No |
+| `TRIM` | Yes | Filters only | No |
+| `LTRIM` | Yes | Filters only | No |
+| `RTRIM` | Yes | Filters only | No |
+| `LOWER` | Yes | Filters only | No |
+| `UPPER` | Yes | Filters only | No |
+| `LENGTH` | Yes | Filters only | No |
+| `LOCATE` | Yes | Filters only | No |
+
+**Date/Time functions**
+
+| Function | JPA | MongoDB | Elasticsearch |
+|----------|-----|---------|---------------|
+| `CURRENT_DATE` | Yes | Filters only | No |
+| `CURRENT_TIME` | Yes | Filters only | No |
+| `CURRENT_TIMESTAMP` | Yes | Filters only | No |
+
+**Conditional functions**
+
+| Function | JPA | MongoDB | Elasticsearch |
+|----------|-----|---------|---------------|
+| `COALESCE` | Yes | Filters only | No |
+| `NULLIF` | Yes | Filters only | No |
+
+**Aggregate functions**
+
+| Function | JPA | MongoDB | Elasticsearch |
+|----------|-----|---------|---------------|
+| `COUNT` | Yes | Filters only | No |
+| `SUM` | Yes | Filters only | No |
+| `AVG` | Yes | Filters only | No |
+| `MIN` | Yes | Filters only | No |
+| `MAX` | Yes | Filters only | No |
 
 #### Query language
 

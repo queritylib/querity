@@ -1,6 +1,10 @@
 package io.github.queritylib.querity.spring.data.elasticsearch;
 
+import io.github.queritylib.querity.api.Function;
+import io.github.queritylib.querity.api.FunctionCall;
+import io.github.queritylib.querity.api.PropertyReference;
 import io.github.queritylib.querity.api.Select;
+import io.github.queritylib.querity.api.SimpleSelect;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -52,6 +56,30 @@ class ElasticsearchSelectTests {
     assertThatThrownBy(() -> ElasticsearchSelect.of(unsupportedSelect))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Unsupported select type");
+  }
+
+  @Test
+  void givenSimpleSelectWithExpressions_whenGetFields_thenReturnFieldNames() {
+    SimpleSelect simpleSelect = SimpleSelect.ofExpressions(
+        PropertyReference.of("firstName"),
+        PropertyReference.of("lastName")
+    );
+    ElasticsearchSelect elasticsearchSelect = ElasticsearchSelect.of(simpleSelect);
+
+    List<String> fields = elasticsearchSelect.getFields();
+
+    assertThat(fields).containsExactly("firstName", "lastName");
+  }
+
+  @Test
+  void givenSimpleSelectWithFunctionExpression_whenGetFields_thenThrowUnsupportedOperationException() {
+    FunctionCall upperName = FunctionCall.of(Function.UPPER, PropertyReference.of("name"));
+    SimpleSelect simpleSelect = SimpleSelect.ofExpressions(upperName);
+    ElasticsearchSelect elasticsearchSelect = ElasticsearchSelect.of(simpleSelect);
+
+    assertThatThrownBy(() -> elasticsearchSelect.getFields())
+        .isInstanceOf(UnsupportedOperationException.class)
+        .hasMessageContaining("Function UPPER is not supported in Elasticsearch");
   }
 
   private static class UnsupportedSelect implements Select {

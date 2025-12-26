@@ -1191,6 +1191,216 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
         .toList();
   }
 
+  /**
+   * Override this method to indicate whether function expressions are supported in filters.
+   * JPA supports functions in filters, MongoDB supports them via $expr, Elasticsearch does not.
+   *
+   * @return true if function expressions are supported in filters
+   */
+  protected boolean supportsFunctionExpressionsInFilters() {
+    return true;
+  }
+
+  /**
+   * Override this method to indicate whether function expressions are supported in sorting.
+   * JPA supports functions in sorting, MongoDB and Elasticsearch do not.
+   *
+   * @return true if function expressions are supported in sorting
+   */
+  protected boolean supportsFunctionExpressionsInSorting() {
+    return true;
+  }
+
+  /**
+   * Override this method to indicate whether function expressions are supported in projections.
+   * JPA supports functions in projections, MongoDB and Elasticsearch do not.
+   *
+   * @return true if function expressions are supported in projections
+   */
+  protected boolean supportsFunctionExpressionsInProjections() {
+    return true;
+  }
+
+  @Nested
+  class FunctionExpressionTests {
+
+    @Test
+    void givenUpperFunctionInFilter_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFunctionExpressionsInFilters()) return;
+      // Filter where UPPER(lastName) = uppercase version of entity1's lastName
+      String upperLastName = entity1.getLastName().toUpperCase();
+      Query query = Querity.query()
+          .filter(filterBy(upper(property(PROPERTY_LAST_NAME)), EQUALS, upperLastName))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getLastName() != null && p.getLastName().toUpperCase().equals(upperLastName))
+          .toList());
+    }
+
+    @Test
+    void givenLowerFunctionInFilter_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFunctionExpressionsInFilters()) return;
+      // Filter where LOWER(firstName) = lowercase version of entity1's firstName
+      String lowerFirstName = entity1.getFirstName().toLowerCase();
+      Query query = Querity.query()
+          .filter(filterBy(lower(property(PROPERTY_FIRST_NAME)), EQUALS, lowerFirstName))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getFirstName() != null && p.getFirstName().toLowerCase().equals(lowerFirstName))
+          .toList());
+    }
+
+    @Test
+    void givenLengthFunctionInFilter_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFunctionExpressionsInFilters()) return;
+      // Filter where LENGTH(lastName) > 5
+      Query query = Querity.query()
+          .filter(filterBy(length(property(PROPERTY_LAST_NAME)), GREATER_THAN, 5))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getLastName() != null && p.getLastName().length() > 5)
+          .toList());
+    }
+
+    @Test
+    void givenLengthFunctionEqualsInFilter_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFunctionExpressionsInFilters()) return;
+      // Filter where LENGTH(lastName) = length of entity1's lastName
+      int targetLength = entity1.getLastName().length();
+      Query query = Querity.query()
+          .filter(filterBy(length(property(PROPERTY_LAST_NAME)), EQUALS, targetLength))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getLastName() != null && p.getLastName().length() == targetLength)
+          .toList());
+    }
+
+    @Test
+    void givenFunctionInFilterWithAndLogic_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFunctionExpressionsInFilters()) return;
+      // Filter where UPPER(lastName) = entity1's lastName AND married = true
+      String upperLastName = entity1.getLastName().toUpperCase();
+      Query query = Querity.query()
+          .filter(and(
+              filterBy(upper(property(PROPERTY_LAST_NAME)), EQUALS, upperLastName),
+              filterBy(PROPERTY_MARRIED, EQUALS, true)
+          ))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getLastName() != null &&
+              p.getLastName().toUpperCase().equals(upperLastName) &&
+              p.isMarried())
+          .toList());
+    }
+
+    @Test
+    void givenSortByLengthFunction_whenFindAll_thenReturnSortedElements() {
+      if (!supportsFunctionExpressionsInSorting()) return;
+      // Sort by LENGTH(lastName), then by id
+      Query query = Querity.query()
+          .filter(filterBy(PROPERTY_LAST_NAME, IS_NOT_NULL))
+          .sort(sortBy(length(property(PROPERTY_LAST_NAME))), sortBy(PROPERTY_ID))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      Comparator<T> comparator = Comparator
+          .comparing((T p) -> p.getLastName().length())
+          .thenComparing(T::getId);
+      List<T> expected = entities.stream()
+          .filter(p -> p.getLastName() != null)
+          .sorted(comparator)
+          .toList();
+      assertThat(result).containsExactlyElementsOf(expected);
+    }
+
+    @Test
+    void givenSortByUpperFunction_whenFindAll_thenReturnSortedElements() {
+      if (!supportsFunctionExpressionsInSorting()) return;
+      // Sort by UPPER(lastName), then by id
+      Query query = Querity.query()
+          .filter(filterBy(PROPERTY_LAST_NAME, IS_NOT_NULL))
+          .sort(sortBy(upper(property(PROPERTY_LAST_NAME))), sortBy(PROPERTY_ID))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      Comparator<T> comparator = Comparator
+          .comparing((T p) -> p.getLastName().toUpperCase())
+          .thenComparing(T::getId);
+      List<T> expected = entities.stream()
+          .filter(p -> p.getLastName() != null)
+          .sorted(comparator)
+          .toList();
+      assertThat(result).containsExactlyElementsOf(expected);
+    }
+
+    @Test
+    void givenSelectWithUpperFunction_whenFindAllProjected_thenReturnProjectedResults() {
+      if (!supportsFunctionExpressionsInProjections()) return;
+      // Select UPPER(firstName) as upperFirstName
+      Query query = Querity.query()
+          .filter(filterBy(PROPERTY_FIRST_NAME, IS_NOT_NULL))
+          .select(selectBy(upper(property(PROPERTY_FIRST_NAME)).as("upperFirstName")))
+          .build();
+      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).allSatisfy(map -> {
+        assertThat(map).containsKey("upperFirstName");
+        Object value = map.get("upperFirstName");
+        assertThat(value).isInstanceOf(String.class);
+        assertThat(((String) value).toUpperCase()).isEqualTo(value);
+      });
+    }
+
+    @Test
+    void givenSelectWithLengthFunction_whenFindAllProjected_thenReturnProjectedResults() {
+      if (!supportsFunctionExpressionsInProjections()) return;
+      // Select LENGTH(lastName) as lastNameLength
+      Query query = Querity.query()
+          .filter(filterBy(PROPERTY_LAST_NAME, IS_NOT_NULL))
+          .select(selectBy(length(property(PROPERTY_LAST_NAME)).as("lastNameLength")))
+          .build();
+      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).allSatisfy(map -> {
+        assertThat(map).containsKey("lastNameLength");
+        Object value = map.get("lastNameLength");
+        assertThat(value).isInstanceOf(Number.class);
+        assertThat(((Number) value).intValue()).isGreaterThan(0);
+      });
+    }
+
+    @Test
+    void givenSelectWithMultipleFunctions_whenFindAllProjected_thenReturnProjectedResults() {
+      if (!supportsFunctionExpressionsInProjections()) return;
+      // Select UPPER(firstName), LENGTH(lastName)
+      Query query = Querity.query()
+          .filter(and(
+              filterBy(PROPERTY_FIRST_NAME, IS_NOT_NULL),
+              filterBy(PROPERTY_LAST_NAME, IS_NOT_NULL)
+          ))
+          .select(selectBy(
+              upper(property(PROPERTY_FIRST_NAME)).as("upperFirstName"),
+              length(property(PROPERTY_LAST_NAME)).as("lastNameLength")
+          ))
+          .build();
+      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).allSatisfy(map -> {
+        assertThat(map).containsKey("upperFirstName");
+        assertThat(map).containsKey("lastNameLength");
+      });
+    }
+  }
+
   protected abstract Class<T> getEntityClass();
 
   private T getEntityFromList(int skip) {

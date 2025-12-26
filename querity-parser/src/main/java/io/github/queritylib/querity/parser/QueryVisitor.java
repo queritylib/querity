@@ -3,6 +3,7 @@ package io.github.queritylib.querity.parser;
 import io.github.queritylib.querity.api.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 class QueryVisitor extends QueryParserBaseVisitor<Object> {
@@ -31,10 +32,128 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
 
   @Override
   public Object visitSelectFields(QueryParser.SelectFieldsContext ctx) {
-    String[] propertyNames = ctx.PROPERTY().stream()
-        .map(node -> node.getText())
-        .toArray(String[]::new);
-    return Querity.selectBy(propertyNames);
+    List<PropertyExpression> expressions = new ArrayList<>();
+    for (QueryParser.SelectFieldContext fieldCtx : ctx.selectField()) {
+      PropertyExpression expr = (PropertyExpression) visit(fieldCtx);
+      expressions.add(expr);
+    }
+
+    // Check if all expressions are simple PropertyReferences (no functions or aliases)
+    boolean allSimpleProperties = expressions.stream()
+        .allMatch(e -> e instanceof PropertyReference pr && !pr.hasAlias());
+
+    if (allSimpleProperties) {
+      // Use propertyNames for backward compatibility
+      String[] propertyNames = expressions.stream()
+          .map(e -> ((PropertyReference) e).getPropertyName())
+          .toArray(String[]::new);
+      return SimpleSelect.of(propertyNames);
+    } else {
+      // Use expressions when functions are involved
+      return SimpleSelect.ofExpressions(expressions.toArray(new PropertyExpression[0]));
+    }
+  }
+
+  @Override
+  public Object visitSelectField(QueryParser.SelectFieldContext ctx) {
+    PropertyExpression expr = (PropertyExpression) visit(ctx.propertyExpression());
+    // Handle alias if present
+    if (ctx.AS() != null && ctx.alias != null) {
+      String alias = (String) visit(ctx.alias);
+      if (expr instanceof FunctionCall fc) {
+        return fc.as(alias);
+      }
+      if (expr instanceof PropertyReference pr) {
+        return pr.as(alias);
+      }
+    }
+    return expr;
+  }
+
+  @Override
+  public Object visitPropertyExpression(QueryParser.PropertyExpressionContext ctx) {
+    if (ctx.propertyName() != null) {
+      return PropertyReference.of((String) visit(ctx.propertyName()));
+    } else {
+      return visit(ctx.functionCall());
+    }
+  }
+
+  @Override
+  public String visitPropertyName(QueryParser.PropertyNameContext ctx) {
+    if (ctx.PROPERTY() != null) {
+      return ctx.PROPERTY().getText();
+    }
+    return unescapeBacktickProperty(ctx.BACKTICK_PROPERTY().getText());
+  }
+
+  @Override
+  public Object visitFunctionCall(QueryParser.FunctionCallContext ctx) {
+    if (ctx.nullaryFunction() != null) {
+      return visit(ctx.nullaryFunction());
+    }
+
+    Function function = (Function) visit(ctx.functionName());
+    List<FunctionArgument> arguments = new ArrayList<>();
+
+    if (ctx.functionArgs() != null) {
+      for (QueryParser.FunctionArgContext argCtx : ctx.functionArgs().functionArg()) {
+        arguments.add((FunctionArgument) visit(argCtx));
+      }
+    }
+
+    return FunctionCall.builder()
+        .function(function)
+        .arguments(arguments)
+        .build();
+  }
+
+  @Override
+  public Object visitNullaryFunction(QueryParser.NullaryFunctionContext ctx) {
+    Function function;
+    if (ctx.CURRENT_DATE_FUNC() != null) {
+      function = Function.CURRENT_DATE;
+    } else if (ctx.CURRENT_TIME_FUNC() != null) {
+      function = Function.CURRENT_TIME;
+    } else {
+      function = Function.CURRENT_TIMESTAMP;
+    }
+    return FunctionCall.of(function);
+  }
+
+  @Override
+  public Object visitFunctionName(QueryParser.FunctionNameContext ctx) {
+    if (ctx.ABS_FUNC() != null) return Function.ABS;
+    if (ctx.SQRT_FUNC() != null) return Function.SQRT;
+    if (ctx.MOD_FUNC() != null) return Function.MOD;
+    if (ctx.CONCAT_FUNC() != null) return Function.CONCAT;
+    if (ctx.SUBSTRING_FUNC() != null) return Function.SUBSTRING;
+    if (ctx.TRIM_FUNC() != null) return Function.TRIM;
+    if (ctx.LTRIM_FUNC() != null) return Function.LTRIM;
+    if (ctx.RTRIM_FUNC() != null) return Function.RTRIM;
+    if (ctx.LOWER_FUNC() != null) return Function.LOWER;
+    if (ctx.UPPER_FUNC() != null) return Function.UPPER;
+    if (ctx.LENGTH_FUNC() != null) return Function.LENGTH;
+    if (ctx.LOCATE_FUNC() != null) return Function.LOCATE;
+    if (ctx.COALESCE_FUNC() != null) return Function.COALESCE;
+    if (ctx.NULLIF_FUNC() != null) return Function.NULLIF;
+    if (ctx.COUNT_FUNC() != null) return Function.COUNT;
+    if (ctx.SUM_FUNC() != null) return Function.SUM;
+    if (ctx.AVG_FUNC() != null) return Function.AVG;
+    if (ctx.MIN_FUNC() != null) return Function.MIN;
+    if (ctx.MAX_FUNC() != null) return Function.MAX;
+    throw new UnsupportedOperationException("Unsupported function: " + ctx.getText());
+  }
+
+  @Override
+  public FunctionArgument visitFunctionArg(QueryParser.FunctionArgContext ctx) {
+    if (ctx.propertyExpression() != null) {
+      return (PropertyExpression) visit(ctx.propertyExpression());
+    } else {
+      // Wrap raw values in Literal for type safety
+      Object value = visit(ctx.simpleValue());
+      return Literal.of(value);
+    }
   }
 
   @Override
@@ -84,26 +203,36 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
 
   @Override
   public Condition visitSimpleCondition(QueryParser.SimpleConditionContext ctx) {
-    String propertyName = ctx.PROPERTY(0).getText();
+    PropertyExpression leftExpr = (PropertyExpression) visit(ctx.propertyExpression());
     Operator operator = (Operator) visit(ctx.operator());
     Object value = null;
+
     if (operator.getRequiredValuesCount() > 0) {
       if (ctx.arrayValue() != null) {
         value = visitArrayValue(ctx.arrayValue());
       } else if (ctx.simpleValue() != null) {
         value = visitSimpleValue(ctx.simpleValue());
-      } else if (ctx.PROPERTY().size() > 1) {
-        // Use second PROPERTY as field reference
-        String fieldName = ctx.PROPERTY(1).getText();
+      } else if (ctx.valueProperty != null) {
+        // Use PROPERTY as field reference
+        String fieldName = (String) visit(ctx.valueProperty);
         value = FieldReference.of(fieldName);
       }
     }
 
-    return SimpleCondition.builder()
-        .propertyName(propertyName)
-        .operator(operator)
-        .value(value)
-        .build();
+    // Determine if we should use propertyName or leftExpression
+    if (leftExpr instanceof PropertyReference pr) {
+      return SimpleCondition.builder()
+          .propertyName(pr.getPropertyName())
+          .operator(operator)
+          .value(value)
+          .build();
+    } else {
+      return SimpleCondition.builder()
+          .leftExpression(leftExpr)
+          .operator(operator)
+          .value(value)
+          .build();
+    }
   }
 
   @Override
@@ -114,7 +243,7 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
     } else if (ctx.DECIMAL_VALUE() != null) {
       value = new BigDecimal(ctx.DECIMAL_VALUE().getText());
     } else if (ctx.BOOLEAN_VALUE() != null) {
-      value = Boolean.valueOf(ctx.BOOLEAN_VALUE().getText());
+      value = Boolean.valueOf(ctx.BOOLEAN_VALUE().getText().toLowerCase());
     } else {
       value = ctx.STRING_VALUE().getText().replace("\"", "");  // Remove quotes if present
     }
@@ -171,9 +300,15 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
 
   @Override
   public Object visitSortField(QueryParser.SortFieldContext ctx) {
-    return Querity.sortBy(
-        ctx.PROPERTY().getText(),
-        ctx.direction() != null ? (SimpleSort.Direction) visit(ctx.direction()) : SimpleSort.Direction.ASC);
+    PropertyExpression expr = (PropertyExpression) visit(ctx.propertyExpression());
+    SimpleSort.Direction direction = ctx.direction() != null ?
+        (SimpleSort.Direction) visit(ctx.direction()) : SimpleSort.Direction.ASC;
+
+    if (expr instanceof PropertyReference pr) {
+      return Querity.sortBy(pr.getPropertyName(), direction);
+    } else {
+      return Querity.sortBy(expr, direction);
+    }
   }
 
   @Override
@@ -184,5 +319,18 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
       return SimpleSort.Direction.DESC;
     }
   }
-}
 
+  private static String unescapeBacktickProperty(String text) {
+    String raw = text.substring(1, text.length() - 1);
+    StringBuilder result = new StringBuilder(raw.length());
+    for (int i = 0; i < raw.length(); i++) {
+      char current = raw.charAt(i);
+      if (current == '\\' && i + 1 < raw.length()) {
+        result.append(raw.charAt(++i));
+      } else {
+        result.append(current);
+      }
+    }
+    return result.toString();
+  }
+}

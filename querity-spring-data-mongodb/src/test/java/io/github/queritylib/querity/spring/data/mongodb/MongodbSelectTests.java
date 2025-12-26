@@ -1,6 +1,10 @@
 package io.github.queritylib.querity.spring.data.mongodb;
 
+import io.github.queritylib.querity.api.Function;
+import io.github.queritylib.querity.api.FunctionCall;
+import io.github.queritylib.querity.api.PropertyReference;
 import io.github.queritylib.querity.api.Select;
+import io.github.queritylib.querity.api.SimpleSelect;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.mongodb.core.query.Field;
 
@@ -65,6 +69,33 @@ class MongodbSelectTests {
     assertThatThrownBy(() -> MongodbSelect.of(unsupportedSelect))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Unsupported select type");
+  }
+
+  @Test
+  void givenSimpleSelectWithExpressions_whenApplyProjection_thenIncludeFields() {
+    SimpleSelect simpleSelect = SimpleSelect.ofExpressions(
+        PropertyReference.of("firstName"),
+        PropertyReference.of("lastName")
+    );
+    MongodbSelect mongodbSelect = MongodbSelect.of(simpleSelect);
+    Field field = mock(Field.class);
+
+    mongodbSelect.applyProjection(field);
+
+    verify(field).include("firstName");
+    verify(field).include("lastName");
+  }
+
+  @Test
+  void givenSimpleSelectWithFunctionExpression_whenApplyProjection_thenThrowUnsupportedOperationException() {
+    FunctionCall upperName = FunctionCall.of(Function.UPPER, PropertyReference.of("name"));
+    SimpleSelect simpleSelect = SimpleSelect.ofExpressions(upperName);
+    MongodbSelect mongodbSelect = MongodbSelect.of(simpleSelect);
+    Field field = mock(Field.class);
+
+    assertThatThrownBy(() -> mongodbSelect.applyProjection(field))
+        .isInstanceOf(UnsupportedOperationException.class)
+        .hasMessageContaining("aggregation pipeline");
   }
 
   private static class UnsupportedSelect implements Select {

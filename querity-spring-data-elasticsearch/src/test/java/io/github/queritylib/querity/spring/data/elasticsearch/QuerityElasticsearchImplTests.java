@@ -64,6 +64,33 @@ class QuerityElasticsearchImplTests extends QuerityGenericSpringTestSuite<Person
     return false;
   }
 
+  /**
+   * Elasticsearch does not support function expressions in filters.
+   * This would require script queries which are not implemented.
+   */
+  @Override
+  protected boolean supportsFunctionExpressionsInFilters() {
+    return false;
+  }
+
+  /**
+   * Elasticsearch does not support function expressions in sorting.
+   * This would require script-based sorting which is not implemented.
+   */
+  @Override
+  protected boolean supportsFunctionExpressionsInSorting() {
+    return false;
+  }
+
+  /**
+   * Elasticsearch does not support function expressions in projections.
+   * This would require scripted fields which are not implemented.
+   */
+  @Override
+  protected boolean supportsFunctionExpressionsInProjections() {
+    return false;
+  }
+
   @Test
   void givenElasticsearchNativeCondition_whenFindAll_thenReturnOnlyFilteredElements() {
     Criteria criteria = Criteria.where("lastName").is(entity1.getLastName());

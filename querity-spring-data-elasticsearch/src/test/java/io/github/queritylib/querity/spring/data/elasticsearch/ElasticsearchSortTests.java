@@ -1,6 +1,9 @@
 package io.github.queritylib.querity.spring.data.elasticsearch;
 
+import io.github.queritylib.querity.api.Function;
+import io.github.queritylib.querity.api.FunctionCall;
 import io.github.queritylib.querity.api.NativeSortWrapper;
+import io.github.queritylib.querity.api.PropertyReference;
 import io.github.queritylib.querity.api.SimpleSort;
 import io.github.queritylib.querity.api.Sort;
 import org.junit.jupiter.api.Nested;
@@ -149,6 +152,29 @@ class ElasticsearchSortTests {
       ElasticsearchSimpleSort elasticsearchSimpleSort = new ElasticsearchSimpleSort(simpleSort);
 
       assertThat(elasticsearchSimpleSort.getDirection()).isEqualTo(io.github.queritylib.querity.api.SimpleSort.Direction.DESC);
+    }
+
+    @Test
+    void givenSimpleSortWithPropertyExpression_whenToElasticsearchSortOrder_thenReturnOrder() {
+      SimpleSort simpleSort = sortBy(PropertyReference.of("email"), SimpleSort.Direction.ASC);
+
+      ElasticsearchSort elasticsearchSort = ElasticsearchSort.of(simpleSort);
+      Order result = elasticsearchSort.toElasticsearchSortOrder();
+
+      assertThat(result.getProperty()).isEqualTo("email");
+      assertThat(result.getDirection()).isEqualTo(Direction.ASC);
+    }
+
+    @Test
+    void givenSimpleSortWithFunctionExpression_whenToElasticsearchSortOrder_thenThrowUnsupportedOperationException() {
+      FunctionCall lowerName = FunctionCall.of(Function.LOWER, PropertyReference.of("name"));
+      SimpleSort simpleSort = sortBy(lowerName, SimpleSort.Direction.ASC);
+
+      ElasticsearchSort elasticsearchSort = ElasticsearchSort.of(simpleSort);
+
+      assertThatThrownBy(() -> elasticsearchSort.toElasticsearchSortOrder())
+          .isInstanceOf(UnsupportedOperationException.class)
+          .hasMessageContaining("Function LOWER is not supported in Elasticsearch");
     }
   }
 
