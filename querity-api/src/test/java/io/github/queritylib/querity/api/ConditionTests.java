@@ -7,13 +7,15 @@ import static io.github.queritylib.querity.api.Querity.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+// Note: FunctionCall and PropertyReference are used in left expression tests
+
 class ConditionTests {
   @Test
-  void givenNoPropertyName_whenBuildSimpleCondition_thenThrowNullPointerException() {
+  void givenNoPropertyNameOrLeftExpression_whenBuildSimpleCondition_thenThrowIllegalArgumentException() {
     SimpleCondition.SimpleConditionBuilder builder = SimpleCondition.builder();
-    assertThrows(NullPointerException.class,
+    assertThrows(IllegalArgumentException.class,
         builder::build,
-        "propertyName is marked non-null but is null");
+        "Either propertyName or leftExpression must be set");
   }
 
   @Test
@@ -248,5 +250,145 @@ class ConditionTests {
   @Test
   void givenNullFieldName_whenCreateFieldReference_thenThrowNullPointerException() {
     assertThrows(NullPointerException.class, () -> field(null));
+  }
+
+  // Left Expression Tests
+
+  @Test
+  void givenPropertyName_whenHasLeftExpression_thenReturnFalse() {
+    SimpleCondition condition = filterBy("lastName", "Skywalker");
+
+    assertThat(condition.hasLeftExpression()).isFalse();
+  }
+
+  @Test
+  void givenLeftExpression_whenHasLeftExpression_thenReturnTrue() {
+    SimpleCondition condition = SimpleCondition.builder()
+        .leftExpression(PropertyReference.of("lastName"))
+        .operator(EQUALS)
+        .value("Skywalker")
+        .build();
+
+    assertThat(condition.hasLeftExpression()).isTrue();
+  }
+
+  @Test
+  void givenPropertyName_whenGetEffectiveLeftExpression_thenReturnPropertyReference() {
+    SimpleCondition condition = filterBy("lastName", "Skywalker");
+
+    PropertyExpression effectiveExpr = condition.getEffectiveLeftExpression();
+
+    assertThat(effectiveExpr).isInstanceOf(PropertyReference.class);
+    assertThat(((PropertyReference) effectiveExpr).getPropertyName()).isEqualTo("lastName");
+  }
+
+  @Test
+  void givenLeftExpression_whenGetEffectiveLeftExpression_thenReturnLeftExpression() {
+    PropertyReference propRef = PropertyReference.of("firstName");
+    SimpleCondition condition = SimpleCondition.builder()
+        .leftExpression(propRef)
+        .operator(EQUALS)
+        .value("Luke")
+        .build();
+
+    PropertyExpression effectiveExpr = condition.getEffectiveLeftExpression();
+
+    assertThat(effectiveExpr).isSameAs(propRef);
+  }
+
+  @Test
+  void givenFunctionCallAsLeftExpression_whenGetEffectiveLeftExpression_thenReturnFunctionCall() {
+    FunctionCall funcCall = FunctionCall.of(Function.UPPER, PropertyReference.of("lastName"));
+    SimpleCondition condition = SimpleCondition.builder()
+        .leftExpression(funcCall)
+        .operator(EQUALS)
+        .value("SKYWALKER")
+        .build();
+
+    PropertyExpression effectiveExpr = condition.getEffectiveLeftExpression();
+
+    assertThat(effectiveExpr).isSameAs(funcCall);
+  }
+
+  @Test
+  void givenBothPropertyNameAndLeftExpression_whenBuildSimpleCondition_thenThrowIllegalArgumentException() {
+    assertThrows(IllegalArgumentException.class,
+        () -> SimpleCondition.builder()
+            .propertyName("lastName")
+            .leftExpression(PropertyReference.of("firstName"))
+            .operator(EQUALS)
+            .value("test")
+            .build(),
+        "Cannot set both propertyName and leftExpression");
+  }
+
+  @Test
+  void givenFieldReferenceWithIsNull_whenBuildSimpleCondition_thenThrowIllegalArgumentException() {
+    FieldReference fieldRef = field("otherField");
+    assertThrows(IllegalArgumentException.class,
+        () -> SimpleCondition.builder()
+            .propertyName("someField")
+            .operator(IS_NULL)
+            .value(fieldRef)
+            .build());
+  }
+
+  @Test
+  void givenFieldReferenceWithIsNotNull_whenBuildSimpleCondition_thenThrowIllegalArgumentException() {
+    FieldReference fieldRef = field("otherField");
+    assertThrows(IllegalArgumentException.class,
+        () -> SimpleCondition.builder()
+            .propertyName("someField")
+            .operator(IS_NOT_NULL)
+            .value(fieldRef)
+            .build());
+  }
+
+  @Test
+  void givenSimpleCondition_whenToBuilder_thenReturnBuilderWithSameValues() {
+    SimpleCondition original = filterBy("lastName", EQUALS, "Skywalker");
+
+    SimpleCondition copy = original.toBuilder().build();
+
+    assertThat(copy.getPropertyName()).isEqualTo(original.getPropertyName());
+    assertThat(copy.getOperator()).isEqualTo(original.getOperator());
+    assertThat(copy.getValue()).isEqualTo(original.getValue());
+  }
+
+  @Test
+  void givenSimpleCondition_whenEquals_thenReturnTrueForEqualConditions() {
+    SimpleCondition condition1 = filterBy("lastName", EQUALS, "Skywalker");
+    SimpleCondition condition2 = filterBy("lastName", EQUALS, "Skywalker");
+
+    assertThat(condition1).isEqualTo(condition2);
+  }
+
+  @Test
+  void givenSimpleCondition_whenHashCode_thenReturnSameHashCodeForEqualConditions() {
+    SimpleCondition condition1 = filterBy("lastName", EQUALS, "Skywalker");
+    SimpleCondition condition2 = filterBy("lastName", EQUALS, "Skywalker");
+
+    assertThat(condition1.hashCode()).isEqualTo(condition2.hashCode());
+  }
+
+  @Test
+  void givenSimpleCondition_whenToString_thenReturnReadableString() {
+    SimpleCondition condition = filterBy("lastName", EQUALS, "Skywalker");
+
+    assertThat(condition.toString()).contains("lastName");
+    assertThat(condition.toString()).contains("EQUALS");
+    assertThat(condition.toString()).contains("Skywalker");
+  }
+
+  @Test
+  void givenLeftExpressionCondition_whenGetPropertyName_thenReturnNull() {
+    SimpleCondition condition = SimpleCondition.builder()
+        .leftExpression(PropertyReference.of("name"))
+        .operator(EQUALS)
+        .value("test")
+        .build();
+
+    assertThat(condition.getPropertyName()).isNull();
+    assertThat(condition.getLeftExpression()).isNotNull();
   }
 }
