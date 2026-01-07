@@ -1,8 +1,6 @@
 package io.github.queritylib.querity.jpa;
 
-import io.github.queritylib.querity.api.FunctionCall;
 import io.github.queritylib.querity.api.PropertyExpression;
-import io.github.queritylib.querity.api.PropertyReference;
 import io.github.queritylib.querity.api.SimpleSelect;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;

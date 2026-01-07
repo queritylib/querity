@@ -24,6 +24,7 @@ public interface JpaSelect {
    * @param cb        the criteria builder
    * @return a list of JPA selections
    */
+  @SuppressWarnings("java:S1452")
   List<Selection<?>> toSelections(Metamodel metamodel, Root<?> root, CriteriaQuery<?> cq, CriteriaBuilder cb);
 
   /**

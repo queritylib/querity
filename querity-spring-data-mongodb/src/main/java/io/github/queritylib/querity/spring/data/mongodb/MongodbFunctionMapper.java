@@ -10,7 +10,6 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.bson.Document;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
@@ -23,6 +22,8 @@ import java.util.Map;
 public class MongodbFunctionMapper {
 
   static final Map<Function, MongodbFunctionExpressionProvider> FUNCTION_MAP = new EnumMap<>(Function.class);
+  private static final String TRIM_INPUT_KEY = "input";
+  private static final String NOW_VARIABLE = "$$NOW";
 
   static {
     // Arithmetic functions
@@ -43,8 +44,8 @@ public class MongodbFunctionMapper {
 
     // Date/Time functions
     FUNCTION_MAP.put(Function.CURRENT_DATE, MongodbFunctionMapper::currentDate);
-    FUNCTION_MAP.put(Function.CURRENT_TIME, MongodbFunctionMapper::currentTime);
-    FUNCTION_MAP.put(Function.CURRENT_TIMESTAMP, MongodbFunctionMapper::currentTimestamp);
+    FUNCTION_MAP.put(Function.CURRENT_TIME, args -> NOW_VARIABLE);
+    FUNCTION_MAP.put(Function.CURRENT_TIMESTAMP, args -> NOW_VARIABLE);
 
     // Conditional functions
     FUNCTION_MAP.put(Function.COALESCE, MongodbFunctionMapper::coalesce);
@@ -161,15 +162,15 @@ public class MongodbFunctionMapper {
   }
 
   private static Object trim(List<FunctionArgument> args) {
-    return new Document("$trim", new Document("input", toExpressionOrLiteral(args.get(0))));
+    return new Document("$trim", new Document(TRIM_INPUT_KEY, toExpressionOrLiteral(args.get(0))));
   }
 
   private static Object ltrim(List<FunctionArgument> args) {
-    return new Document("$ltrim", new Document("input", toExpressionOrLiteral(args.get(0))));
+    return new Document("$ltrim", new Document(TRIM_INPUT_KEY, toExpressionOrLiteral(args.get(0))));
   }
 
   private static Object rtrim(List<FunctionArgument> args) {
-    return new Document("$rtrim", new Document("input", toExpressionOrLiteral(args.get(0))));
+    return new Document("$rtrim", new Document(TRIM_INPUT_KEY, toExpressionOrLiteral(args.get(0))));
   }
 
   private static Object lower(List<FunctionArgument> args) {
@@ -207,16 +208,7 @@ public class MongodbFunctionMapper {
 
   private static Object currentDate(List<FunctionArgument> args) {
     // Use $dateTrunc to get just the date part
-    return new Document("$dateTrunc", new Document("date", "$$NOW").append("unit", "day"));
-  }
-
-  private static Object currentTime(List<FunctionArgument> args) {
-    // MongoDB doesn't have a direct current_time, use $$NOW
-    return "$$NOW";
-  }
-
-  private static Object currentTimestamp(List<FunctionArgument> args) {
-    return "$$NOW";
+    return new Document("$dateTrunc", new Document("date", NOW_VARIABLE).append("unit", "day"));
   }
 
   // --- Conditional functions ---
@@ -227,7 +219,7 @@ public class MongodbFunctionMapper {
       return toExpressionOrLiteral(args.get(0));
     }
 
-    // Build nested $ifNull: {$ifNull: [arg1, {$ifNull: [arg2, arg3]}]}
+    // Build nested $ifNull with the last argument as fallback.
     Object result = toExpressionOrLiteral(args.get(args.size() - 1));
     for (int i = args.size() - 2; i >= 0; i--) {
       result = new Document("$ifNull", List.of(toExpressionOrLiteral(args.get(i)), result));
@@ -237,7 +229,7 @@ public class MongodbFunctionMapper {
 
   private static Object nullif(List<FunctionArgument> args) {
     // NULLIF(a, b) returns NULL if a = b, otherwise returns a
-    // In MongoDB: {$cond: [{$eq: [a, b]}, null, a]}
+    // In MongoDB, use $cond with an $eq comparison.
     Object first = toExpressionOrLiteral(args.get(0));
     Object second = toExpressionOrLiteral(args.get(1));
 

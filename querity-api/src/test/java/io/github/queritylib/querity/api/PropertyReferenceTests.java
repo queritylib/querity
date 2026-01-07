@@ -42,8 +42,9 @@ class PropertyReferenceTests {
     PropertyReference ref1 = PropertyReference.of("name");
     PropertyReference ref2 = PropertyReference.of("name");
 
-    assertThat(ref1).isEqualTo(ref2);
-    assertThat(ref1.hashCode()).isEqualTo(ref2.hashCode());
+    assertThat(ref1)
+        .isEqualTo(ref2)
+        .hasSameHashCodeAs(ref2);
   }
 
   @Test

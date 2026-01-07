@@ -34,14 +34,8 @@ class JpaFunctionMapperTests {
 
   @Test
   void givenAllFunctions_whenCheckFunctionMap_thenAllFunctionsSupported() {
-    assertThat(Function.values())
-        .allMatch(JpaFunctionMapper.FUNCTION_MAP::containsKey,
-            "All functions should be mapped in JpaFunctionMapper");
-  }
-
-  @Test
-  void givenFunctionMap_whenCheckSize_thenContainsAllFunctions() {
-    assertThat(JpaFunctionMapper.FUNCTION_MAP).hasSize(Function.values().length);
+    assertThat(JpaFunctionMapper.FUNCTION_MAP.keySet())
+        .containsExactlyInAnyOrder(Function.values());
   }
 
   @Test

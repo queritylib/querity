@@ -183,11 +183,12 @@ public abstract class QuerityJpaImplTests extends QuerityGenericSpringTestSuite<
         .select(selectByNative(fullNameSpec))
         .build();
     List<Map<String, Object>> result = querity.findAllProjected(Person.class, query);
-    assertThat(result).isNotEmpty();
-    assertThat(result).allSatisfy(map -> {
-      assertThat(map).containsKey("fullName");
-      assertThat(map.get("fullName")).isInstanceOf(String.class);
-    });
+    assertThat(result)
+        .isNotEmpty()
+        .allSatisfy(map -> assertThat(map)
+            .containsKey("fullName")
+            .extractingByKey("fullName")
+            .isInstanceOf(String.class));
     // Verify the concatenation is correct for entity1
     String expectedFullName = entity1.getFirstName() + " " + entity1.getLastName();
     assertThat(result).anyMatch(map -> expectedFullName.equals(map.get("fullName")));
@@ -210,13 +211,14 @@ public abstract class QuerityJpaImplTests extends QuerityGenericSpringTestSuite<
         .select(selectByNative(idSpec, fullNameSpec))
         .build();
     List<Map<String, Object>> result = querity.findAllProjected(Person.class, query);
-    assertThat(result).isNotEmpty();
-    assertThat(result).allSatisfy(map -> {
-      assertThat(map).containsKey("id");
-      assertThat(map).containsKey("fullName");
-      String fullName = (String) map.get("fullName");
-      assertThat(fullName).endsWith(entity1.getLastName());
-    });
+    assertThat(result)
+        .isNotEmpty()
+        .allSatisfy(map -> {
+          assertThat(map)
+              .containsKey("id")
+              .containsKey("fullName");
+          String fullName = (String) map.get("fullName");
+          assertThat(fullName).endsWith(entity1.getLastName());
+        });
   }
 }
-

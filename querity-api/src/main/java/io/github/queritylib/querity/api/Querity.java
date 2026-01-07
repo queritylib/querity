@@ -404,7 +404,7 @@ public interface Querity {
    * @return a FunctionCall for SUBSTRING
    */
   static FunctionCall substring(FunctionArgument string, int start, int length) {
-    return FunctionCall.of(Function.SUBSTRING, string, Literal.of(start), Literal.of(length));
+    return FunctionCall.of(Function.SUBSTRING, string, lit(start), lit(length));
   }
 
   /**

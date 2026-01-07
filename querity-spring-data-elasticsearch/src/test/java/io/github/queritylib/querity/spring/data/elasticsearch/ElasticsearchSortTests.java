@@ -172,7 +172,7 @@ class ElasticsearchSortTests {
 
       ElasticsearchSort elasticsearchSort = ElasticsearchSort.of(simpleSort);
 
-      assertThatThrownBy(() -> elasticsearchSort.toElasticsearchSortOrder())
+      assertThatThrownBy(elasticsearchSort::toElasticsearchSortOrder)
           .isInstanceOf(UnsupportedOperationException.class)
           .hasMessageContaining("Function LOWER is not supported in Elasticsearch");
     }
@@ -182,4 +182,3 @@ class ElasticsearchSortTests {
   private static class UnsupportedSort implements Sort {
   }
 }
-

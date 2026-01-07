@@ -172,55 +172,35 @@ class ConditionTests {
   void givenFieldReferenceWithStartsWith_whenBuildSimpleCondition_thenThrowIllegalArgumentException() {
     FieldReference fieldRef = field("otherField");
     assertThrows(IllegalArgumentException.class,
-        () -> SimpleCondition.builder()
-            .propertyName("someField")
-            .operator(STARTS_WITH)
-            .value(fieldRef)
-            .build());
+        () -> buildConditionWithFieldReference(STARTS_WITH, fieldRef));
   }
 
   @Test
   void givenFieldReferenceWithEndsWith_whenBuildSimpleCondition_thenThrowIllegalArgumentException() {
     FieldReference fieldRef = field("otherField");
     assertThrows(IllegalArgumentException.class,
-        () -> SimpleCondition.builder()
-            .propertyName("someField")
-            .operator(ENDS_WITH)
-            .value(fieldRef)
-            .build());
+        () -> buildConditionWithFieldReference(ENDS_WITH, fieldRef));
   }
 
   @Test
   void givenFieldReferenceWithContains_whenBuildSimpleCondition_thenThrowIllegalArgumentException() {
     FieldReference fieldRef = field("otherField");
     assertThrows(IllegalArgumentException.class,
-        () -> SimpleCondition.builder()
-            .propertyName("someField")
-            .operator(CONTAINS)
-            .value(fieldRef)
-            .build());
+        () -> buildConditionWithFieldReference(CONTAINS, fieldRef));
   }
 
   @Test
   void givenFieldReferenceWithIn_whenBuildSimpleCondition_thenThrowIllegalArgumentException() {
     FieldReference fieldRef = field("otherField");
     assertThrows(IllegalArgumentException.class,
-        () -> SimpleCondition.builder()
-            .propertyName("someField")
-            .operator(IN)
-            .value(fieldRef)
-            .build());
+        () -> buildConditionWithFieldReference(IN, fieldRef));
   }
 
   @Test
   void givenFieldReferenceWithNotIn_whenBuildSimpleCondition_thenThrowIllegalArgumentException() {
     FieldReference fieldRef = field("otherField");
     assertThrows(IllegalArgumentException.class,
-        () -> SimpleCondition.builder()
-            .propertyName("someField")
-            .operator(NOT_IN)
-            .value(fieldRef)
-            .build());
+        () -> buildConditionWithFieldReference(NOT_IN, fieldRef));
   }
 
   @Test
@@ -237,8 +217,9 @@ class ConditionTests {
     FieldReference ref2 = field("endDate");
     FieldReference ref3 = field("startDate");
 
-    assertThat(ref1).isEqualTo(ref2);
-    assertThat(ref1).isNotEqualTo(ref3);
+    assertThat(ref1)
+        .isEqualTo(ref2)
+        .isNotEqualTo(ref3);
   }
 
   @Test
@@ -313,12 +294,7 @@ class ConditionTests {
   @Test
   void givenBothPropertyNameAndLeftExpression_whenBuildSimpleCondition_thenThrowIllegalArgumentException() {
     assertThrows(IllegalArgumentException.class,
-        () -> SimpleCondition.builder()
-            .propertyName("lastName")
-            .leftExpression(PropertyReference.of("firstName"))
-            .operator(EQUALS)
-            .value("test")
-            .build(),
+        ConditionTests::buildConditionWithPropertyNameAndLeftExpression,
         "Cannot set both propertyName and leftExpression");
   }
 
@@ -326,22 +302,14 @@ class ConditionTests {
   void givenFieldReferenceWithIsNull_whenBuildSimpleCondition_thenThrowIllegalArgumentException() {
     FieldReference fieldRef = field("otherField");
     assertThrows(IllegalArgumentException.class,
-        () -> SimpleCondition.builder()
-            .propertyName("someField")
-            .operator(IS_NULL)
-            .value(fieldRef)
-            .build());
+        () -> buildConditionWithFieldReference(IS_NULL, fieldRef));
   }
 
   @Test
   void givenFieldReferenceWithIsNotNull_whenBuildSimpleCondition_thenThrowIllegalArgumentException() {
     FieldReference fieldRef = field("otherField");
     assertThrows(IllegalArgumentException.class,
-        () -> SimpleCondition.builder()
-            .propertyName("someField")
-            .operator(IS_NOT_NULL)
-            .value(fieldRef)
-            .build());
+        () -> buildConditionWithFieldReference(IS_NOT_NULL, fieldRef));
   }
 
   @Test
@@ -368,16 +336,17 @@ class ConditionTests {
     SimpleCondition condition1 = filterBy("lastName", EQUALS, "Skywalker");
     SimpleCondition condition2 = filterBy("lastName", EQUALS, "Skywalker");
 
-    assertThat(condition1.hashCode()).isEqualTo(condition2.hashCode());
+    assertThat(condition1).hasSameHashCodeAs(condition2);
   }
 
   @Test
   void givenSimpleCondition_whenToString_thenReturnReadableString() {
     SimpleCondition condition = filterBy("lastName", EQUALS, "Skywalker");
 
-    assertThat(condition.toString()).contains("lastName");
-    assertThat(condition.toString()).contains("EQUALS");
-    assertThat(condition.toString()).contains("Skywalker");
+    assertThat(condition.toString())
+        .contains("lastName")
+        .contains("EQUALS")
+        .contains("Skywalker");
   }
 
   @Test
@@ -390,5 +359,22 @@ class ConditionTests {
 
     assertThat(condition.getPropertyName()).isNull();
     assertThat(condition.getLeftExpression()).isNotNull();
+  }
+
+  private static void buildConditionWithFieldReference(Operator operator, FieldReference fieldRef) {
+    SimpleCondition.builder()
+        .propertyName("someField")
+        .operator(operator)
+        .value(fieldRef)
+        .build();
+  }
+
+  private static void buildConditionWithPropertyNameAndLeftExpression() {
+    SimpleCondition.builder()
+        .propertyName("lastName")
+        .leftExpression(PropertyReference.of("firstName"))
+        .operator(EQUALS)
+        .value("test")
+        .build();
   }
 }

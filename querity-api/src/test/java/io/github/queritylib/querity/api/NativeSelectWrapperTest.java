@@ -2,7 +2,6 @@ package io.github.queritylib.querity.api;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 
 import static io.github.queritylib.querity.api.Querity.selectByNative;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,8 +35,9 @@ class NativeSelectWrapperTest {
     NativeSelectWrapper<String> wrapper1 = selectByNative("field1", "field2");
     NativeSelectWrapper<String> wrapper2 = selectByNative("field1", "field2");
 
-    assertThat(wrapper1).isEqualTo(wrapper2);
-    assertThat(wrapper1.hashCode()).isEqualTo(wrapper2.hashCode());
+    assertThat(wrapper1)
+        .isEqualTo(wrapper2)
+        .hasSameHashCodeAs(wrapper2);
   }
 
   @Test

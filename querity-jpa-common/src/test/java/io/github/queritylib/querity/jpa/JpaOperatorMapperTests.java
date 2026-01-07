@@ -19,14 +19,14 @@ class JpaOperatorMapperTests {
 
   @Test
   void testAllOperatorsSupported() {
-    assertThat(Operator.values())
-        .allMatch(JpaOperatorMapper.OPERATOR_PREDICATE_MAP::containsKey);
+    assertThat(JpaOperatorMapper.OPERATOR_PREDICATE_MAP.keySet())
+        .containsAll(Set.of(Operator.values()));
   }
 
   @Test
   void testFieldToFieldOperatorsSupported() {
-    assertThat(FIELD_TO_FIELD_SUPPORTED_OPERATORS)
-        .allMatch(JpaOperatorMapper.FIELD_TO_FIELD_PREDICATE_MAP::containsKey);
+    assertThat(JpaOperatorMapper.FIELD_TO_FIELD_PREDICATE_MAP.keySet())
+        .containsAll(FIELD_TO_FIELD_SUPPORTED_OPERATORS);
   }
 
   @Test

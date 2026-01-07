@@ -5,6 +5,7 @@ import io.github.queritylib.querity.api.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 class QueryVisitor extends QueryParserBaseVisitor<Object> {
 
@@ -45,7 +46,8 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
     if (allSimpleProperties) {
       // Use propertyNames for backward compatibility
       String[] propertyNames = expressions.stream()
-          .map(e -> ((PropertyReference) e).getPropertyName())
+          .map(PropertyReference.class::cast)
+          .map(PropertyReference::getPropertyName)
           .toArray(String[]::new);
       return SimpleSelect.of(propertyNames);
     } else {
@@ -123,26 +125,12 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
 
   @Override
   public Object visitFunctionName(QueryParser.FunctionNameContext ctx) {
-    if (ctx.ABS_FUNC() != null) return Function.ABS;
-    if (ctx.SQRT_FUNC() != null) return Function.SQRT;
-    if (ctx.MOD_FUNC() != null) return Function.MOD;
-    if (ctx.CONCAT_FUNC() != null) return Function.CONCAT;
-    if (ctx.SUBSTRING_FUNC() != null) return Function.SUBSTRING;
-    if (ctx.TRIM_FUNC() != null) return Function.TRIM;
-    if (ctx.LTRIM_FUNC() != null) return Function.LTRIM;
-    if (ctx.RTRIM_FUNC() != null) return Function.RTRIM;
-    if (ctx.LOWER_FUNC() != null) return Function.LOWER;
-    if (ctx.UPPER_FUNC() != null) return Function.UPPER;
-    if (ctx.LENGTH_FUNC() != null) return Function.LENGTH;
-    if (ctx.LOCATE_FUNC() != null) return Function.LOCATE;
-    if (ctx.COALESCE_FUNC() != null) return Function.COALESCE;
-    if (ctx.NULLIF_FUNC() != null) return Function.NULLIF;
-    if (ctx.COUNT_FUNC() != null) return Function.COUNT;
-    if (ctx.SUM_FUNC() != null) return Function.SUM;
-    if (ctx.AVG_FUNC() != null) return Function.AVG;
-    if (ctx.MIN_FUNC() != null) return Function.MIN;
-    if (ctx.MAX_FUNC() != null) return Function.MAX;
-    throw new UnsupportedOperationException("Unsupported function: " + ctx.getText());
+    String functionName = ctx.getText();
+    try {
+      return Function.valueOf(functionName.toUpperCase(Locale.ROOT));
+    } catch (IllegalArgumentException ex) {
+      throw new UnsupportedOperationException("Unsupported function: " + functionName, ex);
+    }
   }
 
   @Override
@@ -323,10 +311,14 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
   private static String unescapeBacktickProperty(String text) {
     String raw = text.substring(1, text.length() - 1);
     StringBuilder result = new StringBuilder(raw.length());
+    boolean escaped = false;
     for (int i = 0; i < raw.length(); i++) {
       char current = raw.charAt(i);
-      if (current == '\\' && i + 1 < raw.length()) {
-        result.append(raw.charAt(++i));
+      if (escaped) {
+        result.append(current);
+        escaped = false;
+      } else if (current == '\\' && i + 1 < raw.length()) {
+        escaped = true;
       } else {
         result.append(current);
       }

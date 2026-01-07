@@ -129,8 +129,9 @@ class SimpleSelectExpressionTests {
     SimpleSelect select1 = SimpleSelect.of("id", "name");
     SimpleSelect select2 = SimpleSelect.of("id", "name");
 
-    assertThat(select1).isEqualTo(select2);
-    assertThat(select1.hashCode()).isEqualTo(select2.hashCode());
+    assertThat(select1)
+        .isEqualTo(select2)
+        .hasSameHashCodeAs(select2);
   }
 
   @Test
@@ -147,9 +148,10 @@ class SimpleSelectExpressionTests {
 
     String str = select.toString();
 
-    assertThat(str).contains("id");
-    assertThat(str).contains("firstName");
-    assertThat(str).contains("lastName");
+    assertThat(str)
+        .contains("id")
+        .contains("firstName")
+        .contains("lastName");
   }
 
   @Test

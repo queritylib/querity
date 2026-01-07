@@ -28,9 +28,10 @@ class QuerityElasticsearchImplUnitTests {
     @SuppressWarnings("unchecked")
     Map<String, Object> result = (Map<String, Object>) sanitizeMethod.invoke(querity, sourceMap);
 
-    assertThat(result).containsKey("firstName");
-    assertThat(result).containsKey("lastName");
-    assertThat(result).doesNotContainKey("_class");
+    assertThat(result)
+        .containsKey("firstName")
+        .containsKey("lastName")
+        .doesNotContainKey("_class");
   }
 
   @Test
@@ -49,9 +50,10 @@ class QuerityElasticsearchImplUnitTests {
     @SuppressWarnings("unchecked")
     Map<String, Object> result = (Map<String, Object>) sanitizeMethod.invoke(querity, sourceMap);
 
-    assertThat(result).containsKey("firstName");
-    assertThat(result).doesNotContainKey("123");
-    assertThat(result).hasSize(1);
+    assertThat(result)
+        .containsKey("firstName")
+        .doesNotContainKey("123")
+        .hasSize(1);
   }
 
   @Test

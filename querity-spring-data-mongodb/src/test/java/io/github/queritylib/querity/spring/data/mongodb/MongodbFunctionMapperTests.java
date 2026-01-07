@@ -91,7 +91,7 @@ class MongodbFunctionMapperTests {
       Object result = MongodbFunctionMapper.toExpression(fc);
 
       assertThat(result).isInstanceOf(Document.class);
-      assertThat(((Document) result).get("$abs")).isEqualTo("$value");
+      assertThat((Document) result).containsEntry("$abs", "$value");
     }
 
     @Test
@@ -101,7 +101,7 @@ class MongodbFunctionMapperTests {
       Object result = MongodbFunctionMapper.toExpression(fc);
 
       assertThat(result).isInstanceOf(Document.class);
-      assertThat(((Document) result).get("$sqrt")).isEqualTo("$value");
+      assertThat((Document) result).containsEntry("$sqrt", "$value");
     }
 
     @Test
@@ -124,7 +124,7 @@ class MongodbFunctionMapperTests {
       Object result = MongodbFunctionMapper.toExpression(fc);
 
       assertThat(result).isInstanceOf(Document.class);
-      assertThat(((Document) result).get("$toUpper")).isEqualTo("$name");
+      assertThat((Document) result).containsEntry("$toUpper", "$name");
     }
 
     @Test
@@ -134,7 +134,7 @@ class MongodbFunctionMapperTests {
       Object result = MongodbFunctionMapper.toExpression(fc);
 
       assertThat(result).isInstanceOf(Document.class);
-      assertThat(((Document) result).get("$toLower")).isEqualTo("$name");
+      assertThat((Document) result).containsEntry("$toLower", "$name");
     }
 
     @Test
@@ -280,7 +280,7 @@ class MongodbFunctionMapperTests {
       Object result = MongodbFunctionMapper.toExpression(fc);
 
       assertThat(result).isInstanceOf(Document.class);
-      assertThat(((Document) result).get("$sum")).isEqualTo(1);
+      assertThat((Document) result).containsEntry("$sum", 1);
     }
 
     @Test
@@ -290,7 +290,7 @@ class MongodbFunctionMapperTests {
       Object result = MongodbFunctionMapper.toExpression(fc);
 
       assertThat(result).isInstanceOf(Document.class);
-      assertThat(((Document) result).get("$sum")).isEqualTo("$amount");
+      assertThat((Document) result).containsEntry("$sum", "$amount");
     }
 
     @Test
@@ -300,7 +300,7 @@ class MongodbFunctionMapperTests {
       Object result = MongodbFunctionMapper.toExpression(fc);
 
       assertThat(result).isInstanceOf(Document.class);
-      assertThat(((Document) result).get("$avg")).isEqualTo("$price");
+      assertThat((Document) result).containsEntry("$avg", "$price");
     }
 
     @Test
@@ -310,7 +310,7 @@ class MongodbFunctionMapperTests {
       Object result = MongodbFunctionMapper.toExpression(fc);
 
       assertThat(result).isInstanceOf(Document.class);
-      assertThat(((Document) result).get("$min")).isEqualTo("$value");
+      assertThat((Document) result).containsEntry("$min", "$value");
     }
 
     @Test
@@ -320,7 +320,7 @@ class MongodbFunctionMapperTests {
       Object result = MongodbFunctionMapper.toExpression(fc);
 
       assertThat(result).isInstanceOf(Document.class);
-      assertThat(((Document) result).get("$max")).isEqualTo("$value");
+      assertThat((Document) result).containsEntry("$max", "$value");
     }
   }
 
@@ -361,7 +361,7 @@ class MongodbFunctionMapperTests {
       Object result = MongodbFunctionMapper.toExpression(fc);
 
       assertThat(result).isInstanceOf(Document.class);
-      assertThat(((Document) result).get("$abs")).isEqualTo(-42);
+      assertThat((Document) result).containsEntry("$abs", -42);
     }
 
     @Test

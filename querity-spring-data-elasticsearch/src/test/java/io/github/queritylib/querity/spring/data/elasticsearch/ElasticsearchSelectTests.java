@@ -77,7 +77,7 @@ class ElasticsearchSelectTests {
     SimpleSelect simpleSelect = SimpleSelect.ofExpressions(upperName);
     ElasticsearchSelect elasticsearchSelect = ElasticsearchSelect.of(simpleSelect);
 
-    assertThatThrownBy(() -> elasticsearchSelect.getFields())
+    assertThatThrownBy(elasticsearchSelect::getFields)
         .isInstanceOf(UnsupportedOperationException.class)
         .hasMessageContaining("Function UPPER is not supported in Elasticsearch");
   }

@@ -1,6 +1,5 @@
 package io.github.queritylib.querity.parser;
 
-import io.github.queritylib.querity.api.FieldReference;
 import io.github.queritylib.querity.api.Querity;
 import io.github.queritylib.querity.api.Query;
 import org.junit.jupiter.api.Test;

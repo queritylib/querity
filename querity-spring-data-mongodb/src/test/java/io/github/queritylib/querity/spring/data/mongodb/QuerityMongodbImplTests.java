@@ -154,11 +154,10 @@ class QuerityMongodbImplTests extends QuerityGenericSpringTestSuite<Person, Stri
         .selectBy("firstName", "lastName")
         .build();
     List<Map<String, Object>> result = querity.findAllProjected(Person.class, query);
-    assertThat(result).isNotEmpty();
     // MongoDB doesn't return null fields, so we only check firstName is present
-    assertThat(result).allSatisfy(map -> {
-      assertThat(map).containsKey("firstName");
-    });
+    assertThat(result)
+        .isNotEmpty()
+        .allSatisfy(map -> assertThat(map).containsKey("firstName"));
   }
 
   @Test
@@ -179,9 +178,8 @@ class QuerityMongodbImplTests extends QuerityGenericSpringTestSuite<Person, Stri
         .selectBy("firstName", "lastName")
         .build();
     List<Map<String, Object>> result = querity.findAllProjected(Person.class, query);
-    assertThat(result).isNotEmpty();
-    assertThat(result).allSatisfy(map -> {
-      assertThat(map.get("lastName")).isEqualTo(lastName);
-    });
+    assertThat(result)
+        .isNotEmpty()
+        .allSatisfy(map -> assertThat(map).containsEntry("lastName", lastName));
   }
 }

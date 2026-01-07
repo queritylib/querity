@@ -42,15 +42,12 @@ public class SelectUtils {
         .filter(constructor -> constructor.getParameterCount() == 1)
         .anyMatch(constructor -> {
           Type paramType = constructor.getGenericParameterTypes()[0];
-          if (paramType instanceof ParameterizedType pt) {
-            if (NativeSelectWrapper.class.isAssignableFrom((Class<?>) pt.getRawType())) {
-              Type[] typeArgs = pt.getActualTypeArguments();
-              if (typeArgs.length == 1) {
-                Class<?> expectedType = extractRawType(typeArgs[0]);
-                if (expectedType != null) {
-                  return expectedType.isAssignableFrom(wrappedType);
-                }
-              }
+          if (paramType instanceof ParameterizedType pt
+              && NativeSelectWrapper.class.isAssignableFrom((Class<?>) pt.getRawType())) {
+            Type[] typeArgs = pt.getActualTypeArguments();
+            if (typeArgs.length == 1) {
+              Class<?> expectedType = extractRawType(typeArgs[0]);
+              return expectedType != null && expectedType.isAssignableFrom(wrappedType);
             }
           }
           return false;

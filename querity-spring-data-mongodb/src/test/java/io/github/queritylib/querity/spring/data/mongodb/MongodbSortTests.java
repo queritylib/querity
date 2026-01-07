@@ -182,7 +182,7 @@ class MongodbSortTests {
 
       MongodbSort mongodbSort = MongodbSort.of(simpleSort);
 
-      assertThatThrownBy(() -> mongodbSort.toMongoSortOrder())
+      assertThatThrownBy(mongodbSort::toMongoSortOrder)
           .isInstanceOf(UnsupportedOperationException.class)
           .hasMessageContaining("aggregation pipeline");
     }
@@ -192,4 +192,3 @@ class MongodbSortTests {
   private static class UnsupportedSort implements Sort {
   }
 }
-

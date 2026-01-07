@@ -55,6 +55,7 @@ public class Query {
     @SuppressWarnings({"java:S1068", "java:S1450"})
     private Sort[] sort = new Sort[0];
     private List<QueryPreprocessor> preprocessors = new ArrayList<>();
+    @SuppressWarnings("java:S1068")
     private Select select;
 
     public QueryBuilder withPreprocessor(QueryPreprocessor preprocessor) {

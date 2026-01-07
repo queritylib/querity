@@ -80,6 +80,7 @@ public class JpaFunctionMapper {
    * @param metamodel the JPA metamodel
    * @return a JPA Expression
    */
+  @SuppressWarnings("java:S1452")
   public static Expression<?> toExpression(PropertyExpression expr, Root<?> root,
       CriteriaBuilder cb, Metamodel metamodel) {
     if (expr instanceof PropertyReference pr) {
@@ -228,7 +229,6 @@ public class JpaFunctionMapper {
           .when(cb.equal(first, secondExpr), cb.nullLiteral(Object.class))
           .otherwise(first);
     } else {
-      // Literal values can use the standard nullif() method
       return cb.nullif(first, second);
     }
   }
@@ -303,6 +303,7 @@ public class JpaFunctionMapper {
 
   @FunctionalInterface
   interface JpaFunctionExpressionProvider {
+    @SuppressWarnings("java:S1452")
     Expression<?> toExpression(List<FunctionArgument> args, Root<?> root, CriteriaBuilder cb, Metamodel metamodel);
   }
 }

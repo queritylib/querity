@@ -23,8 +23,8 @@ class ElasticsearchOperatorMapperTests {
 
   @Test
   void testAllOperatorsSupported() {
-    assertThat(ALL_OPERATORS)
-        .allMatch(ElasticsearchOperatorMapper.OPERATOR_CRITERIA_MAP::containsKey);
+    assertThat(ElasticsearchOperatorMapper.OPERATOR_CRITERIA_MAP.keySet())
+        .containsAll(ALL_OPERATORS);
   }
 
   @Nested
