@@ -50,8 +50,10 @@ public class QuerityElasticsearchImpl implements Querity {
   @SuppressWarnings("unchecked")
   public List<Map<String, Object>> findAllProjected(Class<?> entityClass, Query query) {
     org.springframework.data.elasticsearch.core.query.Query q = getElasticsearchQueryFactory(entityClass, query).getElasticsearchProjectedQuery();
+    Class<Map<String, Object>> mapClass = (Class<Map<String, Object>>) (Class<?>) Map.class;
     try {
-      SearchHits<Map> hits = elasticsearchOperations.search(q, Map.class, elasticsearchOperations.getIndexCoordinatesFor(entityClass));
+      SearchHits<Map<String, Object>> hits =
+          elasticsearchOperations.search(q, mapClass, elasticsearchOperations.getIndexCoordinatesFor(entityClass));
       return hits.stream()
           .map(SearchHit::getContent)
           .map(this::sanitizeMap)

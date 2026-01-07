@@ -44,8 +44,9 @@ class SimpleSelectTest {
       SimpleSelect select1 = selectBy("id", "name");
       SimpleSelect select2 = selectBy("id", "name");
 
-      assertThat(select1).isEqualTo(select2);
-      assertThat(select1.hashCode()).isEqualTo(select2.hashCode());
+      assertThat(select1)
+          .isEqualTo(select2)
+          .hasSameHashCodeAs(select2);
     }
 
     @Test

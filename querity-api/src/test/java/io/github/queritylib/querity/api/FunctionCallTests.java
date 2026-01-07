@@ -93,8 +93,9 @@ class FunctionCallTests {
     FunctionCall fc1 = FunctionCall.of(Function.UPPER, PropertyReference.of("name"));
     FunctionCall fc2 = FunctionCall.of(Function.UPPER, PropertyReference.of("name"));
 
-    assertThat(fc1).isEqualTo(fc2);
-    assertThat(fc1.hashCode()).isEqualTo(fc2.hashCode());
+    assertThat(fc1)
+        .isEqualTo(fc2)
+        .hasSameHashCodeAs(fc2);
   }
 
   @Test
@@ -133,8 +134,9 @@ class FunctionCallTests {
 
   @Test
   void givenNullaryFunctionWithArguments_whenBuild_thenThrowException() {
+    PropertyReference ref = PropertyReference.of("date");
     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-        () -> FunctionCall.of(Function.CURRENT_DATE, PropertyReference.of("date")));
+        () -> FunctionCall.of(Function.CURRENT_DATE, ref));
 
     assertThat(exception.getMessage()).contains("does not accept any arguments");
   }
@@ -142,8 +144,9 @@ class FunctionCallTests {
   @Test
   void givenFunctionWithWrongArgumentCount_whenBuild_thenThrowException() {
     // MOD requires exactly 2 arguments
+    PropertyReference ref = PropertyReference.of("value");
     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-        () -> FunctionCall.of(Function.MOD, PropertyReference.of("value")));
+        () -> FunctionCall.of(Function.MOD, ref));
 
     assertThat(exception.getMessage()).contains("requires 2 argument(s)");
   }
@@ -160,8 +163,9 @@ class FunctionCallTests {
   @Test
   void givenConcatWithOneArgument_whenBuild_thenThrowException() {
     // CONCAT requires at least 2 arguments
+    PropertyReference ref = PropertyReference.of("name");
     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-        () -> FunctionCall.of(Function.CONCAT, PropertyReference.of("name")));
+        () -> FunctionCall.of(Function.CONCAT, ref));
 
     assertThat(exception.getMessage()).contains("requires at least 2 argument(s)");
   }
@@ -201,7 +205,8 @@ class FunctionCallTests {
 
     String str = fc.toString();
 
-    assertThat(str).contains("UPPER");
-    assertThat(str).contains("name");
+    assertThat(str)
+        .contains("UPPER")
+        .contains("name");
   }
 }

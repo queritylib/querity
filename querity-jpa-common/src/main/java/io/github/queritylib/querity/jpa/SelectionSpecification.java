@@ -22,6 +22,7 @@ public interface SelectionSpecification<T> {
    * @param cb   the criteria builder
    * @return the Selection to include in the projection
    */
+  @SuppressWarnings("java:S1452")
   Selection<?> toSelection(Root<T> root, CriteriaBuilder cb);
 
   /**

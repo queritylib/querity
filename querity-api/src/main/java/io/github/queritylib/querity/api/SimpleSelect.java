@@ -7,7 +7,6 @@ import lombok.extern.jackson.Jacksonized;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Represents a selection of properties or expressions for projection queries.
@@ -121,8 +120,8 @@ public class SimpleSelect implements Select {
     }
     if (propertyNames != null) {
       return propertyNames.stream()
-          .map(PropertyReference::of)
-          .collect(Collectors.toList());
+          .map(name -> (PropertyExpression) PropertyReference.of(name))
+          .toList();
     }
     return new ArrayList<>();
   }
@@ -139,7 +138,7 @@ public class SimpleSelect implements Select {
     if (hasExpressions()) {
       return expressions.stream()
           .map(this::getExpressionAlias)
-          .collect(Collectors.toList());
+          .toList();
     }
     return propertyNames != null ? new ArrayList<>(propertyNames) : new ArrayList<>();
   }

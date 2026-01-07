@@ -44,7 +44,8 @@ class LiteralTests {
 
   @Test
   void givenUnsupportedType_whenOf_thenThrowException() {
-    assertThatThrownBy(() -> Literal.of(new Object()))
+    Object invalid = new Object();
+    assertThatThrownBy(() -> Literal.of(invalid))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("must be String, Number, or Boolean");
   }
@@ -53,21 +54,21 @@ class LiteralTests {
   void givenStringLiteral_whenToString_thenReturnQuotedValue() {
     Literal lit = Literal.of("test");
 
-    assertThat(lit.toString()).isEqualTo("\"test\"");
+    assertThat(lit).hasToString("\"test\"");
   }
 
   @Test
   void givenNumberLiteral_whenToString_thenReturnValue() {
     Literal lit = Literal.of(123);
 
-    assertThat(lit.toString()).isEqualTo("123");
+    assertThat(lit).hasToString("123");
   }
 
   @Test
   void givenBooleanLiteral_whenToString_thenReturnValue() {
     Literal lit = Literal.of(false);
 
-    assertThat(lit.toString()).isEqualTo("false");
+    assertThat(lit).hasToString("false");
   }
 
   @Test
@@ -75,8 +76,9 @@ class LiteralTests {
     Literal lit1 = Literal.of("value");
     Literal lit2 = Literal.of("value");
 
-    assertThat(lit1).isEqualTo(lit2);
-    assertThat(lit1.hashCode()).isEqualTo(lit2.hashCode());
+    assertThat(lit1)
+        .isEqualTo(lit2)
+        .hasSameHashCodeAs(lit2);
   }
 
   @Test

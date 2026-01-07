@@ -113,8 +113,9 @@ class SimpleSortExpressionTests {
     SimpleSort sort1 = SimpleSort.builder().propertyName("name").direction(ASC).build();
     SimpleSort sort2 = SimpleSort.builder().propertyName("name").direction(ASC).build();
 
-    assertThat(sort1).isEqualTo(sort2);
-    assertThat(sort1.hashCode()).isEqualTo(sort2.hashCode());
+    assertThat(sort1)
+        .isEqualTo(sort2)
+        .hasSameHashCodeAs(sort2);
   }
 
   @Test
@@ -134,7 +135,8 @@ class SimpleSortExpressionTests {
 
     String str = sort.toString();
 
-    assertThat(str).contains("lastName");
-    assertThat(str).contains("DESC");
+    assertThat(str)
+        .contains("lastName")
+        .contains("DESC");
   }
 }

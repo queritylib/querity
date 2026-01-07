@@ -30,14 +30,14 @@ class MongodbOperatorMapperTests {
 
   @Test
   void testAllOperatorsSupported() {
-    assertThat(Operator.values())
-        .allMatch(MongodbOperatorMapper.OPERATOR_CRITERIA_MAP::containsKey);
+    assertThat(MongodbOperatorMapper.OPERATOR_CRITERIA_MAP.keySet())
+        .containsAll(Set.of(Operator.values()));
   }
 
   @Test
   void testFieldToFieldOperatorsSupported() {
-    assertThat(FIELD_TO_FIELD_SUPPORTED_OPERATORS)
-        .allMatch(MongodbOperatorMapper.FIELD_TO_FIELD_EXPR_OPERATORS::containsKey);
+    assertThat(MongodbOperatorMapper.FIELD_TO_FIELD_EXPR_OPERATORS.keySet())
+        .containsAll(FIELD_TO_FIELD_SUPPORTED_OPERATORS);
   }
 
   @Test

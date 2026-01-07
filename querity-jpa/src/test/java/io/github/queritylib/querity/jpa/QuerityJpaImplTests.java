@@ -209,10 +209,9 @@ public abstract class QuerityJpaImplTests extends QuerityGenericTestSuite<Person
         .selectBy("firstName", "lastName")
         .build();
     List<Map<String, Object>> result = querity.findAllProjected(Person.class, query);
-    assertThat(result).isNotEmpty();
-    assertThat(result).allSatisfy(map -> {
-      assertThat(map).containsKey("firstName");
-    });
+    assertThat(result)
+        .isNotEmpty()
+        .allSatisfy(map -> assertThat(map).containsKey("firstName"));
   }
 
   @Test
@@ -223,10 +222,9 @@ public abstract class QuerityJpaImplTests extends QuerityGenericTestSuite<Person
         .selectBy("firstName", "lastName")
         .build();
     List<Map<String, Object>> result = querity.findAllProjected(Person.class, query);
-    assertThat(result).isNotEmpty();
-    assertThat(result).allSatisfy(map -> {
-      assertThat(map.get("lastName")).isEqualTo(lastName);
-    });
+    assertThat(result)
+        .isNotEmpty()
+        .allSatisfy(map -> assertThat(map).containsEntry("lastName", lastName));
   }
 
   @Test
@@ -235,11 +233,11 @@ public abstract class QuerityJpaImplTests extends QuerityGenericTestSuite<Person
         .selectBy("firstName", "address.city")
         .build();
     List<Map<String, Object>> result = querity.findAllProjected(Person.class, query);
-    assertThat(result).isNotEmpty();
-    assertThat(result).allSatisfy(map -> {
-      assertThat(map).containsKey("firstName");
-      assertThat(map).containsKey("city");
-    });
+    assertThat(result)
+        .isNotEmpty()
+        .allSatisfy(map -> assertThat(map)
+            .containsKey("firstName")
+            .containsKey("city"));
   }
 
   @Test
@@ -252,10 +250,9 @@ public abstract class QuerityJpaImplTests extends QuerityGenericTestSuite<Person
         .select(selectByNative(firstNameSpec))
         .build();
     List<Map<String, Object>> result = querity.findAllProjected(Person.class, query);
-    assertThat(result).isNotEmpty();
-    assertThat(result).allSatisfy(map -> {
-      assertThat(map).containsKey("firstName");
-    });
+    assertThat(result)
+        .isNotEmpty()
+        .allSatisfy(map -> assertThat(map).containsKey("firstName"));
     // Verify the value is correct for entity1
     assertThat(result).anyMatch(map -> entity1.getFirstName().equals(map.get("firstName")));
   }
@@ -275,11 +272,12 @@ public abstract class QuerityJpaImplTests extends QuerityGenericTestSuite<Person
         .select(selectByNative(fullNameSpec))
         .build();
     List<Map<String, Object>> result = querity.findAllProjected(Person.class, query);
-    assertThat(result).isNotEmpty();
-    assertThat(result).allSatisfy(map -> {
-      assertThat(map).containsKey("fullName");
-      assertThat(map.get("fullName")).isInstanceOf(String.class);
-    });
+    assertThat(result)
+        .isNotEmpty()
+        .allSatisfy(map -> assertThat(map)
+            .containsKey("fullName")
+            .extractingByKey("fullName")
+            .isInstanceOf(String.class));
     // Verify the concatenation is correct for entity1
     String expectedFullName = entity1.getFirstName() + " " + entity1.getLastName();
     assertThat(result).anyMatch(map -> expectedFullName.equals(map.get("fullName")));
@@ -302,12 +300,14 @@ public abstract class QuerityJpaImplTests extends QuerityGenericTestSuite<Person
         .select(selectByNative(idSpec, fullNameSpec))
         .build();
     List<Map<String, Object>> result = querity.findAllProjected(Person.class, query);
-    assertThat(result).isNotEmpty();
-    assertThat(result).allSatisfy(map -> {
-      assertThat(map).containsKey("id");
-      assertThat(map).containsKey("fullName");
-      String fullName = (String) map.get("fullName");
-      assertThat(fullName).endsWith(entity1.getLastName());
-    });
+    assertThat(result)
+        .isNotEmpty()
+        .allSatisfy(map -> {
+          assertThat(map)
+              .containsKey("id")
+              .containsKey("fullName");
+          String fullName = (String) map.get("fullName");
+          assertThat(fullName).endsWith(entity1.getLastName());
+        });
   }
 }
