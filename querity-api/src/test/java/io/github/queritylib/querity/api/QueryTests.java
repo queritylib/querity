@@ -6,6 +6,7 @@ import org.mockito.Mockito;
 import static io.github.queritylib.querity.api.Operator.EQUALS;
 import static io.github.queritylib.querity.api.Querity.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class QueryTests {
   @Test
@@ -71,6 +72,13 @@ class QueryTests {
     query.preprocess();
 
     Mockito.verify(preprocessor).preprocess(query);
+  }
+
+  @Test
+  void givenNullPreprocessor_whenWithPreprocessor_thenThrowException() {
+    assertThatThrownBy(() -> Querity.query().withPreprocessor(null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Preprocessor cannot be null");
   }
 
   static class DummyQueryPreprocessor implements QueryPreprocessor {

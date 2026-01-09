@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import io.github.queritylib.querity.api.GroupBy;
 import io.github.queritylib.querity.api.PropertyExpression;
-import io.github.queritylib.querity.api.Select;
-import io.github.queritylib.querity.api.SimpleSelect;
+import io.github.queritylib.querity.api.SimpleGroupBy;
 import lombok.SneakyThrows;
 
 import java.io.IOException;
@@ -19,49 +19,49 @@ import java.util.stream.StreamSupport;
 import static io.github.queritylib.querity.spring.web.jackson.JsonFields.EXPRESSIONS;
 import static io.github.queritylib.querity.spring.web.jackson.JsonFields.PROPERTY_NAMES;
 
-public class SelectDeserializer extends StdDeserializer<Select> {
+public class GroupByDeserializer extends StdDeserializer<GroupBy> {
 
-  protected SelectDeserializer(JavaType valueType) {
+  protected GroupByDeserializer(JavaType valueType) {
     super(valueType);
   }
 
   @Override
-  public Select deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+  public GroupBy deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
     JsonNode root = jsonParser.readValueAsTree();
-    return parseSelect(root, deserializationContext);
+    return parseGroupBy(root, deserializationContext);
   }
 
-  private static Select parseSelect(JsonNode jsonNode, DeserializationContext context) {
+  private static GroupBy parseGroupBy(JsonNode jsonNode, DeserializationContext context) {
     if (jsonNode.hasNonNull(EXPRESSIONS)) {
-      return parseSelectWithExpressions(jsonNode, context);
+      return parseGroupByWithExpressions(jsonNode, context);
     }
     if (jsonNode.hasNonNull(PROPERTY_NAMES)) {
-      return parseSimpleSelect(jsonNode);
+      return parseSimpleGroupBy(jsonNode);
     }
-    throw new IllegalArgumentException("Unknown select type: " + jsonNode);
+    throw new IllegalArgumentException("Unknown groupBy type: " + jsonNode);
   }
 
-  private static SimpleSelect parseSimpleSelect(JsonNode jsonNode) {
+  private static SimpleGroupBy parseSimpleGroupBy(JsonNode jsonNode) {
     JsonNode propertyNamesNode = jsonNode.get(PROPERTY_NAMES);
     List<String> propertyNames = StreamSupport.stream(
             Spliterators.spliteratorUnknownSize(propertyNamesNode.elements(), Spliterator.ORDERED),
             false)
         .map(JsonNode::asText)
         .toList();
-    return SimpleSelect.builder()
+    return SimpleGroupBy.builder()
         .propertyNames(propertyNames)
         .build();
   }
 
   @SneakyThrows
-  private static SimpleSelect parseSelectWithExpressions(JsonNode jsonNode, DeserializationContext context) {
+  private static SimpleGroupBy parseGroupByWithExpressions(JsonNode jsonNode, DeserializationContext context) {
     JsonNode expressionsNode = jsonNode.get(EXPRESSIONS);
     List<PropertyExpression> expressions = StreamSupport.stream(
             Spliterators.spliteratorUnknownSize(expressionsNode.elements(), Spliterator.ORDERED),
             false)
         .map(node -> deserializeExpression(node, context))
         .toList();
-    return SimpleSelect.builder()
+    return SimpleGroupBy.builder()
         .expressions(expressions)
         .build();
   }

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SimpleSelectExpressionTests {
 
@@ -86,19 +87,17 @@ class SimpleSelectExpressionTests {
   }
 
   @Test
-  void givenEmptySelect_whenOf_thenReturnEmptySelect() {
-    SimpleSelect select = SimpleSelect.of();
-
-    assertThat(select.getPropertyNames()).isEmpty();
-    assertThat(select.hasExpressions()).isFalse();
+  void givenEmptySelect_whenOf_thenThrowsIllegalArgumentException() {
+    assertThatThrownBy(() -> SimpleSelect.of())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Either propertyNames or expressions must be set");
   }
 
   @Test
-  void givenEmptyExpressions_whenOfExpressions_thenReturnEmptySelect() {
-    SimpleSelect select = SimpleSelect.ofExpressions();
-
-    assertThat(select.getExpressions()).isEmpty();
-    assertThat(select.hasExpressions()).isFalse();
+  void givenEmptyExpressions_whenOfExpressions_thenThrowsIllegalArgumentException() {
+    assertThatThrownBy(() -> SimpleSelect.ofExpressions())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Either propertyNames or expressions must be set");
   }
 
   @Test
@@ -155,16 +154,37 @@ class SimpleSelectExpressionTests {
   }
 
   @Test
-  void givenMixedExpressionsAndPropertyNames_whenGetEffectiveExpressions_thenPreferExpressions() {
-    // When both are set, expressions should take precedence
+  void givenMixedExpressionsAndPropertyNames_whenBuild_thenThrowsIllegalArgumentException() {
+    // When both are set, should throw exception
     FunctionCall func = FunctionCall.of(Function.UPPER, PropertyReference.of("name"));
-    SimpleSelect select = SimpleSelect.builder()
-        .propertyNames(List.of("id"))
-        .expressions(List.of(func))
-        .build();
+    
+    assertThatThrownBy(() -> SimpleSelect.builder()
+            .propertyNames(List.of("id"))
+            .expressions(List.of(func))
+            .build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Cannot set both propertyNames and expressions");
+  }
 
-    List<PropertyExpression> effective = select.getEffectiveExpressions();
+  @Test
+  void givenEffectiveExpressionsListModified_whenGetEffectiveExpressions_thenListIsImmutable() {
+    PropertyReference prop = PropertyReference.of("id");
+    FunctionCall func = FunctionCall.of(Function.UPPER, PropertyReference.of("name"));
+    SimpleSelect select = SimpleSelect.ofExpressions(prop, func);
 
-    assertThat(effective).containsExactly(func);
+    List<PropertyExpression> expressions = select.getEffectiveExpressions();
+
+    assertThatThrownBy(() -> expressions.add(PropertyReference.of("newProp")))
+        .isInstanceOf(UnsupportedOperationException.class);
+  }
+
+  @Test
+  void givenPropertyNames_whenGetEffectiveExpressions_thenListIsImmutable() {
+    SimpleSelect select = SimpleSelect.of("id", "name");
+
+    List<PropertyExpression> expressions = select.getEffectiveExpressions();
+
+    assertThatThrownBy(() -> expressions.add(PropertyReference.of("newProp")))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 }

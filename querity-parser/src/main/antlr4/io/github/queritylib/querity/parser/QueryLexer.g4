@@ -20,6 +20,8 @@ ASC         : A S C;
 DESC        : D E S C;
 PAGINATION  : P A G E;
 AS          : A S;
+GROUP_BY    : G R O U P ' ' B Y;
+HAVING      : H A V I N G;
 
 // Comparison operators
 NEQ         : '!=';

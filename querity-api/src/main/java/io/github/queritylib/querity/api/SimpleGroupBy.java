@@ -8,56 +8,65 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Represents a selection of properties or expressions for projection queries.
+ * Represents a GROUP BY clause with property names or expressions.
  *
- * <p>A SimpleSelect can contain:
+ * <p>A SimpleGroupBy can contain:
  * <ul>
- *   <li>Simple property names (e.g., "firstName", "address.city")</li>
- *   <li>{@link PropertyExpression} for function-based projections (e.g., UPPER(name), COUNT(id))</li>
+ *   <li>Simple property names (e.g., "category", "address.city")</li>
+ *   <li>{@link PropertyExpression} for function-based grouping (e.g., UPPER(category), YEAR(orderDate))</li>
  * </ul>
  *
- * <h2>Simple Property Selection</h2>
+ * <p><strong>Important:</strong> Use either {@code propertyNames} or {@code expressions}, not both.
+ * The builder will throw an {@link IllegalArgumentException} if both are set or if neither is set.
+ * The factory methods {@link #of(String...)} and {@link #ofExpressions(PropertyExpression...)}
+ * ensure only one is set.
+ *
+ * <h2>Simple Property Grouping</h2>
  * <pre>{@code
- * // Select specific fields
  * Query query = Querity.query()
- *     .select(Querity.selectBy("firstName", "lastName", "address.city"))
+ *     .select(selectBy(
+ *         prop("category"),
+ *         sum(prop("amount")).as("totalAmount")
+ *     ))
+ *     .groupByProperties("category")
  *     .build();
  * }</pre>
  *
- * <h2>Function-based Selection</h2>
+ * <h2>Multiple Property Grouping</h2>
  * <pre>{@code
- * // Select with functions
  * Query query = Querity.query()
- *     .select(Querity.selectBy(
- *         Querity.upper(Querity.property("firstName")),
- *         Querity.length(Querity.property("lastName")),
- *         Querity.property("email")
+ *     .select(selectBy(
+ *         prop("category"),
+ *         prop("region"),
+ *         count(prop("id")).as("orderCount")
  *     ))
+ *     .groupByProperties("category", "region")
  *     .build();
  * }</pre>
  *
- * <h2>Aggregation Functions</h2>
+ * <h2>Expression-based Grouping</h2>
  * <pre>{@code
- * // Select with aggregations
  * Query query = Querity.query()
- *     .select(Querity.selectBy(
- *         Querity.count(Querity.property("id")).as("totalCount"),
- *         Querity.sum(Querity.property("amount")).as("totalAmount")
+ *     .select(selectBy(
+ *         upper(prop("category")).as("upperCategory"),
+ *         sum(prop("amount")).as("totalAmount")
  *     ))
+ *     .groupByExpressions(upper(prop("category")))
  *     .build();
  * }</pre>
  *
  * @see PropertyExpression
  * @see FunctionCall
+ * @see GroupBy
  */
 @Builder(toBuilder = true)
 @Jacksonized
 @EqualsAndHashCode
 @ToString
-public class SimpleSelect implements Select {
+public class SimpleGroupBy implements GroupBy {
 
   /**
-   * Simple property names for basic projections.
+   * Simple property names for basic grouping.
    * <p>Use either this or {@code expressions}, not both.
    * The builder will throw an exception if both are set.
    */
@@ -65,7 +74,7 @@ public class SimpleSelect implements Select {
   private List<String> propertyNames;
 
   /**
-   * Expressions for function-based projections.
+   * Expressions for function-based grouping.
    * <p>Use either this or {@code propertyNames}, not both.
    * The builder will throw an exception if both are set.
    */
@@ -91,31 +100,31 @@ public class SimpleSelect implements Select {
   }
 
   /**
-   * Creates a SimpleSelect with the given property names.
+   * Creates a SimpleGroupBy with the given property names.
    *
-   * @param propertyNames the property names to select
-   * @return a new SimpleSelect
+   * @param propertyNames the property names to group by
+   * @return a new SimpleGroupBy
    */
-  public static SimpleSelect of(String... propertyNames) {
-    return SimpleSelect.builder()
+  public static SimpleGroupBy of(String... propertyNames) {
+    return SimpleGroupBy.builder()
         .propertyNames(Arrays.asList(propertyNames))
         .build();
   }
 
   /**
-   * Creates a SimpleSelect with the given expressions.
+   * Creates a SimpleGroupBy with the given expressions.
    *
-   * @param expressions the expressions to select
-   * @return a new SimpleSelect
+   * @param expressions the expressions to group by
+   * @return a new SimpleGroupBy
    */
-  public static SimpleSelect ofExpressions(PropertyExpression... expressions) {
-    return SimpleSelect.builder()
+  public static SimpleGroupBy ofExpressions(PropertyExpression... expressions) {
+    return SimpleGroupBy.builder()
         .expressions(Arrays.asList(expressions))
         .build();
   }
 
   /**
-   * Check if this select uses expressions.
+   * Check if this group by uses expressions.
    *
    * @return true if expressions are set
    */
@@ -125,11 +134,11 @@ public class SimpleSelect implements Select {
   }
 
   /**
-   * Get all selections as PropertyExpressions.
+   * Get all grouping criteria as PropertyExpressions.
    * <p>If expressions are set, returns them. Otherwise, converts propertyNames
    * to PropertyReferences.
    *
-   * @return list of PropertyExpression for all selections
+   * @return list of PropertyExpression for all grouping criteria
    */
   @JsonIgnore
   public List<PropertyExpression> getEffectiveExpressions() {
@@ -145,41 +154,10 @@ public class SimpleSelect implements Select {
   }
 
   /**
-   * Get the alias names for all selections.
-   * <p>For expressions with aliases, returns the alias. For property names or
-   * expressions without aliases, returns the property name or a generated name.
-   *
-   * @return list of alias names
-   */
-  @JsonIgnore
-  public List<String> getAliasNames() {
-    if (hasExpressions()) {
-      return expressions.stream()
-          .map(this::getExpressionAlias)
-          .toList();
-    }
-    return propertyNames != null ? List.copyOf(propertyNames) : List.of();
-  }
-
-  private String getExpressionAlias(PropertyExpression expr) {
-    if (expr instanceof FunctionCall fc && fc.hasAlias()) {
-      return fc.getAlias();
-    }
-    if (expr instanceof PropertyReference pr) {
-      if (pr.hasAlias()) {
-        return pr.getAlias();
-      }
-      return pr.getPropertyName();
-    }
-    // For function calls without alias, generate a name
-    return expr.toExpressionString().replaceAll("[^a-zA-Z0-9]", "_");
-  }
-
-  /**
    * Custom builder to validate that exactly one of propertyNames or expressions is set.
    */
-  public static class SimpleSelectBuilder {
-    public SimpleSelect build() {
+  public static class SimpleGroupByBuilder {
+    public SimpleGroupBy build() {
       boolean hasPropertyNames = propertyNames != null && !propertyNames.isEmpty();
       boolean hasExpressions = expressions != null && !expressions.isEmpty();
 
@@ -189,7 +167,7 @@ public class SimpleSelect implements Select {
       if (hasPropertyNames && hasExpressions) {
         throw new IllegalArgumentException("Cannot set both propertyNames and expressions");
       }
-      return new SimpleSelect(propertyNames, expressions);
+      return new SimpleGroupBy(propertyNames, expressions);
     }
   }
 }

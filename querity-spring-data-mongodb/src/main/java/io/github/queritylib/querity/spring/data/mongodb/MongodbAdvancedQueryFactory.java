@@ -1,7 +1,7 @@
 package io.github.queritylib.querity.spring.data.mongodb;
 
+import io.github.queritylib.querity.api.AdvancedQuery;
 import io.github.queritylib.querity.api.Pagination;
-import io.github.queritylib.querity.api.Query;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -10,28 +10,39 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import java.util.List;
 
 /**
- * Factory for creating MongoDB queries from Query objects.
- * Handles simple entity queries with filter, sort, and pagination.
+ * Factory for creating MongoDB queries from AdvancedQuery objects.
+ * Handles projection queries with SELECT clauses.
  *
  * @param <T> the entity type
  */
 @Slf4j
-public class MongodbQueryFactory<T> {
+public class MongodbAdvancedQueryFactory<T> {
   private final Class<T> entityClass;
-  private final Query query;
+  private final AdvancedQuery query;
 
-  MongodbQueryFactory(Class<T> entityClass, Query query) {
+  MongodbAdvancedQueryFactory(Class<T> entityClass, AdvancedQuery query) {
     this.entityClass = entityClass;
     this.query = query;
   }
 
-  org.springframework.data.mongodb.core.query.Query getMongodbQuery() {
-    if (query != null && query.isDistinct()) {
+  org.springframework.data.mongodb.core.query.Query getMongodbProjectedQuery() {
+    if (query == null || !query.hasSelect()) {
+      throw new IllegalStateException("Projection query requires a SELECT clause");
+    }
+    if (query.isDistinct()) {
       log.debug("Distinct queries are not supported in MongoDB, ignoring the distinct flag");
     }
+    if (query.hasGroupBy()) {
+      throw new UnsupportedOperationException("GROUP BY is not supported in MongoDB projection queries - use aggregation pipeline instead");
+    }
     org.springframework.data.mongodb.core.query.Query q = initMongodbQuery();
+    applyProjection(q);
     q = applyPaginationAndSorting(q);
     return q;
+  }
+
+  private void applyProjection(org.springframework.data.mongodb.core.query.Query q) {
+    MongodbSelect.of(query.getSelect()).applyProjection(q.fields());
   }
 
   private org.springframework.data.mongodb.core.query.Query initMongodbQuery() {

@@ -7,14 +7,33 @@ import lombok.extern.jackson.Jacksonized;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Represents a simple query with filter, sort, and pagination capabilities.
+ *
+ * <p>Use this class for queries that return entities via {@link Querity#findAll(Class, Query)}.
+ * For queries that require projections, grouping, or aggregations, use {@link AdvancedQuery}.
+ *
+ * <h2>Example Usage</h2>
+ * <pre>{@code
+ * Query query = Querity.query()
+ *     .filter(filterBy("status", EQUALS, "ACTIVE"))
+ *     .sort(sortBy("lastName", ASC))
+ *     .pagination(0, 20)
+ *     .build();
+ *
+ * List<Person> people = querity.findAll(Person.class, query);
+ * }</pre>
+ *
+ * @see AdvancedQuery for projection queries with GROUP BY, SELECT, and HAVING
+ * @see QueryDefinition for the common query interface
+ */
 @Builder(toBuilder = true)
 @Jacksonized
 @Getter
-@EqualsAndHashCode(of = {"filter", "pagination", "sort", "distinct", "select"})
-@ToString(of = {"filter", "pagination", "sort", "distinct", "select"})
-public class Query {
+@EqualsAndHashCode(of = {"filter", "pagination", "sort", "distinct"})
+@ToString(of = {"filter", "pagination", "sort", "distinct"})
+public class Query implements QueryDefinition {
   private final Condition filter;
   private final Pagination pagination;
   @NonNull
@@ -23,30 +42,25 @@ public class Query {
   @JsonIgnore
   private List<QueryPreprocessor> preprocessors;
   private boolean distinct;
-  private final Select select;
 
+  @Override
   public boolean hasFilter() {
     return filter != null && !filter.isEmpty();
   }
 
+  @Override
   public boolean hasPagination() {
     return pagination != null;
   }
 
+  @Override
   public boolean hasSort() {
-    return Arrays.stream(sort).anyMatch(s -> true);
+    return sort.length > 0;
   }
 
-  public boolean hasSelect() {
-    return select != null;
-  }
-
+  @Override
   public List<Sort> getSort() {
     return Arrays.asList(sort);
-  }
-
-  @NonNull List<QueryPreprocessor> getPreprocessors() {
-    return preprocessors;
   }
 
   public static class QueryBuilder {
@@ -55,10 +69,11 @@ public class Query {
     @SuppressWarnings({"java:S1068", "java:S1450"})
     private Sort[] sort = new Sort[0];
     private List<QueryPreprocessor> preprocessors = new ArrayList<>();
-    @SuppressWarnings("java:S1068")
-    private Select select;
 
     public QueryBuilder withPreprocessor(QueryPreprocessor preprocessor) {
+      if (preprocessor == null) {
+        throw new IllegalArgumentException("Preprocessor cannot be null");
+      }
       this.preprocessors.add(preprocessor);
       return this;
     }
@@ -78,20 +93,16 @@ public class Query {
       return this;
     }
 
-    public QueryBuilder select(Select select) {
-      this.select = select;
-      return this;
-    }
-
-    public QueryBuilder selectBy(String... propertyNames) {
-      this.select = Querity.selectBy(propertyNames);
-      return this;
+    public Query build() {
+      return new Query(filter, pagination, sort, List.copyOf(preprocessors), distinct);
     }
   }
 
   public Query preprocess() {
-    AtomicReference<Query> atomicQuery = new AtomicReference<>(this);
-    this.getPreprocessors().forEach(p -> atomicQuery.set(p.preprocess(atomicQuery.get())));
-    return atomicQuery.get();
+    Query result = this;
+    for (QueryPreprocessor preprocessor : preprocessors) {
+      result = preprocessor.preprocess(result);
+    }
+    return result;
   }
 }

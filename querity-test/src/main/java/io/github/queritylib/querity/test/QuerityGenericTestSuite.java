@@ -1,5 +1,6 @@
 package io.github.queritylib.querity.test;
 
+import io.github.queritylib.querity.api.AdvancedQuery;
 import io.github.queritylib.querity.api.Querity;
 import io.github.queritylib.querity.api.Query;
 import io.github.queritylib.querity.test.domain.*;
@@ -34,11 +35,19 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
   public static final String PROPERTY_HEIGHT = "height";
   public static final String PROPERTY_CHILDREN = "children";
   public static final String PROPERTY_MARRIED = "married";
+  public static final String PROPERTY_GENDER = "gender";
+  public static final String PROPERTY_MARITAL_STATUS = "maritalStatus";
   public static final String PROPERTY_ADDRESS_CITY = "address.city";
   public static final String PROPERTY_VISITED_LOCATIONS_COUNTRY = "visitedLocations.country";
   public static final String PROPERTY_VISITED_LOCATIONS_CITIES = "visitedLocations.cities";
   public static final String PROPERTY_FAVOURITE_PRODUCT_CATEGORY = "favouriteProductCategory";
   public static final String PROPERTY_ORDERS_EXTERNAL_ID = "orders.externalId";
+
+  /**
+   * Minimum group size threshold for HAVING clause tests.
+   * Groups with count greater than this value will be included in results.
+   */
+  protected static final long MIN_GROUP_COUNT_THRESHOLD = 1L;
 
   protected List<T> entities;
   protected T entity1;
@@ -855,7 +864,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
 
     @Test
     void givenSelectByTwoFields_whenFindAllProjected_thenReturnOnlySelectedFields() {
-      Query query = Querity.query()
+      AdvancedQuery query = Querity.advancedQuery()
           .filter(filterBy(PROPERTY_LAST_NAME, IS_NOT_NULL))
           .selectBy(PROPERTY_FIRST_NAME, PROPERTY_LAST_NAME)
           .build();
@@ -871,7 +880,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
 
     @Test
     void givenSelectByWithFilter_whenFindAllProjected_thenReturnFilteredAndProjectedResults() {
-      Query query = Querity.query()
+      AdvancedQuery query = Querity.advancedQuery()
           .filter(filterBy(PROPERTY_LAST_NAME, EQUALS, entity1.getLastName()))
           .selectBy(PROPERTY_FIRST_NAME, PROPERTY_LAST_NAME)
           .build();
@@ -884,25 +893,29 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
 
     @Test
     void givenSelectByNestedField_whenFindAllProjected_thenReturnNestedFieldValues() {
-      Query query = Querity.query()
+      AdvancedQuery query = Querity.advancedQuery()
           .selectBy(PROPERTY_FIRST_NAME, PROPERTY_ADDRESS_CITY)
           .build();
       List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
       assertThat(result).isNotEmpty();
       assertThat(result).allSatisfy(map -> {
         assertThat(map).containsKey("firstName");
-        // Nested field "address.city" may be returned as "city" (JPA) or nested as "address.city" (Elasticsearch)
+        // Nested field "address.city" may be returned as:
+        // - "city" (legacy JPA behavior)
+        // - "address.city" (current JPA behavior - preserves full path for uniqueness)
+        // - nested as "address" map (Elasticsearch/MongoDB)
         boolean hasCityFlat = map.containsKey("city");
+        boolean hasCityFullPath = map.containsKey("address.city");
         boolean hasCityNested = map.containsKey("address") && map.get("address") instanceof Map;
-        assertThat(hasCityFlat || hasCityNested)
-            .as("Expected 'city' key or nested 'address.city' structure")
+        assertThat(hasCityFlat || hasCityFullPath || hasCityNested)
+            .as("Expected 'city', 'address.city' key, or nested 'address' structure but got: " + map.keySet())
             .isTrue();
       });
     }
 
     @Test
     void givenSelectByWithPagination_whenFindAllProjected_thenReturnPaginatedProjectedResults() {
-      Query query = Querity.query()
+      AdvancedQuery query = Querity.advancedQuery()
           .selectBy(PROPERTY_ID, PROPERTY_FIRST_NAME)
           .sort(sortBy(PROPERTY_ID))
           .pagination(2, 3)
@@ -1221,6 +1234,16 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     return true;
   }
 
+  /**
+   * Override this method to indicate whether GROUP BY with aggregate functions is supported.
+   * JPA supports GROUP BY with aggregations, MongoDB and Elasticsearch require special aggregation pipelines.
+   *
+   * @return true if GROUP BY with aggregate functions is supported
+   */
+  protected boolean supportsGroupBy() {
+    return true;
+  }
+
   @Nested
   class FunctionExpressionTests {
 
@@ -1346,9 +1369,9 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     void givenSelectWithUpperFunction_whenFindAllProjected_thenReturnProjectedResults() {
       if (!supportsFunctionExpressionsInProjections()) return;
       // Select UPPER(firstName) as upperFirstName
-      Query query = Querity.query()
+      AdvancedQuery query = Querity.advancedQuery()
           .filter(filterBy(PROPERTY_FIRST_NAME, IS_NOT_NULL))
-          .select(selectBy(upper(property(PROPERTY_FIRST_NAME)).as("upperFirstName")))
+          .select(upper(property(PROPERTY_FIRST_NAME)).as("upperFirstName"))
           .build();
       List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
       assertThat(result).isNotEmpty();
@@ -1364,9 +1387,9 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     void givenSelectWithLengthFunction_whenFindAllProjected_thenReturnProjectedResults() {
       if (!supportsFunctionExpressionsInProjections()) return;
       // Select LENGTH(lastName) as lastNameLength
-      Query query = Querity.query()
+      AdvancedQuery query = Querity.advancedQuery()
           .filter(filterBy(PROPERTY_LAST_NAME, IS_NOT_NULL))
-          .select(selectBy(length(property(PROPERTY_LAST_NAME)).as("lastNameLength")))
+          .select(length(property(PROPERTY_LAST_NAME)).as("lastNameLength"))
           .build();
       List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
       assertThat(result).isNotEmpty();
@@ -1382,15 +1405,15 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     void givenSelectWithMultipleFunctions_whenFindAllProjected_thenReturnProjectedResults() {
       if (!supportsFunctionExpressionsInProjections()) return;
       // Select UPPER(firstName), LENGTH(lastName)
-      Query query = Querity.query()
+      AdvancedQuery query = Querity.advancedQuery()
           .filter(and(
               filterBy(PROPERTY_FIRST_NAME, IS_NOT_NULL),
               filterBy(PROPERTY_LAST_NAME, IS_NOT_NULL)
           ))
-          .select(selectBy(
+          .select(
               upper(property(PROPERTY_FIRST_NAME)).as("upperFirstName"),
               length(property(PROPERTY_LAST_NAME)).as("lastNameLength")
-          ))
+          )
           .build();
       List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
       assertThat(result).isNotEmpty();
@@ -1460,5 +1483,143 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     Comparator<C> comparator = Comparator.nullsLast(Comparator.naturalOrder());
     if (reversed) comparator = comparator.reversed();
     return comparator;
+  }
+
+  @Nested
+  class GroupByTests {
+
+    @Test
+    void givenGroupByWithCount_whenFindAllProjected_thenReturnGroupedResults() {
+      if (!supportsGroupBy()) return;
+      // Group by gender and count
+      AdvancedQuery query = Querity.advancedQuery()
+          .select(
+              property(PROPERTY_GENDER).as("gender"),
+              count(property(PROPERTY_ID)).as("total")
+          )
+          .groupBy(PROPERTY_GENDER)
+          .sort(sortBy("gender"))
+          .build();
+      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).allSatisfy(map -> {
+        assertThat(map).containsKey("gender");
+        assertThat(map).containsKey("total");
+        assertThat(map.get("total")).isInstanceOf(Number.class);
+        assertThat(((Number) map.get("total")).longValue()).isGreaterThan(0L);
+      });
+    }
+
+    @Test
+    void givenGroupByWithSum_whenFindAllProjected_thenReturnAggregatedResults() {
+      if (!supportsGroupBy()) return;
+      // Group by gender and sum children
+      AdvancedQuery query = Querity.advancedQuery()
+          .select(
+              property(PROPERTY_GENDER).as("gender"),
+              sum(property("children")).as("totalChildren")
+          )
+          .groupBy(PROPERTY_GENDER)
+          .build();
+      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).allSatisfy(map -> {
+        assertThat(map).containsKey("gender");
+        assertThat(map).containsKey("totalChildren");
+        assertThat(map.get("totalChildren")).isInstanceOf(Number.class);
+      });
+    }
+
+    @Test
+    void givenGroupByMultipleFields_whenFindAllProjected_thenReturnGroupedResults() {
+      if (!supportsGroupBy()) return;
+      // Group by gender and married status, count
+      AdvancedQuery query = Querity.advancedQuery()
+          .select(
+              property(PROPERTY_GENDER).as("gender"),
+              property(PROPERTY_MARRIED).as("married"),
+              count(property(PROPERTY_ID)).as("total")
+          )
+          .groupBy(PROPERTY_GENDER, PROPERTY_MARRIED)
+          .sort(sortBy("gender"), sortBy("married"))
+          .build();
+      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).allSatisfy(map -> {
+        assertThat(map).containsKey("gender");
+        assertThat(map).containsKey("married");
+        assertThat(map).containsKey("total");
+      });
+    }
+
+    @Test
+    void givenGroupByWithHaving_whenFindAllProjected_thenReturnFilteredGroups() {
+      if (!supportsGroupBy()) return;
+      // Group by gender, count, filter groups with count > 1
+      AdvancedQuery query = Querity.advancedQuery()
+          .select(
+              property(PROPERTY_GENDER).as("gender"),
+              count(property(PROPERTY_ID)).as("total")
+          )
+          .groupBy(PROPERTY_GENDER)
+          .having(filterBy(count(property(PROPERTY_ID)), GREATER_THAN, MIN_GROUP_COUNT_THRESHOLD))
+          .build();
+      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).allSatisfy(map -> {
+        assertThat(map).containsKey("total");
+        assertThat(((Number) map.get("total")).longValue()).isGreaterThan(MIN_GROUP_COUNT_THRESHOLD);
+      });
+    }
+
+    @Test
+    void givenGroupByWithMultipleAggregates_whenFindAllProjected_thenReturnAllAggregates() {
+      if (!supportsGroupBy()) return;
+      // Group by gender with count, sum, avg, min, max
+      AdvancedQuery query = Querity.advancedQuery()
+          .select(
+              property(PROPERTY_GENDER).as("gender"),
+              count(property(PROPERTY_ID)).as("total"),
+              sum(property("children")).as("totalChildren"),
+              avg(property("children")).as("avgChildren"),
+              min(property("children")).as("minChildren"),
+              max(property("children")).as("maxChildren")
+          )
+          .groupBy(PROPERTY_GENDER)
+          .build();
+      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).allSatisfy(map -> {
+        assertThat(map).containsKey("gender");
+        assertThat(map).containsKey("total");
+        assertThat(map).containsKey("totalChildren");
+        assertThat(map).containsKey("avgChildren");
+        assertThat(map).containsKey("minChildren");
+        assertThat(map).containsKey("maxChildren");
+      });
+    }
+
+    @Test
+    void givenGroupByWithWhereAndHaving_whenFindAllProjected_thenReturnFilteredAndGroupedResults() {
+      if (!supportsGroupBy()) return;
+      // Filter by children > 0, group by gender, having count > 1
+      AdvancedQuery query = Querity.advancedQuery()
+          .filter(filterBy("children", GREATER_THAN, 0))
+          .select(
+              property(PROPERTY_GENDER).as("gender"),
+              count(property(PROPERTY_ID)).as("total"),
+              avg(property("children")).as("avgChildren")
+          )
+          .groupBy(PROPERTY_GENDER)
+          .having(filterBy(count(property(PROPERTY_ID)), GREATER_THAN, MIN_GROUP_COUNT_THRESHOLD))
+          .build();
+      List<Map<String, Object>> result = querity.findAllProjected(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).allSatisfy(map -> {
+        assertThat(map).containsKey("gender");
+        assertThat(map).containsKey("total");
+        assertThat(((Number) map.get("total")).longValue()).isGreaterThan(MIN_GROUP_COUNT_THRESHOLD);
+      });
+    }
   }
 }

@@ -3,7 +3,7 @@ parser grammar QueryParser;
 options { tokenVocab=QueryLexer; }
 
 // Main query structure
-query            : DISTINCT? (selectClause)? (condition)? (SORT sortFields)? (PAGINATION paginationParams)? ;
+query            : DISTINCT? (selectClause)? (condition)? (groupByClause)? (havingClause)? (SORT sortFields)? (PAGINATION paginationParams)? ;
 
 // Select clause with support for expressions and optional aliases
 selectClause     : SELECT selectFields ;
@@ -72,6 +72,13 @@ functionArg      : propertyExpression | simpleValue ;
 sortField        : propertyExpression (direction)? ;
 sortFields       : sortField (COMMA sortField)* ;
 direction        : ASC | DESC ;
+
+// Group By clause
+groupByClause    : GROUP_BY groupByFields ;
+groupByFields    : propertyExpression (COMMA propertyExpression)* ;
+
+// Having clause
+havingClause     : HAVING condition ;
 
 // Pagination
 paginationParams : INT_VALUE COMMA INT_VALUE ;

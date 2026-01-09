@@ -262,8 +262,8 @@ class QuerityFunctionFactoryTests {
   // Integration test: building a complete query with functions
 
   @Test
-  void givenQueryWithFunctions_whenBuild_thenReturnCorrectQuery() {
-    Query query = query()
+  void givenAdvancedQueryWithFunctions_whenBuild_thenReturnCorrectQuery() {
+    AdvancedQuery query = advancedQuery()
         .filter(filterBy(upper(prop("lastName")), EQUALS, "SKYWALKER"))
         .sort(sortBy(length(prop("firstName")), ASC))
         .select(selectBy(

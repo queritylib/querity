@@ -105,9 +105,9 @@ class SimpleSelectTest {
   @Nested
   class UsageInQueryTests {
     @Test
-    void givenSimpleSelect_whenUsedInQuery_thenQueryHasSelect() {
+    void givenSimpleSelect_whenUsedInAdvancedQuery_thenQueryHasSelect() {
       SimpleSelect select = selectBy("id", "name", "email");
-      Query query = Querity.query()
+      AdvancedQuery query = Querity.advancedQuery()
           .select(select)
           .build();
 
@@ -116,8 +116,8 @@ class SimpleSelectTest {
     }
 
     @Test
-    void givenPropertyNames_whenUsedInQueryBuilder_thenQueryHasSimpleSelect() {
-      Query query = Querity.query()
+    void givenPropertyNames_whenUsedInAdvancedQueryBuilder_thenQueryHasSimpleSelect() {
+      AdvancedQuery query = Querity.advancedQuery()
           .selectBy("id", "name")
           .build();
 
@@ -127,8 +127,8 @@ class SimpleSelectTest {
     }
 
     @Test
-    void givenNoSelect_whenQuery_thenQueryHasNoSelect() {
-      Query query = Querity.query().build();
+    void givenNoSelect_whenAdvancedQuery_thenQueryHasNoSelect() {
+      AdvancedQuery query = Querity.advancedQuery().build();
 
       assertThat(query.hasSelect()).isFalse();
       assertThat(query.getSelect()).isNull();

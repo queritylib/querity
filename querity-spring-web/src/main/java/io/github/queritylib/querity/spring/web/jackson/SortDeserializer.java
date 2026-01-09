@@ -10,10 +10,10 @@ import io.github.queritylib.querity.api.Sort;
 
 import java.io.IOException;
 
-public class SortDeserializer extends StdDeserializer<Sort> {
+import static io.github.queritylib.querity.spring.web.jackson.JsonFields.DIRECTION;
+import static io.github.queritylib.querity.spring.web.jackson.JsonFields.PROPERTY_NAME;
 
-  public static final String FIELD_PROPERTY_NAME = "propertyName";
-  public static final String FIELD_DIRECTION = "direction";
+public class SortDeserializer extends StdDeserializer<Sort> {
 
   protected SortDeserializer(JavaType valueType) {
     super(valueType);
@@ -33,18 +33,18 @@ public class SortDeserializer extends StdDeserializer<Sort> {
   }
 
   private static boolean isSimpleSort(JsonNode jsonNode) {
-    return jsonNode.hasNonNull(FIELD_PROPERTY_NAME);
+    return jsonNode.hasNonNull(PROPERTY_NAME);
   }
 
   private static SimpleSort parseSimpleSort(JsonNode jsonNode) {
     SimpleSort.SimpleSortBuilder builder = SimpleSort.builder();
-    
-    builder.propertyName(jsonNode.get(FIELD_PROPERTY_NAME).asText());
-    
-    if (jsonNode.hasNonNull(FIELD_DIRECTION)) {
-      builder.direction(SimpleSort.Direction.valueOf(jsonNode.get(FIELD_DIRECTION).asText()));
+
+    builder.propertyName(jsonNode.get(PROPERTY_NAME).asText());
+
+    if (jsonNode.hasNonNull(DIRECTION)) {
+      builder.direction(SimpleSort.Direction.valueOf(jsonNode.get(DIRECTION).asText()));
     }
-    
+
     return builder.build();
   }
 }

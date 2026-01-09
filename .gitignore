@@ -16,3 +16,9 @@ buildNumber.properties
 *.iml
 out
 gen
+
+# Eclipse project files
+.project
+.classpath
+.settings/
+bin/

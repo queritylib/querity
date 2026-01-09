@@ -1,5 +1,6 @@
 package io.github.queritylib.querity.api;
 
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -28,6 +29,7 @@ import lombok.extern.jackson.Jacksonized;
  * @see Querity#lit(Boolean)
  */
 @Value
+@Builder
 @Jacksonized
 public class Literal implements FunctionArgument {
 
