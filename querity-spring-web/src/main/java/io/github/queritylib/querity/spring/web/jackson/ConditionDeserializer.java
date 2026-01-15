@@ -16,7 +16,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static io.github.queritylib.querity.spring.web.jackson.JsonFields.FUNCTION;
 import static io.github.queritylib.querity.spring.web.jackson.JsonFields.LEFT_EXPRESSION;
 
 public class ConditionDeserializer extends StdDeserializer<Condition> {
@@ -89,13 +88,9 @@ public class ConditionDeserializer extends StdDeserializer<Condition> {
   private static SimpleCondition parseSimpleCondition(JsonNode jsonNode, DeserializationContext context) {
     SimpleCondition.SimpleConditionBuilder builder = SimpleCondition.builder();
     
-    // Check for leftExpression (function-based condition) or function shorthand
+    // Check for leftExpression (function-based condition)
     if (jsonNode.hasNonNull(LEFT_EXPRESSION)) {
       PropertyExpression leftExpr = context.readTreeAsValue(jsonNode.get(LEFT_EXPRESSION), PropertyExpression.class);
-      builder = builder.leftExpression(leftExpr);
-    } else if (jsonNode.hasNonNull(FUNCTION)) {
-      // Shorthand: function directly in condition object
-      PropertyExpression leftExpr = context.readTreeAsValue(jsonNode, PropertyExpression.class);
       builder = builder.leftExpression(leftExpr);
     } else {
       builder = setIfNotNull(jsonNode, builder, FIELD_SIMPLE_CONDITION_PROPERTY_NAME, JsonNode::asText, builder::propertyName);

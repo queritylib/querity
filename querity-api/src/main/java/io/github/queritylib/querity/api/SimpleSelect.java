@@ -146,7 +146,12 @@ public class SimpleSelect implements Select {
   /**
    * Get all selections as PropertyExpressions.
    * <p>Combines both propertyNames (converted to PropertyReferences) and expressions
-   * into a single list. PropertyNames come first, followed by expressions.
+   * into a single list.
+   *
+   * <p><strong>Ordering:</strong> PropertyNames come first (in their original order),
+   * followed by expressions (in their original order). This ordering is deterministic
+   * but does not preserve interleaved insertion order when mixing the builder methods
+   * {@code propertyName()} and {@code expression()}.
    *
    * @return list of PropertyExpression for all selections
    */
