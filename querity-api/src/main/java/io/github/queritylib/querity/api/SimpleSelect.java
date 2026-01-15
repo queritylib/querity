@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import java.util.List;
  * <ul>
  *   <li>Simple property names (e.g., "firstName", "address.city")</li>
  *   <li>{@link PropertyExpression} for function-based projections (e.g., UPPER(name), COUNT(id))</li>
+ *   <li>Both property names and expressions combined</li>
  * </ul>
  *
  * <h2>Simple Property Selection</h2>
@@ -47,6 +49,15 @@ import java.util.List;
  *     .build();
  * }</pre>
  *
+ * <h2>Mixed Selection (property names + expressions)</h2>
+ * <pre>{@code
+ * SimpleSelect select = SimpleSelect.builder()
+ *     .propertyName("id")
+ *     .propertyName("name")
+ *     .expression(upper(prop("category")).as("upperCategory"))
+ *     .build();
+ * }</pre>
+ *
  * @see PropertyExpression
  * @see FunctionCall
  */
@@ -58,16 +69,14 @@ public class SimpleSelect implements Select {
 
   /**
    * Simple property names for basic projections.
-   * <p>Use either this or {@code expressions}, not both.
-   * The builder will throw an exception if both are set.
+   * <p>Can be combined with {@code expressions}.
    */
   @Singular
   private List<String> propertyNames;
 
   /**
    * Expressions for function-based projections.
-   * <p>Use either this or {@code propertyNames}, not both.
-   * The builder will throw an exception if both are set.
+   * <p>Can be combined with {@code propertyNames}.
    */
   @Singular
   private List<PropertyExpression> expressions;
@@ -125,23 +134,39 @@ public class SimpleSelect implements Select {
   }
 
   /**
+   * Check if this select uses property names.
+   *
+   * @return true if property names are set
+   */
+  @JsonIgnore
+  public boolean hasPropertyNames() {
+    return propertyNames != null && !propertyNames.isEmpty();
+  }
+
+  /**
    * Get all selections as PropertyExpressions.
-   * <p>If expressions are set, returns them. Otherwise, converts propertyNames
-   * to PropertyReferences.
+   * <p>Combines both propertyNames (converted to PropertyReferences) and expressions
+   * into a single list. PropertyNames come first, followed by expressions.
    *
    * @return list of PropertyExpression for all selections
    */
   @JsonIgnore
   public List<PropertyExpression> getEffectiveExpressions() {
-    if (hasExpressions()) {
-      return List.copyOf(expressions);
-    }
+    List<PropertyExpression> result = new ArrayList<>();
+    
+    // Add property names as PropertyReferences
     if (propertyNames != null) {
-      return propertyNames.stream()
-          .map(name -> (PropertyExpression) PropertyReference.of(name))
-          .toList();
+      for (String name : propertyNames) {
+        result.add(PropertyReference.of(name));
+      }
     }
-    return List.of();
+    
+    // Add expressions
+    if (expressions != null) {
+      result.addAll(expressions);
+    }
+    
+    return List.copyOf(result);
   }
 
   /**
@@ -153,12 +178,21 @@ public class SimpleSelect implements Select {
    */
   @JsonIgnore
   public List<String> getAliasNames() {
-    if (hasExpressions()) {
-      return expressions.stream()
-          .map(this::getExpressionAlias)
-          .toList();
+    List<String> result = new ArrayList<>();
+    
+    // Add property names directly as aliases
+    if (propertyNames != null) {
+      result.addAll(propertyNames);
     }
-    return propertyNames != null ? List.copyOf(propertyNames) : List.of();
+    
+    // Add expression aliases
+    if (expressions != null) {
+      for (PropertyExpression expr : expressions) {
+        result.add(getExpressionAlias(expr));
+      }
+    }
+    
+    return List.copyOf(result);
   }
 
   private String getExpressionAlias(PropertyExpression expr) {
@@ -176,7 +210,7 @@ public class SimpleSelect implements Select {
   }
 
   /**
-   * Custom builder to validate that exactly one of propertyNames or expressions is set.
+   * Custom builder to validate that at least one of propertyNames or expressions is set.
    */
   public static class SimpleSelectBuilder {
     public SimpleSelect build() {
@@ -185,9 +219,6 @@ public class SimpleSelect implements Select {
 
       if (!hasPropertyNames && !hasExpressions) {
         throw new IllegalArgumentException("Either propertyNames or expressions must be set");
-      }
-      if (hasPropertyNames && hasExpressions) {
-        throw new IllegalArgumentException("Cannot set both propertyNames and expressions");
       }
       return new SimpleSelect(propertyNames, expressions);
     }

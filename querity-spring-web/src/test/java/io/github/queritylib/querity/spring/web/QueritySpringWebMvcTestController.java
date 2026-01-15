@@ -1,5 +1,6 @@
 package io.github.queritylib.querity.spring.web;
 
+import io.github.queritylib.querity.api.AdvancedQuery;
 import io.github.queritylib.querity.api.Condition;
 import io.github.queritylib.querity.api.Query;
 import org.springframework.http.MediaType;
@@ -11,6 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class QueritySpringWebMvcTestController {
   @GetMapping(value = "/query", produces = MediaType.APPLICATION_JSON_VALUE)
   public Query getQuery(@RequestParam(required = false) Query q) {
+    return q;
+  }
+
+  @GetMapping(value = "/advanced-query", produces = MediaType.APPLICATION_JSON_VALUE)
+  public AdvancedQuery getAdvancedQuery(@RequestParam(required = false) AdvancedQuery q) {
     return q;
   }
 

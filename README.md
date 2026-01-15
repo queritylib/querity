@@ -134,10 +134,10 @@ Java 14).
 
 #### Projections
 
-Use `selectBy` to retrieve only specific fields instead of full entities:
+Use `advancedQuery()` with `selectBy` to retrieve only specific fields instead of full entities:
 
 ```java
-Query query = Querity.query()
+AdvancedQuery query = Querity.advancedQuery()
     .selectBy("firstName", "lastName", "address.city")
     .filter(filterBy("lastName", EQUALS, "Skywalker"))
     .build();
@@ -168,7 +168,7 @@ SelectionSpecification<Person> fullNameSpec = AliasedSelectionSpecification.of(
     (root, cb) -> cb.concat(cb.concat(root.get("firstName"), " "), root.get("lastName")),
     "fullName"
 );
-Query query = Querity.query()
+AdvancedQuery query = Querity.advancedQuery()
     .select(selectByNative(fullNameSpec))
     .build();
 List<Map<String, Object>> results = querity.findAllProjected(Person.class, query);
@@ -195,12 +195,12 @@ Query query = Querity.query()
     .build();
 
 // Select with function expressions
-Query query = Querity.query()
-    .select(selectBy(
+AdvancedQuery query = Querity.advancedQuery()
+    .select(
         prop("id"),
         upper(prop("lastName")).as("upperLastName"),
         concat(prop("firstName"), lit(" "), prop("lastName")).as("fullName")
-    ))
+    )
     .build();
 ```
 
@@ -301,13 +301,13 @@ Query query = QuerityParser.parseQuery(
 
 #### GROUP BY and HAVING
 
-Querity supports GROUP BY and HAVING clauses for aggregate queries. Use `groupBy` to group results and `having` to filter groups:
+Querity supports GROUP BY and HAVING clauses for aggregate queries. Use `advancedQuery()` with `groupBy` to group results and `having` to filter groups:
 
 ```java
 import static io.github.queritylib.querity.api.Querity.*;
 
 // Group by single property
-Query query = Querity.query()
+AdvancedQuery query = Querity.advancedQuery()
     .select(selectBy(
         prop("category"),
         count(prop("id")).as("itemCount"),
@@ -319,7 +319,7 @@ List<Map<String, Object>> results = querity.findAllProjected(Order.class, query)
 // Returns: [{category: "Electronics", itemCount: 42, totalAmount: 15000}, ...]
 
 // Group by multiple properties
-Query query = Querity.query()
+AdvancedQuery query = Querity.advancedQuery()
     .select(selectBy(
         prop("category"),
         prop("region"),
@@ -329,7 +329,7 @@ Query query = Querity.query()
     .build();
 
 // Group by with HAVING clause
-Query query = Querity.query()
+AdvancedQuery query = Querity.advancedQuery()
     .select(selectBy(
         prop("category"),
         sum(prop("amount")).as("total")
@@ -344,7 +344,7 @@ Query query = Querity.query()
 
 ```java
 // Group by function result (e.g., group orders by year)
-Query query = Querity.query()
+AdvancedQuery query = Querity.advancedQuery()
     .select(selectBy(
         upper(prop("category")).as("upperCategory"),
         count(prop("id")).as("orderCount")
@@ -358,7 +358,7 @@ Query query = Querity.query()
 GROUP BY and HAVING can also be used in the textual query language:
 
 ```java
-Query query = QuerityParser.parseQuery(
+AdvancedQuery query = QuerityParser.parseAdvancedQuery(
     "select category, COUNT(id) as itemCount group by category having COUNT(id) > 10"
 );
 ```

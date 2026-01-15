@@ -15,4 +15,5 @@ public final class JsonFields {
   public static final String PROPERTY_NAMES = "propertyNames";
   public static final String EXPRESSIONS = "expressions";
   public static final String DIRECTION = "direction";
+  public static final String LEFT_EXPRESSION = "leftExpression";
 }

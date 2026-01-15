@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static io.github.queritylib.querity.api.Querity.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -249,13 +250,22 @@ class SimpleGroupByTest {
     }
 
     @Test
-    void givenBothPropertyNamesAndExpressions_whenBuild_thenThrowsIllegalArgumentException() {
-      assertThatThrownBy(() -> SimpleGroupBy.builder()
-              .propertyName("category")
-              .expression(upper(prop("name")))
-              .build())
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasMessageContaining("Cannot set both propertyNames and expressions");
+    void givenBothPropertyNamesAndExpressions_whenBuild_thenCombinesBoth() {
+      SimpleGroupBy groupBy = SimpleGroupBy.builder()
+          .propertyName("category")
+          .expression(upper(prop("name")))
+          .build();
+      
+      assertThat(groupBy.hasPropertyNames()).isTrue();
+      assertThat(groupBy.hasExpressions()).isTrue();
+      assertThat(groupBy.getPropertyNames()).containsExactly("category");
+      assertThat(groupBy.getExpressions()).hasSize(1);
+      
+      // Effective expressions should contain both: propertyNames first, then expressions
+      List<PropertyExpression> effective = groupBy.getEffectiveExpressions();
+      assertThat(effective).hasSize(2);
+      assertThat(effective.get(0)).isInstanceOf(PropertyReference.class);
+      assertThat(effective.get(1)).isInstanceOf(FunctionCall.class);
     }
 
     @Test

@@ -154,16 +154,29 @@ class SimpleSelectExpressionTests {
   }
 
   @Test
-  void givenMixedExpressionsAndPropertyNames_whenBuild_thenThrowsIllegalArgumentException() {
-    // When both are set, should throw exception
+  void givenMixedExpressionsAndPropertyNames_whenBuild_thenCombinesBoth() {
     FunctionCall func = FunctionCall.of(Function.UPPER, PropertyReference.of("name"));
     
-    assertThatThrownBy(() -> SimpleSelect.builder()
-            .propertyNames(List.of("id"))
-            .expressions(List.of(func))
-            .build())
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Cannot set both propertyNames and expressions");
+    SimpleSelect select = SimpleSelect.builder()
+        .propertyNames(List.of("id"))
+        .expressions(List.of(func))
+        .build();
+    
+    assertThat(select.hasPropertyNames()).isTrue();
+    assertThat(select.hasExpressions()).isTrue();
+    assertThat(select.getPropertyNames()).containsExactly("id");
+    assertThat(select.getExpressions()).hasSize(1);
+    
+    // Effective expressions should contain both: propertyNames first, then expressions
+    List<PropertyExpression> effective = select.getEffectiveExpressions();
+    assertThat(effective).hasSize(2);
+    assertThat(effective.get(0)).isInstanceOf(PropertyReference.class);
+    assertThat(effective.get(1)).isInstanceOf(FunctionCall.class);
+    
+    // Alias names should also contain both
+    List<String> aliases = select.getAliasNames();
+    assertThat(aliases).hasSize(2);
+    assertThat(aliases.get(0)).isEqualTo("id");
   }
 
   @Test

@@ -21,4 +21,5 @@ gen
 .project
 .classpath
 .settings/
+.factorypath
 bin/

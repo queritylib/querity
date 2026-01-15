@@ -4,54 +4,60 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * Represents a GROUP BY clause with property names or expressions.
+ * Represents a GROUP BY clause with property names and/or expressions.
  *
  * <p>A SimpleGroupBy can contain:
  * <ul>
  *   <li>Simple property names (e.g., "category", "address.city")</li>
  *   <li>{@link PropertyExpression} for function-based grouping (e.g., UPPER(category), YEAR(orderDate))</li>
+ *   <li>Both property names and expressions combined</li>
  * </ul>
- *
- * <p><strong>Important:</strong> Use either {@code propertyNames} or {@code expressions}, not both.
- * The builder will throw an {@link IllegalArgumentException} if both are set or if neither is set.
- * The factory methods {@link #of(String...)} and {@link #ofExpressions(PropertyExpression...)}
- * ensure only one is set.
  *
  * <h2>Simple Property Grouping</h2>
  * <pre>{@code
- * Query query = Querity.query()
+ * AdvancedQuery query = Querity.advancedQuery()
  *     .select(selectBy(
  *         prop("category"),
  *         sum(prop("amount")).as("totalAmount")
  *     ))
- *     .groupByProperties("category")
+ *     .groupBy("category")
  *     .build();
  * }</pre>
  *
  * <h2>Multiple Property Grouping</h2>
  * <pre>{@code
- * Query query = Querity.query()
+ * AdvancedQuery query = Querity.advancedQuery()
  *     .select(selectBy(
  *         prop("category"),
  *         prop("region"),
  *         count(prop("id")).as("orderCount")
  *     ))
- *     .groupByProperties("category", "region")
+ *     .groupBy("category", "region")
  *     .build();
  * }</pre>
  *
  * <h2>Expression-based Grouping</h2>
  * <pre>{@code
- * Query query = Querity.query()
+ * AdvancedQuery query = Querity.advancedQuery()
  *     .select(selectBy(
  *         upper(prop("category")).as("upperCategory"),
  *         sum(prop("amount")).as("totalAmount")
  *     ))
  *     .groupByExpressions(upper(prop("category")))
+ *     .build();
+ * }</pre>
+ *
+ * <h2>Mixed Grouping (property names + expressions)</h2>
+ * <pre>{@code
+ * SimpleGroupBy groupBy = SimpleGroupBy.builder()
+ *     .propertyName("category")
+ *     .propertyName("status")
+ *     .expression(upper(prop("region")))
  *     .build();
  * }</pre>
  *
@@ -67,16 +73,14 @@ public class SimpleGroupBy implements GroupBy {
 
   /**
    * Simple property names for basic grouping.
-   * <p>Use either this or {@code expressions}, not both.
-   * The builder will throw an exception if both are set.
+   * <p>Can be combined with {@code expressions}.
    */
   @Singular
   private List<String> propertyNames;
 
   /**
    * Expressions for function-based grouping.
-   * <p>Use either this or {@code propertyNames}, not both.
-   * The builder will throw an exception if both are set.
+   * <p>Can be combined with {@code propertyNames}.
    */
   @Singular
   private List<PropertyExpression> expressions;
@@ -134,27 +138,43 @@ public class SimpleGroupBy implements GroupBy {
   }
 
   /**
+   * Check if this group by uses property names.
+   *
+   * @return true if property names are set
+   */
+  @JsonIgnore
+  public boolean hasPropertyNames() {
+    return propertyNames != null && !propertyNames.isEmpty();
+  }
+
+  /**
    * Get all grouping criteria as PropertyExpressions.
-   * <p>If expressions are set, returns them. Otherwise, converts propertyNames
-   * to PropertyReferences.
+   * <p>Combines both propertyNames (converted to PropertyReferences) and expressions
+   * into a single list. PropertyNames come first, followed by expressions.
    *
    * @return list of PropertyExpression for all grouping criteria
    */
   @JsonIgnore
   public List<PropertyExpression> getEffectiveExpressions() {
-    if (hasExpressions()) {
-      return List.copyOf(expressions);
-    }
+    List<PropertyExpression> result = new ArrayList<>();
+    
+    // Add property names as PropertyReferences
     if (propertyNames != null) {
-      return propertyNames.stream()
-          .map(name -> (PropertyExpression) PropertyReference.of(name))
-          .toList();
+      for (String name : propertyNames) {
+        result.add(PropertyReference.of(name));
+      }
     }
-    return List.of();
+    
+    // Add expressions
+    if (expressions != null) {
+      result.addAll(expressions);
+    }
+    
+    return List.copyOf(result);
   }
 
   /**
-   * Custom builder to validate that exactly one of propertyNames or expressions is set.
+   * Custom builder to validate that at least one of propertyNames or expressions is set.
    */
   public static class SimpleGroupByBuilder {
     public SimpleGroupBy build() {
@@ -163,9 +183,6 @@ public class SimpleGroupBy implements GroupBy {
 
       if (!hasPropertyNames && !hasExpressions) {
         throw new IllegalArgumentException("Either propertyNames or expressions must be set");
-      }
-      if (hasPropertyNames && hasExpressions) {
-        throw new IllegalArgumentException("Cannot set both propertyNames and expressions");
       }
       return new SimpleGroupBy(propertyNames, expressions);
     }
