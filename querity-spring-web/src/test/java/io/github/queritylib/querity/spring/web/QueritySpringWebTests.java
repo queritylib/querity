@@ -36,9 +36,8 @@ class QueritySpringWebTests {
       /* not single condition */      "{\"filter\":{\"not\":{\"propertyName\":\"lastName\",\"operator\":\"EQUALS\",\"value\":\"Skywalker\"}}}",
       /* not conditions wrapper */    "{\"filter\":{\"not\":{\"and\":[{\"propertyName\":\"lastName\",\"operator\":\"EQUALS\",\"value\":\"Skywalker\"}]}}}",
       /* in array condition */        "{\"filter\":{\"propertyName\":\"lastName\",\"operator\":\"IN\",\"value\":[\"Skywalker\",\"Solo\"]}}",
-      /* simple select */             "{\"select\":{\"propertyNames\":[\"id\",\"firstName\",\"lastName\"]}}",
-      /* select with filter */        "{\"filter\":{\"propertyName\":\"lastName\",\"operator\":\"EQUALS\",\"value\":\"Skywalker\"},\"select\":{\"propertyNames\":[\"id\",\"name\"]}}",
-      /* select with sort */          "{\"select\":{\"propertyNames\":[\"id\"]},\"sort\":[{\"propertyName\":\"lastName\"}]}",
+      // Note: Tests with 'select' have been removed as Query no longer supports select.
+      // Use AdvancedQuery for projections (select, groupBy, having).
   })
   void givenJsonQuery_whenGetQuery_thenReturnsTheSameQueryAsResponse(String query) throws Exception {
     mockMvc.perform(get("/query")
@@ -141,5 +140,67 @@ class QueritySpringWebTests {
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(content().json("{\"propertyName\":\"prop2\",\"operator\":\"EQUALS\",\"value\":\"test\"}", JsonCompareMode.LENIENT));
+  }
+
+  /**
+   * Tests JSON deserialization and serialization of an AdvancedQuery object given as a REST endpoint query parameter
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {
+      /* empty advanced query */
+      "{}",
+      /* select with property names */
+      "{\"select\":{\"propertyNames\":[\"firstName\",\"lastName\"]}}",
+      /* select with expressions - property references */
+      "{\"select\":{\"expressions\":[{\"propertyName\":\"firstName\"},{\"propertyName\":\"lastName\",\"alias\":\"surname\"}]}}",
+      /* select with function expression */
+      "{\"select\":{\"expressions\":[{\"function\":\"UPPER\",\"arguments\":[{\"propertyName\":\"lastName\"}],\"alias\":\"upperName\"}]}}",
+      /* select with aggregate function */
+      "{\"select\":{\"expressions\":[{\"function\":\"COUNT\",\"arguments\":[{\"propertyName\":\"id\"}],\"alias\":\"total\"}]}}",
+      /* group by with property names */
+      "{\"select\":{\"expressions\":[{\"propertyName\":\"category\"},{\"function\":\"COUNT\",\"arguments\":[{\"propertyName\":\"id\"}],\"alias\":\"count\"}]},\"groupBy\":{\"propertyNames\":[\"category\"]}}",
+      /* group by with expressions */
+      "{\"select\":{\"expressions\":[{\"function\":\"UPPER\",\"arguments\":[{\"propertyName\":\"category\"}],\"alias\":\"upperCat\"},{\"function\":\"COUNT\",\"arguments\":[{\"propertyName\":\"id\"}],\"alias\":\"count\"}]},\"groupBy\":{\"expressions\":[{\"function\":\"UPPER\",\"arguments\":[{\"propertyName\":\"category\"}]}]}}",
+      /* group by with having - using leftExpression */
+      "{\"select\":{\"expressions\":[{\"propertyName\":\"category\"},{\"function\":\"SUM\",\"arguments\":[{\"propertyName\":\"amount\"}],\"alias\":\"total\"}]},\"groupBy\":{\"propertyNames\":[\"category\"]},\"having\":{\"leftExpression\":{\"function\":\"SUM\",\"arguments\":[{\"propertyName\":\"amount\"}]},\"operator\":\"GREATER_THAN\",\"value\":1000}}",
+      /* advanced query with filter */
+      "{\"filter\":{\"propertyName\":\"status\",\"operator\":\"EQUALS\",\"value\":\"ACTIVE\"},\"select\":{\"propertyNames\":[\"name\",\"status\"]}}",
+      /* advanced query with pagination */
+      "{\"select\":{\"propertyNames\":[\"name\"]},\"pagination\":{\"page\":1,\"pageSize\":20}}",
+      /* advanced query with sort */
+      "{\"select\":{\"propertyNames\":[\"name\"]},\"sort\":[{\"propertyName\":\"name\",\"direction\":\"ASC\"}]}",
+      /* advanced query with distinct */
+      "{\"select\":{\"propertyNames\":[\"category\"]},\"distinct\":true}",
+      /* complex advanced query */
+      "{\"filter\":{\"propertyName\":\"status\",\"operator\":\"EQUALS\",\"value\":\"COMPLETED\"},\"select\":{\"expressions\":[{\"propertyName\":\"category\"},{\"function\":\"COUNT\",\"arguments\":[{\"propertyName\":\"id\"}],\"alias\":\"orderCount\"},{\"function\":\"SUM\",\"arguments\":[{\"propertyName\":\"amount\"}],\"alias\":\"totalAmount\"}]},\"groupBy\":{\"propertyNames\":[\"category\"]},\"having\":{\"leftExpression\":{\"function\":\"COUNT\",\"arguments\":[{\"propertyName\":\"id\"}]},\"operator\":\"GREATER_THAN\",\"value\":5},\"sort\":[{\"propertyName\":\"totalAmount\",\"direction\":\"DESC\"}],\"pagination\":{\"page\":1,\"pageSize\":10}}"
+  })
+  void givenJsonAdvancedQuery_whenGetAdvancedQuery_thenReturnsTheSameQueryAsResponse(String query) throws Exception {
+    mockMvc.perform(get("/advanced-query")
+            .queryParam("q", query))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(content().json(query, JsonCompareMode.LENIENT));
+  }
+
+  @Test
+  void givenInvalidJsonAdvancedQuery_whenGetAdvancedQuery_thenReturnsBadRequest() throws Exception {
+    mockMvc.perform(get("/advanced-query")
+            .queryParam("q", "{"))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void givenNoAdvancedQuery_whenGetAdvancedQuery_thenReturnsEmptyResponse() throws Exception {
+    mockMvc.perform(get("/advanced-query"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(""));
+  }
+
+  @Test
+  void givenEmptyStringAsAdvancedQuery_whenGetAdvancedQuery_thenReturnsEmptyResponse() throws Exception {
+    mockMvc.perform(get("/advanced-query")
+            .queryParam("q", ""))
+        .andExpect(status().isOk())
+        .andExpect(content().string(""));
   }
 }

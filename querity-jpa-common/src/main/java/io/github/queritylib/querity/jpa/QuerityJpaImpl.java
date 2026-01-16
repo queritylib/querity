@@ -1,5 +1,6 @@
 package io.github.queritylib.querity.jpa;
 
+import io.github.queritylib.querity.api.AdvancedQuery;
 import io.github.queritylib.querity.api.Condition;
 import io.github.queritylib.querity.api.Querity;
 import io.github.queritylib.querity.api.Query;
@@ -34,11 +35,15 @@ public class QuerityJpaImpl implements Querity {
   }
 
   @Override
-  public List<Map<String, Object>> findAllProjected(Class<?> entityClass, Query query) {
-    return getJpaQueryFactory(entityClass, query).getProjectedResults();
+  public List<Map<String, Object>> findAllProjected(Class<?> entityClass, AdvancedQuery query) {
+    return getJpaAdvancedQueryFactory(entityClass, query).getProjectedResults();
   }
 
   protected <T> JpaQueryFactory<T> getJpaQueryFactory(Class<T> entityClass, Query query) {
     return new JpaQueryFactory<>(entityClass, query, entityManager);
+  }
+
+  protected <T> JpaAdvancedQueryFactory<T> getJpaAdvancedQueryFactory(Class<T> entityClass, AdvancedQuery query) {
+    return new JpaAdvancedQueryFactory<>(entityClass, query, entityManager);
   }
 }

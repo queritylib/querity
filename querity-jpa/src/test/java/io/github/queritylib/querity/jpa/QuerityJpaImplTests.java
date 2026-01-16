@@ -1,5 +1,6 @@
 package io.github.queritylib.querity.jpa;
 
+import io.github.queritylib.querity.api.AdvancedQuery;
 import io.github.queritylib.querity.api.Operator;
 import io.github.queritylib.querity.api.Querity;
 import io.github.queritylib.querity.api.Query;
@@ -205,7 +206,7 @@ public abstract class QuerityJpaImplTests extends QuerityGenericTestSuite<Person
 
   @Test
   void givenSelectWithProjection_whenFindAllProjected_thenReturnOnlySelectedFields() {
-    Query query = Querity.query()
+    AdvancedQuery query = Querity.advancedQuery()
         .selectBy("firstName", "lastName")
         .build();
     List<Map<String, Object>> result = querity.findAllProjected(Person.class, query);
@@ -217,7 +218,7 @@ public abstract class QuerityJpaImplTests extends QuerityGenericTestSuite<Person
   @Test
   void givenQueryWithFilterAndProjection_whenFindAllProjected_thenReturnFilteredAndProjectedResults() {
     String lastName = ((Person) entity1).getLastName();
-    Query query = Querity.query()
+    AdvancedQuery query = Querity.advancedQuery()
         .filter(Querity.filterBy("lastName", lastName))
         .selectBy("firstName", "lastName")
         .build();
@@ -229,7 +230,7 @@ public abstract class QuerityJpaImplTests extends QuerityGenericTestSuite<Person
 
   @Test
   void givenQueryWithNestedFieldProjection_whenFindAllProjected_thenReturnNestedFieldValues() {
-    Query query = Querity.query()
+    AdvancedQuery query = Querity.advancedQuery()
         .selectBy("firstName", "address.city")
         .build();
     List<Map<String, Object>> result = querity.findAllProjected(Person.class, query);
@@ -237,7 +238,8 @@ public abstract class QuerityJpaImplTests extends QuerityGenericTestSuite<Person
         .isNotEmpty()
         .allSatisfy(map -> assertThat(map)
             .containsKey("firstName")
-            .containsKey("city"));
+            // Nested field "address.city" is returned with full path as key to avoid collisions
+            .containsKey("address.city"));
   }
 
   @Test
@@ -246,7 +248,7 @@ public abstract class QuerityJpaImplTests extends QuerityGenericTestSuite<Person
         (root, cb) -> root.get("firstName"),
         "firstName"
     );
-    Query query = Querity.query()
+    AdvancedQuery query = Querity.advancedQuery()
         .select(selectByNative(firstNameSpec))
         .build();
     List<Map<String, Object>> result = querity.findAllProjected(Person.class, query);
@@ -266,7 +268,7 @@ public abstract class QuerityJpaImplTests extends QuerityGenericTestSuite<Person
             cb.coalesce(root.get("lastName"), "")),
         "fullName"
     );
-    Query query = Querity.query()
+    AdvancedQuery query = Querity.advancedQuery()
         .filter(Querity.filterBy("firstName", io.github.queritylib.querity.api.Operator.IS_NOT_NULL))
         .filter(Querity.filterBy("lastName", io.github.queritylib.querity.api.Operator.IS_NOT_NULL))
         .select(selectByNative(fullNameSpec))
@@ -295,7 +297,7 @@ public abstract class QuerityJpaImplTests extends QuerityGenericTestSuite<Person
         (root, cb) -> root.get("id"),
         "id"
     );
-    Query query = Querity.query()
+    AdvancedQuery query = Querity.advancedQuery()
         .filter(Querity.filterBy("lastName", entity1.getLastName()))
         .select(selectByNative(idSpec, fullNameSpec))
         .build();

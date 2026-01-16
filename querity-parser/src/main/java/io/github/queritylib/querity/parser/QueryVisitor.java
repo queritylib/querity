@@ -10,16 +10,31 @@ import java.util.Locale;
 class QueryVisitor extends QueryParserBaseVisitor<Object> {
 
   @Override
-  public Query visitQuery(QueryParser.QueryContext ctx) {
+  public QueryDefinition visitQuery(QueryParser.QueryContext ctx) {
     boolean distinct = ctx.DISTINCT() != null;
     Select select = ctx.selectClause() != null ? (Select) visit(ctx.selectClause()) : null;
     Condition filter = ctx.condition() != null ? (Condition) visit(ctx.condition()) : null;
+    GroupBy groupBy = ctx.groupByClause() != null ? (GroupBy) visit(ctx.groupByClause()) : null;
+    Condition having = ctx.havingClause() != null ? (Condition) visit(ctx.havingClause()) : null;
     Sort[] sorts = ctx.SORT() != null ? (Sort[]) visit(ctx.sortFields()) : new Sort[0];
     Pagination pagination = ctx.PAGINATION() != null ? (Pagination) visit(ctx.paginationParams()) : null;
 
+    // If query has projection features (select, groupBy, having), return AdvancedQuery
+    if (select != null || groupBy != null || having != null) {
+      return Querity.advancedQuery()
+          .distinct(distinct)
+          .select(select)
+          .filter(filter)
+          .groupBy(groupBy)
+          .having(having)
+          .pagination(pagination)
+          .sort(sorts)
+          .build();
+    }
+
+    // Otherwise return simple Query
     return Querity.query()
         .distinct(distinct)
-        .select(select)
         .filter(filter)
         .pagination(pagination)
         .sort(sorts)
@@ -45,11 +60,7 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
 
     if (allSimpleProperties) {
       // Use propertyNames for backward compatibility
-      String[] propertyNames = expressions.stream()
-          .map(PropertyReference.class::cast)
-          .map(PropertyReference::getPropertyName)
-          .toArray(String[]::new);
-      return SimpleSelect.of(propertyNames);
+      return SimpleSelect.of(extractPropertyNames(expressions));
     } else {
       // Use expressions when functions are involved
       return SimpleSelect.ofExpressions(expressions.toArray(new PropertyExpression[0]));
@@ -70,6 +81,37 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
       }
     }
     return expr;
+  }
+
+  @Override
+  public Object visitGroupByClause(QueryParser.GroupByClauseContext ctx) {
+    return visit(ctx.groupByFields());
+  }
+
+  @Override
+  public Object visitGroupByFields(QueryParser.GroupByFieldsContext ctx) {
+    List<PropertyExpression> expressions = new ArrayList<>();
+    for (QueryParser.PropertyExpressionContext exprCtx : ctx.propertyExpression()) {
+      PropertyExpression expr = (PropertyExpression) visit(exprCtx);
+      expressions.add(expr);
+    }
+
+    // Check if all expressions are simple PropertyReferences (no functions)
+    boolean allSimpleProperties = expressions.stream()
+        .allMatch(e -> e instanceof PropertyReference);
+
+    if (allSimpleProperties) {
+      // Use propertyNames for backward compatibility
+      return SimpleGroupBy.of(extractPropertyNames(expressions));
+    } else {
+      // Use expressions when functions are involved
+      return SimpleGroupBy.ofExpressions(expressions.toArray(new PropertyExpression[0]));
+    }
+  }
+
+  @Override
+  public Object visitHavingClause(QueryParser.HavingClauseContext ctx) {
+    return visit(ctx.condition());
   }
 
   @Override
@@ -324,5 +366,19 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
       }
     }
     return result.toString();
+  }
+
+  /**
+   * Extracts property names from a list of PropertyExpressions.
+   * <p>Assumes all expressions are PropertyReference instances.
+   *
+   * @param expressions list of PropertyExpression (must all be PropertyReference)
+   * @return array of property names
+   */
+  private static String[] extractPropertyNames(List<PropertyExpression> expressions) {
+    return expressions.stream()
+        .map(PropertyReference.class::cast)
+        .map(PropertyReference::getPropertyName)
+        .toArray(String[]::new);
   }
 }

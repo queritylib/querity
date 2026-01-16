@@ -1,5 +1,6 @@
 package io.github.queritylib.querity.spring.data.mongodb;
 
+import io.github.queritylib.querity.api.AdvancedQuery;
 import io.github.queritylib.querity.api.Condition;
 import io.github.queritylib.querity.api.Querity;
 import io.github.queritylib.querity.api.Query;
@@ -20,10 +21,6 @@ public class QuerityMongodbImpl implements Querity {
 
   @Override
   public <T> List<T> findAll(Class<T> entityClass, Query query) {
-    if (query != null && query.hasSelect()) {
-      throw new IllegalArgumentException(
-          "findAll() does not support projections. Use findAllProjected() instead.");
-    }
     org.springframework.data.mongodb.core.query.Query q = getMongodbQuery(entityClass, query);
     return mongoTemplate.find(q, entityClass);
   }
@@ -36,8 +33,8 @@ public class QuerityMongodbImpl implements Querity {
   }
 
   @Override
-  public List<Map<String, Object>> findAllProjected(Class<?> entityClass, Query query) {
-    org.springframework.data.mongodb.core.query.Query q = getMongodbQueryFactory(entityClass, query).getMongodbProjectedQuery();
+  public List<Map<String, Object>> findAllProjected(Class<?> entityClass, AdvancedQuery query) {
+    org.springframework.data.mongodb.core.query.Query q = getMongodbAdvancedQueryFactory(entityClass, query).getMongodbProjectedQuery();
     return mongoTemplate.find(q, Document.class, mongoTemplate.getCollectionName(entityClass)).stream()
         .map(this::documentToMap)
         .toList();
@@ -61,5 +58,9 @@ public class QuerityMongodbImpl implements Querity {
 
   protected static <T> MongodbQueryFactory<T> getMongodbQueryFactory(Class<T> entityClass, Query query) {
     return new MongodbQueryFactory<>(entityClass, query);
+  }
+
+  protected static <T> MongodbAdvancedQueryFactory<T> getMongodbAdvancedQueryFactory(Class<T> entityClass, AdvancedQuery query) {
+    return new MongodbAdvancedQueryFactory<>(entityClass, query);
   }
 }

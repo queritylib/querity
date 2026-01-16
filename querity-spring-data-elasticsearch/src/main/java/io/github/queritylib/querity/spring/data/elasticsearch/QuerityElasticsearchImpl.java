@@ -1,6 +1,7 @@
 package io.github.queritylib.querity.spring.data.elasticsearch;
 
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
+import io.github.queritylib.querity.api.AdvancedQuery;
 import io.github.queritylib.querity.api.Condition;
 import io.github.queritylib.querity.api.Querity;
 import io.github.queritylib.querity.api.Query;
@@ -25,10 +26,6 @@ public class QuerityElasticsearchImpl implements Querity {
 
   @Override
   public <T> List<T> findAll(Class<T> entityClass, Query query) {
-    if (query != null && query.hasSelect()) {
-      throw new IllegalArgumentException(
-          "findAll() does not support projections. Use findAllProjected() instead.");
-    }
     org.springframework.data.elasticsearch.core.query.Query q = getElasticsearchQuery(entityClass, query);
     try {
       SearchHits<T> hits = elasticsearchOperations.search(q, entityClass);
@@ -48,8 +45,8 @@ public class QuerityElasticsearchImpl implements Querity {
 
   @Override
   @SuppressWarnings("unchecked")
-  public List<Map<String, Object>> findAllProjected(Class<?> entityClass, Query query) {
-    org.springframework.data.elasticsearch.core.query.Query q = getElasticsearchQueryFactory(entityClass, query).getElasticsearchProjectedQuery();
+  public List<Map<String, Object>> findAllProjected(Class<?> entityClass, AdvancedQuery query) {
+    org.springframework.data.elasticsearch.core.query.Query q = getElasticsearchAdvancedQueryFactory(entityClass, query).getElasticsearchProjectedQuery();
     Class<Map<String, Object>> mapClass = (Class<Map<String, Object>>) (Class<?>) Map.class;
     try {
       SearchHits<Map<String, Object>> hits =
@@ -81,5 +78,9 @@ public class QuerityElasticsearchImpl implements Querity {
 
   protected static <T> ElasticsearchQueryFactory<T> getElasticsearchQueryFactory(Class<T> entityClass, Query query) {
     return new ElasticsearchQueryFactory<>(entityClass, query);
+  }
+
+  protected static <T> ElasticsearchAdvancedQueryFactory<T> getElasticsearchAdvancedQueryFactory(Class<T> entityClass, AdvancedQuery query) {
+    return new ElasticsearchAdvancedQueryFactory<>(entityClass, query);
   }
 }

@@ -1,8 +1,10 @@
 package io.github.queritylib.querity.spring.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.queritylib.querity.api.AdvancedQuery;
 import io.github.queritylib.querity.api.Condition;
 import io.github.queritylib.querity.api.Query;
+import io.github.queritylib.querity.spring.web.propertyeditor.AdvancedQueryJsonPropertyEditor;
 import io.github.queritylib.querity.spring.web.propertyeditor.ConditionJsonPropertyEditor;
 import io.github.queritylib.querity.spring.web.propertyeditor.QueryJsonPropertyEditor;
 import org.springframework.format.support.FormattingConversionService;
@@ -25,6 +27,7 @@ public class QuerityWebMvcSupport extends WebMvcConfigurationSupport {
     ConfigurableWebBindingInitializer initializer = super.getConfigurableWebBindingInitializer(mvcConversionService, mvcValidator);
     initializer.setPropertyEditorRegistrar(propertyEditorRegistry -> {
       propertyEditorRegistry.registerCustomEditor(Query.class, new QueryJsonPropertyEditor(objectMapper));
+      propertyEditorRegistry.registerCustomEditor(AdvancedQuery.class, new AdvancedQueryJsonPropertyEditor(objectMapper));
       propertyEditorRegistry.registerCustomEditor(Condition.class, new ConditionJsonPropertyEditor(objectMapper));
     });
     return initializer;

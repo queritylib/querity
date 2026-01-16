@@ -1,5 +1,6 @@
 package io.github.queritylib.querity.spring.data.jpa;
 
+import io.github.queritylib.querity.api.AdvancedQuery;
 import io.github.queritylib.querity.api.Operator;
 import io.github.queritylib.querity.api.Querity;
 import io.github.queritylib.querity.api.Query;
@@ -177,7 +178,7 @@ public abstract class QuerityJpaImplTests extends QuerityGenericSpringTestSuite<
             cb.coalesce(root.get("lastName"), "")),
         "fullName"
     );
-    Query query = Querity.query()
+    AdvancedQuery query = Querity.advancedQuery()
         .filter(filterBy("firstName", Operator.IS_NOT_NULL))
         .filter(filterBy("lastName", Operator.IS_NOT_NULL))
         .select(selectByNative(fullNameSpec))
@@ -206,7 +207,7 @@ public abstract class QuerityJpaImplTests extends QuerityGenericSpringTestSuite<
         (root, cb) -> root.get("id"),
         "id"
     );
-    Query query = Querity.query()
+    AdvancedQuery query = Querity.advancedQuery()
         .filter(filterBy("lastName", entity1.getLastName()))
         .select(selectByNative(idSpec, fullNameSpec))
         .build();

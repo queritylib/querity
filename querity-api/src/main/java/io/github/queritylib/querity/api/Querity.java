@@ -13,15 +13,37 @@ public interface Querity {
    * Execute a projection query returning a list of maps with the selected properties.
    *
    * @param entityClass the entity class to query
-   * @param query the query with select clause
+   * @param query the advanced query with select, groupBy, and having clauses
    * @return a list of maps containing the selected properties
    */
-  default List<Map<String, Object>> findAllProjected(Class<?> entityClass, Query query) {
+  default List<Map<String, Object>> findAllProjected(Class<?> entityClass, AdvancedQuery query) {
     throw new UnsupportedOperationException("Projection queries are not supported by this implementation");
   }
 
   static Query.QueryBuilder query() {
     return Query.builder();
+  }
+
+  /**
+   * Create an advanced query builder for projection queries.
+   *
+   * <p>Use this for queries that require SELECT, GROUP BY, or HAVING clauses:
+   * <pre>{@code
+   * AdvancedQuery query = Querity.advancedQuery()
+   *     .select(prop("category"), sum(prop("amount")).as("total"))
+   *     .filter(filterBy("status", EQUALS, "ACTIVE"))
+   *     .groupBy("category")
+   *     .having(filterBy(count(prop("id")), GREATER_THAN, 10))
+   *     .build();
+   *
+   * List<Map<String, Object>> results = querity.findAllProjected(Order.class, query);
+   * }</pre>
+   *
+   * @return an AdvancedQuery builder
+   * @see #query() for simple entity queries
+   */
+  static AdvancedQuery.AdvancedQueryBuilder advancedQuery() {
+    return AdvancedQuery.builder();
   }
 
   /**
@@ -91,6 +113,48 @@ public interface Querity {
     return NativeSelectWrapper.<T>builder()
         .nativeSelections(Arrays.asList(nativeSelections))
         .build();
+  }
+
+  /**
+   * Create a GROUP BY clause with the given property names.
+   *
+   * <p>Example:
+   * <pre>{@code
+   * AdvancedQuery query = Querity.advancedQuery()
+   *     .select(
+   *         prop("category"),
+   *         sum(prop("amount")).as("totalAmount")
+   *     )
+   *     .groupBy("category")
+   *     .build();
+   * }</pre>
+   *
+   * @param propertyNames the property names to group by
+   * @return a SimpleGroupBy
+   */
+  static SimpleGroupBy groupBy(String... propertyNames) {
+    return SimpleGroupBy.of(propertyNames);
+  }
+
+  /**
+   * Create a GROUP BY clause with the given expressions.
+   *
+   * <p>Example:
+   * <pre>{@code
+   * AdvancedQuery query = Querity.advancedQuery()
+   *     .select(
+   *         upper(prop("category")).as("upperCategory"),
+   *         sum(prop("amount")).as("totalAmount")
+   *     )
+   *     .groupByExpressions(upper(prop("category")))
+   *     .build();
+   * }</pre>
+   *
+   * @param expressions the expressions to group by
+   * @return a SimpleGroupBy
+   */
+  static SimpleGroupBy groupBy(PropertyExpression... expressions) {
+    return SimpleGroupBy.ofExpressions(expressions);
   }
 
   static Query wrapConditionInQuery(Condition condition) {

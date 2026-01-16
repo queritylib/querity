@@ -32,6 +32,7 @@ Query features:
 * pagination
 * projections (select specific fields)
 * function expressions (UPPER, LOWER, LENGTH, CONCAT, etc.)
+* GROUP BY and HAVING clauses
 * textual query language
 * support for REST APIs
 * support for DTO layer
@@ -133,10 +134,10 @@ Java 14).
 
 #### Projections
 
-Use `selectBy` to retrieve only specific fields instead of full entities:
+Use `advancedQuery()` with `selectBy` to retrieve only specific fields instead of full entities:
 
 ```java
-Query query = Querity.query()
+AdvancedQuery query = Querity.advancedQuery()
     .selectBy("firstName", "lastName", "address.city")
     .filter(filterBy("lastName", EQUALS, "Skywalker"))
     .build();
@@ -167,7 +168,7 @@ SelectionSpecification<Person> fullNameSpec = AliasedSelectionSpecification.of(
     (root, cb) -> cb.concat(cb.concat(root.get("firstName"), " "), root.get("lastName")),
     "fullName"
 );
-Query query = Querity.query()
+AdvancedQuery query = Querity.advancedQuery()
     .select(selectByNative(fullNameSpec))
     .build();
 List<Map<String, Object>> results = querity.findAllProjected(Person.class, query);
@@ -194,12 +195,12 @@ Query query = Querity.query()
     .build();
 
 // Select with function expressions
-Query query = Querity.query()
-    .select(selectBy(
+AdvancedQuery query = Querity.advancedQuery()
+    .select(
         prop("id"),
         upper(prop("lastName")).as("upperLastName"),
         concat(prop("firstName"), lit(" "), prop("lastName")).as("fullName")
-    ))
+    )
     .build();
 ```
 
@@ -297,6 +298,75 @@ Query query = QuerityParser.parseQuery(
 | `AVG` | Yes | Filters only | No |
 | `MIN` | Yes | Filters only | No |
 | `MAX` | Yes | Filters only | No |
+
+#### GROUP BY and HAVING
+
+Querity supports GROUP BY and HAVING clauses for aggregate queries. Use `advancedQuery()` with `groupBy` to group results and `having` to filter groups:
+
+```java
+import static io.github.queritylib.querity.api.Querity.*;
+
+// Group by single property
+AdvancedQuery query = Querity.advancedQuery()
+    .select(selectBy(
+        prop("category"),
+        count(prop("id")).as("itemCount"),
+        sum(prop("amount")).as("totalAmount")
+    ))
+    .groupBy("category")
+    .build();
+List<Map<String, Object>> results = querity.findAllProjected(Order.class, query);
+// Returns: [{category: "Electronics", itemCount: 42, totalAmount: 15000}, ...]
+
+// Group by multiple properties
+AdvancedQuery query = Querity.advancedQuery()
+    .select(selectBy(
+        prop("category"),
+        prop("region"),
+        avg(prop("price")).as("avgPrice")
+    ))
+    .groupBy("category", "region")
+    .build();
+
+// Group by with HAVING clause
+AdvancedQuery query = Querity.advancedQuery()
+    .select(selectBy(
+        prop("category"),
+        sum(prop("amount")).as("total")
+    ))
+    .groupBy("category")
+    .having(filterBy(sum(prop("amount")), GREATER_THAN, 1000))
+    .build();
+// Returns only categories with total amount > 1000
+```
+
+**Group by with function expressions:**
+
+```java
+// Group by function result (e.g., group orders by year)
+AdvancedQuery query = Querity.advancedQuery()
+    .select(selectBy(
+        upper(prop("category")).as("upperCategory"),
+        count(prop("id")).as("orderCount")
+    ))
+    .groupBy(upper(prop("category")))
+    .build();
+```
+
+**Query language support:**
+
+GROUP BY and HAVING can also be used in the textual query language:
+
+```java
+AdvancedQuery query = QuerityParser.parseAdvancedQuery(
+    "select category, COUNT(id) as itemCount group by category having COUNT(id) > 10"
+);
+```
+
+> **Backend support:**
+> - **JPA**: Full support for GROUP BY and HAVING
+> - **MongoDB**: Not yet supported
+> - **Elasticsearch**: Not supported
 
 #### Query language
 

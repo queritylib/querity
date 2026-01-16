@@ -1,5 +1,6 @@
 package io.github.queritylib.querity.spring.data.mongodb;
 
+import io.github.queritylib.querity.api.AdvancedQuery;
 import io.github.queritylib.querity.api.Querity;
 import io.github.queritylib.querity.api.Query;
 import io.github.queritylib.querity.spring.data.mongodb.domain.Person;
@@ -78,6 +79,14 @@ class QuerityMongodbImplTests extends QuerityGenericSpringTestSuite<Person, Stri
     return false;
   }
 
+  /**
+   * MongoDB requires aggregation pipeline for GROUP BY operations.
+   */
+  @Override
+  protected boolean supportsGroupBy() {
+    return false;
+  }
+
   @Test
   void givenMongodbNativeCondition_whenFindAll_thenReturnOnlyFilteredElements() {
     Criteria criteria = Criteria.where("lastName").is(entity1.getLastName());
@@ -150,7 +159,7 @@ class QuerityMongodbImplTests extends QuerityGenericSpringTestSuite<Person, Stri
 
   @Test
   void givenSelectWithProjection_whenFindAllProjected_thenReturnOnlySelectedFields() {
-    Query query = Querity.query()
+    AdvancedQuery query = Querity.advancedQuery()
         .selectBy("firstName", "lastName")
         .build();
     List<Map<String, Object>> result = querity.findAllProjected(Person.class, query);
@@ -160,20 +169,14 @@ class QuerityMongodbImplTests extends QuerityGenericSpringTestSuite<Person, Stri
         .allSatisfy(map -> assertThat(map).containsKey("firstName"));
   }
 
-  @Test
-  void givenSelectWithProjection_whenFindAll_thenThrowIllegalArgumentException() {
-    Query query = Querity.query()
-        .selectBy("firstName", "lastName")
-        .build();
-    assertThrows(IllegalArgumentException.class,
-        () -> querity.findAll(Person.class, query),
-        "findAll() does not support projections. Use findAllProjected() instead.");
-  }
+  // Note: The test 'givenSelectWithProjection_whenFindAll_thenThrowIllegalArgumentException'
+  // has been removed. With the Query/AdvancedQuery separation, this scenario is now prevented
+  // at compile time - AdvancedQuery cannot be passed to findAll() which only accepts Query.
 
   @Test
   void givenQueryWithFilterAndProjection_whenFindAllProjected_thenReturnFilteredAndProjectedResults() {
     String lastName = ((Person) entity1).getLastName();
-    Query query = Querity.query()
+    AdvancedQuery query = Querity.advancedQuery()
         .filter(Querity.filterBy("lastName", lastName))
         .selectBy("firstName", "lastName")
         .build();
