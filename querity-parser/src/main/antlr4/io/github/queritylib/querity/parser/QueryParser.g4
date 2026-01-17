@@ -3,7 +3,9 @@ parser grammar QueryParser;
 options { tokenVocab=QueryLexer; }
 
 // Main query structure
-query            : DISTINCT? (selectClause)? (condition)? (groupByClause)? (havingClause)? (SORT sortFields)? (PAGINATION paginationParams)? ;
+query            : DISTINCT? (selectClause)? (whereCondition)? (groupByClause)? (havingClause)? (SORT sortFields)? (PAGINATION paginationParams)? ;
+
+whereCondition   : WHERE? condition ;
 
 // Select clause with support for expressions and optional aliases
 selectClause     : SELECT selectFields ;

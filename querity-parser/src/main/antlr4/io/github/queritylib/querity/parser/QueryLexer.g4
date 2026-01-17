@@ -22,6 +22,7 @@ PAGINATION  : P A G E;
 AS          : A S;
 GROUP_BY    : G R O U P ' ' B Y;
 HAVING      : H A V I N G;
+WHERE       : W H E R E;
 
 // Comparison operators
 NEQ         : '!=';
