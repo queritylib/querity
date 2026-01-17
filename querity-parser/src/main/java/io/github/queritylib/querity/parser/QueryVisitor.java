@@ -13,7 +13,7 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
   public QueryDefinition visitQuery(QueryParser.QueryContext ctx) {
     boolean distinct = ctx.DISTINCT() != null;
     Select select = ctx.selectClause() != null ? (Select) visit(ctx.selectClause()) : null;
-    Condition filter = ctx.condition() != null ? (Condition) visit(ctx.condition()) : null;
+    Condition filter = ctx.whereCondition() != null ? (Condition) visit(ctx.whereCondition()) : null;
     GroupBy groupBy = ctx.groupByClause() != null ? (GroupBy) visit(ctx.groupByClause()) : null;
     Condition having = ctx.havingClause() != null ? (Condition) visit(ctx.havingClause()) : null;
     Sort[] sorts = ctx.SORT() != null ? (Sort[]) visit(ctx.sortFields()) : new Sort[0];
@@ -39,6 +39,11 @@ class QueryVisitor extends QueryParserBaseVisitor<Object> {
         .pagination(pagination)
         .sort(sorts)
         .build();
+  }
+
+  @Override
+  public Object visitWhereCondition(QueryParser.WhereConditionContext ctx) {
+    return visit(ctx.condition());
   }
 
   @Override
