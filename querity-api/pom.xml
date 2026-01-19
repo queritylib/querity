@@ -13,7 +13,7 @@
   <description>Core module of Querity containing the public API</description>
 
   <properties>
-    <jackson.version>2.20.1</jackson.version>
+    <jackson.version>2.21.0</jackson.version>
     <junit-jupiter.version>6.0.2</junit-jupiter.version>
     <assertj.version>3.27.6</assertj.version>
     <mockito.version>5.21.0</mockito.version>
