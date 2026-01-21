@@ -51,6 +51,7 @@ public class JpaQueryFactory<T> {
     TypedQuery<Tuple> tq = createTypedQuery(cq);
 
     JpaQueryUtils.applyPagination(tq, query);
+    applyCustomizers(tq);
 
     return tq;
   }
@@ -88,5 +89,29 @@ public class JpaQueryFactory<T> {
 
   private <R> TypedQuery<R> createTypedQuery(CriteriaQuery<R> cq) {
     return entityManager.createQuery(cq);
+  }
+
+  /**
+   * Apply customizers to the TypedQuery.
+   * Customizers that are of type QueryCustomizer<JpaQueryContext<?>> will be applied.
+   */
+  private void applyCustomizers(TypedQuery<?> typedQuery) {
+    if (query == null || query.getCustomizers() == null || query.getCustomizers().isEmpty()) {
+      return;
+    }
+
+    JpaQueryContext<T> context = new JpaQueryContext<>(entityManager, entityClass, typedQuery);
+
+    for (io.github.queritylib.querity.api.QueryCustomizer<?> customizer : query.getCustomizers()) {
+      try {
+        @SuppressWarnings("unchecked")
+        io.github.queritylib.querity.api.QueryCustomizer<JpaQueryContext<?>> jpaCustomizer =
+            (io.github.queritylib.querity.api.QueryCustomizer<JpaQueryContext<?>>) customizer;
+        jpaCustomizer.customize(context);
+      } catch (ClassCastException e) {
+        // Ignore customizers that are not for JPA
+        // This allows MongoDB/Elasticsearch customizers to be silently ignored
+      }
+    }
   }
 }

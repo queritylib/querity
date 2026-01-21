@@ -175,6 +175,38 @@ List<Map<String, Object>> results = querity.findAllProjected(Person.class, query
 // Each map contains: {fullName: "Luke Skywalker"}
 ```
 
+#### JPA Hints & Optimizations
+
+You can customize JPA queries with specific hints and optimizations using the `.customize()` method.
+This is useful for performance tuning, like solving N+1 query problems with `FETCH JOIN` or setting query timeouts.
+
+**Fetch Join (Eager Loading):**
+
+```java
+import io.github.queritylib.querity.jpa.JPAHints;
+
+// Fetch associated entities eagerly to avoid N+1 queries
+Query query = Querity.query()
+    .filter(filterBy("status", "ACTIVE"))
+    .customize(JPAHints.fetchJoin("orders", "orders.items")) // Supports nested paths
+    .build();
+List<Person> results = querity.findAll(Person.class, query);
+```
+
+**Other Optimizations:**
+
+```java
+Query query = Querity.query()
+    .customize(
+        JPAHints.batchSize(50),      // Optimize JDBC fetch size
+        JPAHints.timeout(5000),      // Query timeout in ms
+        JPAHints.cacheable(true)     // Enable L2 Query Cache
+    )
+    .build();
+```
+
+> **Note:** Customizers are backend-specific. `JPAHints` will only be applied when using the JPA module and are safely ignored by other modules like MongoDB.
+
 > Native expressions are only available for JPA. MongoDB and Elasticsearch support `sortByNative` and `filterByNative` with their respective native types (`Order`, `Criteria`), but not expression-based projections.
 
 #### Function Expressions

@@ -81,6 +81,41 @@ class QueryTests {
         .hasMessage("Preprocessor cannot be null");
   }
 
+  @Test
+  void givenNullCustomizer_whenCustomize_thenThrowException() {
+    assertThatThrownBy(() -> Querity.query().customize((QueryCustomizer<?>[]) null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Customizers cannot be null");
+  }
+
+  @Test
+  void givenCustomizer_whenCustomize_thenAddCustomizer() {
+    QueryCustomizer<?> customizer = q -> {};
+    Query query = Querity.query().customize(customizer).build();
+    assertThat(query.getCustomizers()).containsExactly(customizer);
+  }
+
+  @Test
+  void givenMultipleCustomizers_whenCustomize_thenAddAllCustomizers() {
+    QueryCustomizer<?> customizer1 = q -> {};
+    QueryCustomizer<?> customizer2 = q -> {};
+    Query query = Querity.query()
+        .customize(customizer1)
+        .customize(customizer2)
+        .build();
+    assertThat(query.getCustomizers()).containsExactly(customizer1, customizer2);
+  }
+
+  @Test
+  void givenCustomizersArray_whenCustomize_thenAddAllCustomizers() {
+    QueryCustomizer<?> customizer1 = q -> {};
+    QueryCustomizer<?> customizer2 = q -> {};
+    Query query = Querity.query()
+        .customize(customizer1, customizer2)
+        .build();
+    assertThat(query.getCustomizers()).containsExactly(customizer1, customizer2);
+  }
+
   static class DummyQueryPreprocessor implements QueryPreprocessor {
     @Override
     public Query preprocess(Query query) {

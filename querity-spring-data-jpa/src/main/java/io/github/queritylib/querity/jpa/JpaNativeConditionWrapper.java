@@ -10,11 +10,14 @@ import lombok.experimental.Delegate;
 import org.springframework.data.jpa.domain.Specification;
 
 class JpaNativeConditionWrapper extends JpaCondition {
-  @Delegate
   private final NativeConditionWrapper<Specification<?>> nativeConditionWrapper;
 
   JpaNativeConditionWrapper(NativeConditionWrapper<Specification<?>> nativeConditionWrapper) {
     this.nativeConditionWrapper = nativeConditionWrapper;
+  }
+
+  public Specification<?> getNativeCondition() {
+    return nativeConditionWrapper.getNativeCondition();
   }
 
   @Override

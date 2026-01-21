@@ -41,6 +41,9 @@ public class Query implements QueryDefinition {
   @NonNull
   @JsonIgnore
   private List<QueryPreprocessor> preprocessors;
+  @NonNull
+  @JsonIgnore
+  private List<QueryCustomizer<?>> customizers;
   private boolean distinct;
 
   @Override
@@ -69,12 +72,21 @@ public class Query implements QueryDefinition {
     @SuppressWarnings({"java:S1068", "java:S1450"})
     private Sort[] sort = new Sort[0];
     private List<QueryPreprocessor> preprocessors = new ArrayList<>();
+    private List<QueryCustomizer<?>> customizers = new ArrayList<>();
 
     public QueryBuilder withPreprocessor(QueryPreprocessor preprocessor) {
       if (preprocessor == null) {
         throw new IllegalArgumentException("Preprocessor cannot be null");
       }
       this.preprocessors.add(preprocessor);
+      return this;
+    }
+
+    public QueryBuilder customize(QueryCustomizer<?>... customizers) {
+      if (customizers == null) {
+        throw new IllegalArgumentException("Customizers cannot be null");
+      }
+      this.customizers.addAll(Arrays.asList(customizers));
       return this;
     }
 
@@ -94,7 +106,7 @@ public class Query implements QueryDefinition {
     }
 
     public Query build() {
-      return new Query(filter, pagination, sort, List.copyOf(preprocessors), distinct);
+      return new Query(filter, pagination, sort, List.copyOf(preprocessors), List.copyOf(customizers), distinct);
     }
   }
 

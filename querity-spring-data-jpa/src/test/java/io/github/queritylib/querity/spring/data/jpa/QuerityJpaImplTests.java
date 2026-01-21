@@ -5,6 +5,7 @@ import io.github.queritylib.querity.api.Operator;
 import io.github.queritylib.querity.api.Querity;
 import io.github.queritylib.querity.api.Query;
 import io.github.queritylib.querity.jpa.AliasedSelectionSpecification;
+import io.github.queritylib.querity.jpa.JPAHints;
 import io.github.queritylib.querity.jpa.OrderSpecification;
 import io.github.queritylib.querity.jpa.SelectionSpecification;
 import io.github.queritylib.querity.jpa.domain.Person;
@@ -22,6 +23,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = QueritySpringJpaTestApplication.class)
 public abstract class QuerityJpaImplTests extends QuerityGenericSpringTestSuite<Person, Long> {
+
+  @org.springframework.beans.factory.annotation.Autowired
+  protected jakarta.persistence.EntityManager entityManager;
 
   @Override
   protected Class<Person> getEntityClass() {
@@ -221,5 +225,86 @@ public abstract class QuerityJpaImplTests extends QuerityGenericSpringTestSuite<
           String fullName = (String) map.get("fullName");
           assertThat(fullName).endsWith(entity1.getLastName());
         });
+  }
+
+  @Test
+  void givenFetchJoinCustomizer_whenFindAll_thenEagerlyLoadAssociations() {
+    Query query = Querity.query()
+        .filter(filterBy("lastName", Operator.IS_NOT_NULL))
+        .customize(JPAHints.fetchJoin("orders")) // orders is Lazy (OneToMany)
+        .build();
+    List<Person> result = querity.findAll(getEntityClass(), query);
+    
+    jakarta.persistence.PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
+    
+    assertThat(result)
+        .isNotEmpty()
+        .allSatisfy(person -> {
+          // Verify that associations are initialized implies fetch join worked
+          // Without fetch join, orders would be uninitialized (Lazy)
+          assertThat(unitUtil.isLoaded(person, "orders"))
+              .as("Orders should be loaded eagerly due to fetchJoin")
+              .isTrue();
+        });
+  }
+
+  @Test
+  void givenNestedFetchJoinCustomizer_whenFindAll_thenEagerlyLoadNestedAssociations() {
+    // We cannot test "orders.items" due to Hibernate MultipleBagFetchException (2 lists)
+    // So we test a safe nested path "orders.person" just to verify graph building works
+    Query query = Querity.query()
+        .filter(filterBy("lastName", Operator.IS_NOT_NULL))
+        .customize(JPAHints.fetchJoin("orders", "orders.person"))
+        .build();
+    List<Person> result = querity.findAll(getEntityClass(), query);
+    
+    jakarta.persistence.PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
+
+    assertThat(result)
+        .isNotEmpty()
+        .allSatisfy(person -> {
+          assertThat(unitUtil.isLoaded(person, "orders")).isTrue();
+          person.getOrders().forEach(order -> 
+              assertThat(unitUtil.isLoaded(order, "person"))
+                  .as("Nested order.person should be loaded")
+                  .isTrue()
+          );
+        });
+  }
+
+  @Test
+  void givenNamedEntityGraphCustomizer_whenFindAll_thenEagerlyLoadAssociations() {
+    Query query = Querity.query()
+        .filter(filterBy("lastName", Operator.IS_NOT_NULL))
+        .customize(JPAHints.namedEntityGraph("Person.withOrders"))
+        .build();
+    List<Person> result = querity.findAll(getEntityClass(), query);
+    
+    jakarta.persistence.PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
+    
+    assertThat(result)
+        .isNotEmpty()
+        .allSatisfy(person -> {
+          // Orders should be loaded by the named entity graph
+          assertThat(unitUtil.isLoaded(person, "orders"))
+              .as("Orders should be loaded eagerly due to NamedEntityGraph")
+              .isTrue();
+        });
+  }
+
+  @Test
+  void givenMultipleCustomizers_whenFindAll_thenApplyAllCustomizers() {
+    Query query = Querity.query()
+        .filter(filterBy("lastName", entity1.getLastName()))
+        .customize(JPAHints.fetchJoin("address"))
+        .customize(JPAHints.cacheable(true))
+        .customize(JPAHints.timeout(5000))
+        .build();
+    List<Person> result = querity.findAll(getEntityClass(), query);
+    assertThat(result)
+        .isNotEmpty()
+        .containsExactlyInAnyOrderElementsOf(entities.stream()
+            .filter(p -> entity1.getLastName().equals(p.getLastName()))
+            .toList());
   }
 }
