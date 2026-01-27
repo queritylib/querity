@@ -127,6 +127,28 @@ class AdvancedQueryTests {
           .isInstanceOf(IllegalStateException.class)
           .hasMessageContaining("HAVING clause requires a GROUP BY clause");
     }
+
+    @Test
+    void givenNullCustomizer_whenCustomize_thenThrowException() {
+      assertThatThrownBy(() -> advancedQuery().customize((QueryCustomizer<?>[]) null))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage("Customizers cannot be null");
+    }
+
+    @Test
+    void givenCustomizer_whenCustomize_thenQueryHasCustomizer() {
+      QueryCustomizer<?> customizer = q -> {};
+      AdvancedQuery query = advancedQuery().customize(customizer).build();
+      assertThat(query.getCustomizers()).containsExactly(customizer);
+    }
+
+    @Test
+    void givenMultipleCustomizers_whenCustomize_thenQueryHasAllCustomizers() {
+      QueryCustomizer<?> customizer1 = q -> {};
+      QueryCustomizer<?> customizer2 = q -> {};
+      AdvancedQuery query = advancedQuery().customize(customizer1, customizer2).build();
+      assertThat(query.getCustomizers()).containsExactly(customizer1, customizer2);
+    }
   }
 
   @Nested

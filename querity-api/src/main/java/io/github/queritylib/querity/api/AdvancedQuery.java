@@ -60,6 +60,9 @@ public class AdvancedQuery implements QueryDefinition {
   @NonNull
   @JsonIgnore
   private List<AdvancedQueryPreprocessor> preprocessors;
+  @NonNull
+  @JsonIgnore
+  private List<QueryCustomizer<?>> customizers;
 
   @Override
   public boolean hasFilter() {
@@ -118,6 +121,7 @@ public class AdvancedQuery implements QueryDefinition {
     @SuppressWarnings("java:S1068")
     private Condition having;
     private List<AdvancedQueryPreprocessor> preprocessors = new ArrayList<>();
+    private List<QueryCustomizer<?>> customizers = new ArrayList<>();
 
     /**
      * Adds a preprocessor to be applied when {@link AdvancedQuery#preprocess()} is called.
@@ -131,6 +135,14 @@ public class AdvancedQuery implements QueryDefinition {
         throw new IllegalArgumentException("Preprocessor cannot be null");
       }
       this.preprocessors.add(preprocessor);
+      return this;
+    }
+
+    public AdvancedQueryBuilder customize(QueryCustomizer<?>... customizers) {
+      if (customizers == null) {
+        throw new IllegalArgumentException("Customizers cannot be null");
+      }
+      this.customizers.addAll(Arrays.asList(customizers));
       return this;
     }
 
@@ -243,7 +255,7 @@ public class AdvancedQuery implements QueryDefinition {
       if (having != null && !having.isEmpty() && groupBy == null) {
         throw new IllegalStateException("HAVING clause requires a GROUP BY clause");
       }
-      return new AdvancedQuery(filter, pagination, sort, distinct, select, groupBy, having, List.copyOf(preprocessors));
+      return new AdvancedQuery(filter, pagination, sort, distinct, select, groupBy, having, List.copyOf(preprocessors), List.copyOf(customizers));
     }
   }
 }

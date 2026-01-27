@@ -4,8 +4,10 @@ import io.github.queritylib.querity.api.AdvancedQuery;
 import io.github.queritylib.querity.api.Operator;
 import io.github.queritylib.querity.api.Querity;
 import io.github.queritylib.querity.api.Query;
+import io.github.queritylib.querity.api.QueryCustomizer;
 import io.github.queritylib.querity.jpa.AliasedSelectionSpecification;
 import io.github.queritylib.querity.jpa.JPAHints;
+import io.github.queritylib.querity.jpa.JpaQueryContext;
 import io.github.queritylib.querity.jpa.OrderSpecification;
 import io.github.queritylib.querity.jpa.SelectionSpecification;
 import io.github.queritylib.querity.jpa.domain.Person;
@@ -17,6 +19,7 @@ import org.springframework.data.jpa.domain.Specification;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.github.queritylib.querity.api.Querity.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -290,6 +293,21 @@ public abstract class QuerityJpaImplTests extends QuerityGenericSpringTestSuite<
               .as("Orders should be loaded eagerly due to NamedEntityGraph")
               .isTrue();
         });
+  }
+
+  @Test
+  void givenAdvancedQueryWithCustomizer_whenFindAllProjected_thenApplyCustomizer() {
+    AtomicInteger counter = new AtomicInteger();
+    QueryCustomizer<JpaQueryContext<?>> customizer = context -> counter.incrementAndGet();
+
+    AdvancedQuery query = Querity.advancedQuery()
+        .selectBy("id", "firstName")
+        .customize(customizer)
+        .build();
+
+    querity.findAllProjected(Person.class, query);
+
+    assertThat(counter.get()).isEqualTo(1);
   }
 
   @Test
