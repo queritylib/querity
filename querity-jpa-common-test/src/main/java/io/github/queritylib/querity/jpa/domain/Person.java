@@ -15,6 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@NamedEntityGraph(name = "Person.withOrders", attributeNodes = @NamedAttributeNode("orders"))
 public class Person extends AbstractPersistable<Long> implements io.github.queritylib.querity.test.domain.Person<Long, Address, Location, Order> {
   @NonNull
   private String firstName;

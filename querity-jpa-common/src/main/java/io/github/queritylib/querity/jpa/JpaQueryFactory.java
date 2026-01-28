@@ -51,6 +51,7 @@ public class JpaQueryFactory<T> {
     TypedQuery<Tuple> tq = createTypedQuery(cq);
 
     JpaQueryUtils.applyPagination(tq, query);
+    JpaQueryCustomizerApplier.apply(entityManager, entityClass, tq, query == null ? null : query.getCustomizers());
 
     return tq;
   }
@@ -89,4 +90,5 @@ public class JpaQueryFactory<T> {
   private <R> TypedQuery<R> createTypedQuery(CriteriaQuery<R> cq) {
     return entityManager.createQuery(cq);
   }
+
 }
