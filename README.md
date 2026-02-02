@@ -486,9 +486,9 @@ The test dataset is generated with [Mockaroo](https://mockaroo.com).
 If you want to make changes, you don't need to do it manually, please find the
 schema [here](https://mockaroo.com/ec155390).
 
-## Authors
+## Maintainers
 
-Contributors names and contact info
+Maintainers names and contact info
 
 * Bruno Mendola [@brunomendola](https://github.com/brunomendola)
 
