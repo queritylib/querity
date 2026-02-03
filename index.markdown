@@ -374,6 +374,318 @@ Query query = Querity.query()
 
 > The distinct flag is meaningless in NoSQL databases and will be ignored.
 
+## Projections (Select)
+
+Use `Querity.advancedQuery()` with `selectBy` to retrieve only specific fields instead of full entities.
+
+```java
+AdvancedQuery query = Querity.advancedQuery()
+    .select(selectBy("firstName", "lastName", "address.city"))
+    .filter(filterBy("lastName", EQUALS, "Skywalker"))
+    .build();
+List<Map<String, Object>> results = querity.findAllProjected(Person.class, query);
+// Each map contains only: {firstName: "...", lastName: "...", city: "..."}
+```
+
+Supports **nested properties** with dot notation (e.g., `address.city`).
+
+### Query vs AdvancedQuery
+
+Querity provides two query types:
+
+* **`Query`** - For simple entity queries. Use with `findAll()` to retrieve full entities.
+* **`AdvancedQuery`** - For projection queries with `selectBy`, `groupBy`, `having`. Use with `findAllProjected()` to retrieve `Map<String, Object>` results.
+
+```java
+// Simple entity query
+Query query = Querity.query()
+    .filter(filterBy("lastName", EQUALS, "Skywalker"))
+    .build();
+List<Person> entities = querity.findAll(Person.class, query);
+
+// Projection query
+AdvancedQuery advQuery = Querity.advancedQuery()
+    .select(selectBy("firstName", "lastName"))
+    .filter(filterBy("lastName", EQUALS, "Skywalker"))
+    .build();
+List<Map<String, Object>> projections = querity.findAllProjected(Person.class, advQuery);
+```
+
+### Native select expressions (JPA only)
+
+For advanced use cases, JPA modules support native expressions using `CriteriaBuilder`:
+
+```java
+// Select concatenated full name using native expression
+SelectionSpecification<Person> fullNameSpec = AliasedSelectionSpecification.of(
+    (root, cb) -> cb.concat(cb.concat(root.get("firstName"), " "), root.get("lastName")),
+    "fullName"
+);
+AdvancedQuery query = Querity.advancedQuery()
+    .select(selectByNative(fullNameSpec))
+    .build();
+List<Map<String, Object>> results = querity.findAllProjected(Person.class, query);
+// Each map contains: {fullName: "Luke Skywalker"}
+```
+
+> Native select expressions are only available for JPA.
+
+## Field-to-Field Comparison
+
+Use `filterByField` to compare two entity fields directly:
+
+```java
+// Find orders where quantity exceeds available stock
+Query query = Querity.query()
+    .filter(filterByField("quantity", GREATER_THAN, field("availableStock")))
+    .build();
+
+// Find employees whose salary exceeds their manager's salary
+Query query = Querity.query()
+    .filter(filterByField("salary", GREATER_THAN, field("manager.salary")))
+    .build();
+```
+
+Use `Querity.field("propertyName")` to reference a field on the right-hand side of the comparison.
+
+Supports all comparison operators: `EQUALS`, `NOT_EQUALS`, `GREATER_THAN`, `GREATER_THAN_EQUALS`, `LESSER_THAN`, `LESSER_THAN_EQUALS`.
+
+> **Backend support:**
+> - **JPA**: Full support
+> - **MongoDB**: Full support
+> - **Elasticsearch**: Not supported
+
+## Function Expressions
+
+Querity supports SQL-like functions in filters, sorting, and projections. Use `prop()` for property references and `lit()` for literal values.
+
+### Using functions in filters
+
+```java
+import static io.github.queritylib.querity.api.Querity.*;
+
+// Filter by uppercase lastName
+Query query = Querity.query()
+    .filter(filterBy(upper(prop("lastName")), EQUALS, "SKYWALKER"))
+    .build();
+
+// Filter by string length
+Query query = Querity.query()
+    .filter(filterBy(length(prop("firstName")), GREATER_THAN, 5))
+    .build();
+```
+
+### Using functions in sorting
+
+```java
+// Sort by string length
+Query query = Querity.query()
+    .sort(sortBy(length(prop("lastName")), DESC))
+    .build();
+
+// Sort by uppercase value
+Query query = Querity.query()
+    .sort(sortBy(upper(prop("firstName"))))
+    .build();
+```
+
+### Using functions in projections
+
+```java
+// Select with function expressions
+AdvancedQuery query = Querity.advancedQuery()
+    .select(selectBy(
+        prop("id"),
+        upper(prop("lastName")).as("upperLastName"),
+        concat(prop("firstName"), lit(" "), prop("lastName")).as("fullName"),
+        length(prop("email")).as("emailLength")
+    ))
+    .build();
+```
+
+### Available functions
+
+| Category | Functions |
+|----------|-----------|
+| Arithmetic | `abs()`, `sqrt()`, `mod()` |
+| String | `concat()`, `substring()`, `trim()`, `ltrim()`, `rtrim()`, `lower()`, `upper()`, `length()`, `locate()` |
+| Date/Time | `currentDate()`, `currentTime()`, `currentTimestamp()` |
+| Conditional | `coalesce()`, `nullif()` |
+| Aggregate | `count()`, `sum()`, `avg()`, `min()`, `max()` |
+
+### Function arguments
+
+Function arguments must be either property references or literals:
+- `prop("fieldName")` - reference to an entity property (alias for `property()`)
+- `lit(value)` - literal value (String, Number, or Boolean)
+
+```java
+// Combine functions
+coalesce(prop("nickname"), lit("Anonymous"))
+mod(prop("quantity"), lit(10))
+concat(prop("firstName"), lit(" - "), prop("lastName"))
+
+// Nested functions
+upper(trim(prop("name")))  // UPPER(TRIM(name))
+length(lower(prop("email")))  // LENGTH(LOWER(email))
+
+// Nested properties (e.g., address.city)
+upper(prop("address.city"))
+coalesce(prop("contact.email"), prop("contact.phone"), lit("N/A"))
+```
+
+### Backend support for functions
+
+> - **JPA**: Full support for all functions in filters, sorting, and projections
+> - **MongoDB**: Functions supported in filters only (via `$expr`). Using functions in sort or select throws `UnsupportedOperationException`
+> - **Elasticsearch**: Functions are **not supported**. Using functions throws `UnsupportedOperationException`
+
+**Function support by implementation:**
+
+| Function | JPA | MongoDB | Elasticsearch |
+|----------|-----|---------|---------------|
+| `abs()`, `sqrt()`, `mod()` | ✓ Filters, Sort, Select | ✓ Filters only | ✗ |
+| `concat()`, `substring()`, `trim()`, `ltrim()`, `rtrim()` | ✓ Filters, Sort, Select | ✓ Filters only | ✗ |
+| `lower()`, `upper()`, `length()`, `locate()` | ✓ Filters, Sort, Select | ✓ Filters only | ✗ |
+| `currentDate()`, `currentTime()`, `currentTimestamp()` | ✓ Filters, Sort, Select | ✓ Filters only | ✗ |
+| `coalesce()`, `nullif()` | ✓ Filters, Sort, Select | ✓ Filters only | ✗ |
+| `count()`, `sum()`, `avg()`, `min()`, `max()` | ✓ Filters, Sort, Select | ✓ Filters only | ✗ |
+
+## GROUP BY and HAVING
+
+Querity supports GROUP BY and HAVING clauses for aggregate queries. Use `advancedQuery()` with `groupBy` to group results and `having` to filter groups.
+
+### Basic GROUP BY
+
+```java
+import static io.github.queritylib.querity.api.Querity.*;
+
+// Group by single property
+AdvancedQuery query = Querity.advancedQuery()
+    .select(selectBy(
+        prop("category"),
+        count(prop("id")).as("itemCount"),
+        sum(prop("amount")).as("totalAmount")
+    ))
+    .groupBy("category")
+    .build();
+List<Map<String, Object>> results = querity.findAllProjected(Order.class, query);
+// Returns: [{category: "Electronics", itemCount: 42, totalAmount: 15000}, ...]
+```
+
+### Group by multiple properties
+
+```java
+AdvancedQuery query = Querity.advancedQuery()
+    .select(selectBy(
+        prop("category"),
+        prop("region"),
+        avg(prop("price")).as("avgPrice")
+    ))
+    .groupBy("category", "region")
+    .build();
+```
+
+### Group by with HAVING clause
+
+```java
+AdvancedQuery query = Querity.advancedQuery()
+    .select(selectBy(
+        prop("category"),
+        sum(prop("amount")).as("total")
+    ))
+    .groupBy("category")
+    .having(filterBy(sum(prop("amount")), GREATER_THAN, 1000))
+    .build();
+// Returns only categories with total amount > 1000
+```
+
+### Group by with function expressions
+
+```java
+// Group by function result (e.g., group by uppercase category)
+AdvancedQuery query = Querity.advancedQuery()
+    .select(selectBy(
+        upper(prop("category")).as("upperCategory"),
+        count(prop("id")).as("orderCount")
+    ))
+    .groupBy(upper(prop("category")))
+    .build();
+```
+
+> **Backend support:**
+> - **JPA**: Full support for GROUP BY and HAVING
+> - **MongoDB**: Not yet supported
+> - **Elasticsearch**: Not supported
+
+## Native Sort Expressions
+
+Use `sortByNative` to sort by database-specific expressions.
+
+### JPA native sort
+
+```java
+// Sort by length of lastName using CriteriaBuilder
+OrderSpecification<Person> orderSpec = (root, cb) -> cb.asc(cb.length(root.get("lastName")));
+Query query = Querity.query()
+    .sort(sortByNative(orderSpec))
+    .build();
+List<Person> results = querity.findAll(Person.class, query);
+```
+
+### MongoDB native sort
+
+```java
+// Sort using Spring Data MongoDB's Order
+org.springframework.data.domain.Sort.Order order = Sort.Order.asc("lastName");
+Query query = Querity.query()
+    .sort(sortByNative(order))
+    .build();
+```
+
+## Query Customizers (JPA)
+
+You can customize JPA queries with specific hints and optimizations using the `.customize()` method. This is useful for performance tuning.
+
+### Fetch Join (Eager Loading)
+
+Solve N+1 query problems by fetching associated entities eagerly:
+
+```java
+import io.github.queritylib.querity.jpa.JPAHints;
+
+// Fetch associated entities eagerly to avoid N+1 queries
+Query query = Querity.query()
+    .filter(filterBy("status", EQUALS, "ACTIVE"))
+    .customize(JPAHints.fetchJoin("orders", "orders.items")) // Supports nested paths
+    .build();
+List<Person> results = querity.findAll(Person.class, query);
+```
+
+### Named Entity Graphs
+
+Use JPA entity graphs for fetch optimization:
+
+```java
+Query query = Querity.query()
+    .customize(JPAHints.namedEntityGraph("Person.withOrders"))
+    .build();
+```
+
+### Other Optimizations
+
+```java
+Query query = Querity.query()
+    .customize(
+        JPAHints.batchSize(50),      // Optimize JDBC fetch size
+        JPAHints.timeout(5000),      // Query timeout in ms
+        JPAHints.cacheable(true)     // Enable L2 Query Cache
+    )
+    .build();
+```
+
+> **Note:** Customizers are backend-specific. `JPAHints` will only be applied when using the JPA module and are safely ignored by other modules like MongoDB.
+
 ## Modify an existing Query
 
 Query objects are immutable, so you can't modify them directly (there are no "setters").
@@ -474,6 +786,7 @@ The query language supports the following grammar (ANTLR v4 format):
 
 ```
 DISTINCT    : 'distinct';
+WHERE       : 'where';
 AND         : 'and';
 OR          : 'or';
 NOT         : 'not';
@@ -481,6 +794,10 @@ SORT        : 'sort by';
 ASC         : 'asc';
 DESC        : 'desc';
 PAGINATION  : 'page';
+SELECT      : 'select';
+GROUP_BY    : 'group by';
+HAVING      : 'having';
+AS          : 'as';
 NEQ         : '!=';
 LTE         : '<=';
 GTE         : '>=';
@@ -503,18 +820,30 @@ DECIMAL_VALUE : [0-9]+'.'[0-9]+;
 BOOLEAN_VALUE : 'true' | 'false';
 PROPERTY      : [a-zA-Z_][a-zA-Z0-9_.]*;
 STRING_VALUE  : '"' (~["\\] | '\\' .)* '"';
+FUNCTION_NAME : 'UPPER' | 'LOWER' | 'LENGTH' | 'TRIM' | 'LTRIM' | 'RTRIM' |
+                'ABS' | 'SQRT' | 'MOD' | 'CONCAT' | 'SUBSTRING' | 'LOCATE' |
+                'COALESCE' | 'NULLIF' | 'CURRENT_DATE' | 'CURRENT_TIME' |
+                'CURRENT_TIMESTAMP' | 'COUNT' | 'SUM' | 'AVG' | 'MIN' | 'MAX';
 
-query            : DISTINCT? (condition)? (SORT sortFields)? (PAGINATION paginationParams)? ;
+query            : DISTINCT? (WHERE? condition)? (SORT sortFields)? (PAGINATION paginationParams)? ;
+advancedQuery    : (SELECT selectFields)? (WHERE? condition)? (GROUP_BY groupByFields)? (HAVING havingCondition)? (SORT sortFields)? (PAGINATION paginationParams)? ;
 condition        : simpleCondition | conditionWrapper | notCondition;
 operator         : NEQ | LTE | GTE | EQ | LT | GT | STARTS_WITH | ENDS_WITH | CONTAINS | IS_NULL | IS_NOT_NULL | IN | NOT_IN ;
 conditionWrapper : (AND | OR) LPAREN condition (COMMA condition)* RPAREN ;
 notCondition     : NOT LPAREN condition RPAREN ;
 simpleValue      : INT_VALUE | DECIMAL_VALUE | BOOLEAN_VALUE | STRING_VALUE;
 arrayValue       : LPAREN simpleValue (COMMA simpleValue)* RPAREN ;
-simpleCondition  : PROPERTY operator (simpleValue | arrayValue)? ;
+propertyOrFunction : PROPERTY | functionCall ;
+functionCall     : FUNCTION_NAME LPAREN (functionArg (COMMA functionArg)*)? RPAREN ;
+functionArg      : PROPERTY | simpleValue | functionCall ;
+simpleCondition  : propertyOrFunction operator (simpleValue | arrayValue)? ;
 direction        : ASC | DESC ;
-sortField        : PROPERTY (direction)? ;
+sortField        : propertyOrFunction (direction)? ;
 sortFields       : sortField (COMMA sortField)* ;
+selectField      : propertyOrFunction (AS PROPERTY)? ;
+selectFields     : selectField (COMMA selectField)* ;
+groupByFields    : propertyOrFunction (COMMA propertyOrFunction)* ;
+havingCondition  : condition ;
 paginationParams : INT_VALUE COMMA INT_VALUE ;
 ```
 
@@ -543,6 +872,39 @@ deleted=false
 address.city="Rome"
 distinct and(orders.totalPrice>1000,currency="EUR")
 sort by lastName asc, age desc page 1,10
+```
+
+**Function expressions in query language:**
+
+```text
+UPPER(lastName)="SKYWALKER"
+LENGTH(firstName)>5
+LOWER(email) starts with "luke"
+and(UPPER(lastName)="SKYWALKER", LENGTH(firstName)>3)
+sort by LENGTH(lastName) desc
+COALESCE(nickname, firstName)="Luke"
+```
+
+**Optional WHERE keyword:**
+
+The `WHERE` keyword is optional and can be used for readability:
+
+```text
+where lastName="Skywalker"
+where and(firstName="Luke", lastName="Skywalker") sort by age
+distinct where status="ACTIVE" page 1,10
+```
+
+**SELECT, GROUP BY, and HAVING (AdvancedQuery):**
+
+Use `QuerityParser.parseAdvancedQuery()` for queries with projections or grouping:
+
+```text
+select firstName, lastName, address.city
+select id, UPPER(lastName) as upperName
+select category, COUNT(id) as itemCount group by category
+select category, SUM(amount) as total group by category having SUM(amount)>1000
+select region, category, AVG(price) as avgPrice group by region, category sort by avgPrice desc
 ```
 
 > Notice that string values must always be enclosed in double quotes.
