@@ -16,7 +16,7 @@
 
   <properties>
     <jakarta.persistence.version>3.1.0</jakarta.persistence.version>
-    <hibernate.version>6.6.41.Final</hibernate.version>
+    <hibernate.version>6.6.42.Final</hibernate.version>
     <junit-jupiter.version>6.0.2</junit-jupiter.version>
     <assertj.version>3.27.7</assertj.version>
     <mockito.version>5.21.0</mockito.version>
