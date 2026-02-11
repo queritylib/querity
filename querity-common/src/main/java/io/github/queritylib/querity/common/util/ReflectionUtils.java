@@ -15,11 +15,25 @@ import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ReflectionUtils {
+  private static final Object SCAN_LOCK = new Object();
+
+  /**
+   * Find all concrete subclasses of the given base class within the same package.
+   * <p>
+   * This method uses the Reflections library to scan the package of the base class for subclasses. It filters out abstract classes, returning only concrete implementations.
+   * Note that this method uses a shared lock to avoid race conditions when scanning the classpath via ZipFile, concurrent class loading causes "IllegalStateException: zip file closed".
+   *
+   * @param baseClass the base class to find subclasses of
+   * @param <T>       the type of the base class
+   * @return a set of concrete subclasses of the given base class
+   */
   public static <T> Set<Class<? extends T>> findSubclasses(Class<T> baseClass) {
-    return new Reflections(baseClass.getPackage().getName())
+    synchronized (SCAN_LOCK) {
+      return new Reflections(baseClass.getPackage().getName())
         .getSubTypesOf(baseClass).stream()
         .filter(ReflectionUtils::isConcreteClass)
         .collect(Collectors.toSet());
+    }
   }
 
   private static boolean isConcreteClass(Class<?> clazz) {
@@ -37,8 +51,8 @@ public class ReflectionUtils {
     Class<?> currentClass = beanClass;
     do {
       Optional<Field> field = Arrays.stream(currentClass.getDeclaredFields())
-          .filter(e -> e.getName().equals(fieldName))
-          .findFirst();
+        .filter(e -> e.getName().equals(fieldName))
+        .findFirst();
       if (field.isPresent()) {
         return field;
       } else {
@@ -51,10 +65,10 @@ public class ReflectionUtils {
   public static <T, A> Optional<Class<? extends T>> findClassWithConstructorArgumentOfType(Set<Class<? extends T>> allClasses,
                                                                                            Class<? extends A> constructorArgumentType) {
     return allClasses.stream()
-        .filter(clazz -> Arrays.stream(clazz.getDeclaredConstructors())
-            .anyMatch(constructor -> constructor.getParameterCount() == 1 &&
-                constructor.getParameterTypes()[0].equals(constructorArgumentType)))
-        .findAny();
+      .filter(clazz -> Arrays.stream(clazz.getDeclaredConstructors())
+        .anyMatch(constructor -> constructor.getParameterCount() == 1 &&
+          constructor.getParameterTypes()[0].equals(constructorArgumentType)))
+      .findAny();
   }
 
   @SneakyThrows
