@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Person implements io.github.queritylib.querity.test.domain.Person<String, Address, Location, Order> {
+public class Person implements io.github.queritylib.querity.test.domain.Person<String, Address, Location, Order, IdDocument> {
   @Id
   @Field(type = FieldType.Keyword)
   private String id;
@@ -48,6 +48,7 @@ public class Person implements io.github.queritylib.querity.test.domain.Person<S
   @NonNull
   @Builder.Default
   private List<Order> orders = new ArrayList<>();
+  private IdDocument idDocument;
 
   @Override
   public @NonNull String toString() {

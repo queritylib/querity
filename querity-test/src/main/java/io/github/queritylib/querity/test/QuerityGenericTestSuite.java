@@ -20,7 +20,7 @@ import static io.github.queritylib.querity.api.SimpleSort.Direction.DESC;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
-public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extends Order<? extends OrderItem>>, K extends Comparable<K>> {
+public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extends Order<? extends OrderItem>, ?>, K extends Comparable<K>> {
   protected DatabaseSeeder<T> databaseSeeder;
   protected Querity querity;
 
@@ -42,6 +42,7 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
   public static final String PROPERTY_VISITED_LOCATIONS_CITIES = "visitedLocations.cities";
   public static final String PROPERTY_FAVOURITE_PRODUCT_CATEGORY = "favouriteProductCategory";
   public static final String PROPERTY_ORDERS_EXTERNAL_ID = "orders.externalId";
+  public static final String PROPERTY_ID_DOCUMENT_TYPE_CODE = "idDocument.type.code";
 
   /**
    * Minimum group size threshold for HAVING clause tests.
@@ -717,6 +718,21 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
       assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
           .filter(p -> !(entity1.getLastName().equals(p.getLastName()) && (entity1.getFirstName().equals(p.getFirstName()) || entity2.getFirstName().equals(p.getFirstName()))))
           .toList());
+    }
+
+    @Test
+    void giveFilterByEmbeddedField_whenFindAll_thenReturnOnlyFilteredElements() {
+      String documentTypeCode = entity1.getIdDocument().getType().getCode();
+      Query query = Querity.query()
+        .filter(filterBy(PROPERTY_ID_DOCUMENT_TYPE_CODE, EQUALS, documentTypeCode))
+        .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+        .filter(p -> p.getIdDocument() != null &&
+          p.getIdDocument().getType() != null &&
+          documentTypeCode.equals(p.getIdDocument().getType().getCode()))
+        .toList());
     }
 
     private String formatDate(LocalDate birthDate) {

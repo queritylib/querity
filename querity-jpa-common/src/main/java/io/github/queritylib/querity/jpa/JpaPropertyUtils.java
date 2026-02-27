@@ -37,7 +37,7 @@ class JpaPropertyUtils {
 
   private static <T, P> Path<P> getPropertyPath(Path<T> rootPath, String propertyName, Metamodel metamodel) {
     Path<P> propertyPath = rootPath.get(propertyName);
-    if (needsJoin(rootPath, propertyName, metamodel))
+    if (rootPath instanceof From<?, ?> && needsJoin(rootPath, propertyName, metamodel))
       propertyPath = getJoin((From<?, T>) rootPath, propertyName);
     return propertyPath;
   }

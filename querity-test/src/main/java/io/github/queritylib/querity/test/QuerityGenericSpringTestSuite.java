@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public abstract class QuerityGenericSpringTestSuite<T extends Person<K, ?, ?, ? extends Order<? extends OrderItem>>, K extends Comparable<K>> extends QuerityGenericTestSuite<T, K> {
+public abstract class QuerityGenericSpringTestSuite<T extends Person<K, ?, ?, ? extends Order<? extends OrderItem>, ?>, K extends Comparable<K>> extends QuerityGenericTestSuite<T, K> {
 
   @Autowired
   protected Querity querity;

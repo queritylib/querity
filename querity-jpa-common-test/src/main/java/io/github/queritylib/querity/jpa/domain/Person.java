@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @NamedEntityGraph(name = "Person.withOrders", attributeNodes = @NamedAttributeNode("orders"))
-public class Person extends AbstractPersistable<Long> implements io.github.queritylib.querity.test.domain.Person<Long, Address, Location, Order> {
+public class Person extends AbstractPersistable<Long> implements io.github.queritylib.querity.test.domain.Person<Long, Address, Location, Order, IdDocument> {
   @NonNull
   private String firstName;
   private String lastName;
@@ -38,12 +38,14 @@ public class Person extends AbstractPersistable<Long> implements io.github.queri
   @Builder.Default
   private List<Location> visitedLocations = new ArrayList<>();
   @NonNull
-  @Enumerated
+  @Enumerated(EnumType.STRING)
   private ProductCategory favouriteProductCategory;
   @NonNull
   @OneToMany(mappedBy = "person", cascade = CascadeType.ALL)
   @Builder.Default
   private List<Order> orders = new ArrayList<>();
+  @Embedded
+  private IdDocument idDocument;
 
   @Override
   public @NonNull String toString() {

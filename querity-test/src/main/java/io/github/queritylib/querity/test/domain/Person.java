@@ -3,7 +3,7 @@ package io.github.queritylib.querity.test.domain;
 import java.math.BigDecimal;
 import java.util.List;
 
-public interface Person<K extends Comparable<K>, A extends Address, L extends Location, O extends Order<? extends OrderItem>> {
+public interface Person<K extends Comparable<K>, A extends Address, L extends Location, O extends Order<? extends OrderItem>, D extends IdDocument> {
   K getId();
 
   String getFirstName();
@@ -53,6 +53,10 @@ public interface Person<K extends Comparable<K>, A extends Address, L extends Lo
   List<O> getOrders();
 
   void setOrders(List<O> order);
+
+  D getIdDocument();
+
+  void setIdDocument(D document);
 
   enum Gender {
     M, F
