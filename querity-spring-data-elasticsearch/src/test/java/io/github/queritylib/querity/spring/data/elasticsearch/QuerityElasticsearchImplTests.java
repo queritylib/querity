@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @Testcontainers
 class QuerityElasticsearchImplTests extends QuerityGenericSpringTestSuite<Person, String> {
 
-  private static final String ELASTICSEARCH_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:8.16.5";
+  private static final String ELASTICSEARCH_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:9.2.6";
 
   @Container
   private static final ElasticsearchContainer ELASTICSEARCH_CONTAINER = new ElasticsearchContainer(DockerImageName.parse(ELASTICSEARCH_IMAGE))
