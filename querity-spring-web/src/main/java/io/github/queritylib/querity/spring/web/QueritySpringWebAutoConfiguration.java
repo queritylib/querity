@@ -1,6 +1,6 @@
 package io.github.queritylib.querity.spring.web;
 
-import com.fasterxml.jackson.databind.Module;
+import tools.jackson.databind.JacksonModule;
 import io.github.queritylib.querity.spring.web.jackson.QuerityModule;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Import;
 @ConditionalOnProperty(prefix = "querity.web.autoconfigure", name = "enabled", matchIfMissing = true)
 public class QueritySpringWebAutoConfiguration {
   @Bean
-  public Module querityJacksonModule() {
+  public JacksonModule querityJacksonModule() {
     return new QuerityModule();
   }
 

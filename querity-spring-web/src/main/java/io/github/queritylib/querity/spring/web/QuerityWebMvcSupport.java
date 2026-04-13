@@ -1,6 +1,6 @@
 package io.github.queritylib.querity.spring.web;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.github.queritylib.querity.api.AdvancedQuery;
 import io.github.queritylib.querity.api.Condition;
 import io.github.queritylib.querity.api.Query;
