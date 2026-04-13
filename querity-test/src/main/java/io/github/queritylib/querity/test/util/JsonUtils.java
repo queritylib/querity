@@ -1,7 +1,7 @@
 package io.github.queritylib.querity.test.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
@@ -15,7 +15,7 @@ import java.util.List;
 public class JsonUtils {
   @SuppressWarnings("unchecked")
   public static <T> List<T> readListFromJson(String path, Class<T> entityClass) throws IOException {
-    ObjectMapper objectMapper = new ObjectMapper().registerModules(new JavaTimeModule());
+    ObjectMapper objectMapper = JsonMapper.builder().build();
     Class<T[]> entityArrayClass = (Class<T[]>) Array.newInstance(entityClass, 0).getClass();
     return Arrays.asList(objectMapper.readValue(new ClassPathResource(path).getInputStream(), entityArrayClass));
   }

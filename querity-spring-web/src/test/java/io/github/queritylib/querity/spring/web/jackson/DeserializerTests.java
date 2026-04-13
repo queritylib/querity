@@ -1,6 +1,7 @@
 package io.github.queritylib.querity.spring.web.jackson;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import io.github.queritylib.querity.api.*;
 import io.github.queritylib.querity.api.Select;
 import io.github.queritylib.querity.api.SimpleSelect;
@@ -19,8 +20,9 @@ class DeserializerTests {
 
   @BeforeEach
   void setUp() {
-    objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new QuerityModule());
+    objectMapper = JsonMapper.builder()
+        .addModule(new QuerityModule())
+        .build();
   }
 
   @Nested
@@ -219,6 +221,26 @@ class DeserializerTests {
       QuerityModule module = new QuerityModule();
 
       assertThat(module.version()).isNotNull();
+    }
+  }
+
+  @Nested
+  class QuerityDeserializersTests {
+    private final QuerityDeserializers deserializers = new QuerityDeserializers();
+
+    @Test
+    void givenSupportedTypes_whenHasDeserializerFor_thenReturnTrue() {
+      assertThat(deserializers.hasDeserializerFor(null, Condition.class)).isTrue();
+      assertThat(deserializers.hasDeserializerFor(null, Select.class)).isTrue();
+      assertThat(deserializers.hasDeserializerFor(null, Sort.class)).isTrue();
+      assertThat(deserializers.hasDeserializerFor(null, GroupBy.class)).isTrue();
+      assertThat(deserializers.hasDeserializerFor(null, PropertyExpression.class)).isTrue();
+      assertThat(deserializers.hasDeserializerFor(null, FunctionArgument.class)).isTrue();
+    }
+
+    @Test
+    void givenUnsupportedType_whenHasDeserializerFor_thenReturnFalse() {
+      assertThat(deserializers.hasDeserializerFor(null, String.class)).isFalse();
     }
   }
 
