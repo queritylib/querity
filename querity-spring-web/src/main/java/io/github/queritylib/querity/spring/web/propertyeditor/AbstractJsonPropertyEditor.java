@@ -1,7 +1,7 @@
 package io.github.queritylib.querity.spring.web.propertyeditor;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.util.StringUtils;
 
@@ -22,7 +22,7 @@ public abstract class AbstractJsonPropertyEditor<T> extends PropertyEditorSuppor
       T value;
       try {
         value = objectMapper.readValue(text, getPropertyClass());
-      } catch (JsonProcessingException e) {
+      } catch (JacksonException e) {
         throw new IllegalArgumentException(e);
       }
       setValue(value);
