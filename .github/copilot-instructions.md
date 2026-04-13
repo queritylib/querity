@@ -12,8 +12,7 @@ database technologies via dedicated modules.
 
 - **Language:** Java (minimum version 17)
 - **Frameworks:**
-    - Spring Framework 6
-    - Spring Boot 3 (optional, recommended for simplicity)
+    - Spring Boot 4
 - **Build Tool:** Maven (with wrapper scripts)
 - **Testing:** JUnit (standard for Java projects)
 - **Code Quality:** SonarCloud integration

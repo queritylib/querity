@@ -49,7 +49,7 @@ This demo also uses the [@queritylib/react](https://github.com/queritylib/querit
 ### Requirements
 
 * Java 17+
-* Spring Framework 6 / Spring Boot 3 (for Spring modules)
+* Spring Boot 4 (for Spring modules)
 
 ### Installation
 

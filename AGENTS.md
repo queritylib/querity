@@ -10,11 +10,11 @@ MongoDB, and Elasticsearch via dedicated modules.
 **Tech Stack:**
 
 - Java 17+
-- Spring Framework 6 / Spring Boot 3
+- Spring Boot 4
 - Maven (with wrapper scripts)
 - JUnit 5 + AssertJ for testing
 - Lombok for boilerplate reduction
-- Jackson for JSON serialization
+- Jackson 3 for JSON serialization
 
 ## Build Commands
 
