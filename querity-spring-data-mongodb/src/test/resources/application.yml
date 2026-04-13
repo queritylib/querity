@@ -1,1 +1,6 @@
-spring.main.banner-mode: off
+spring:
+  main:
+    banner-mode: off
+  mongodb:
+    representation:
+      uuid: java-legacy
