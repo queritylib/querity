@@ -1,16 +1,15 @@
 package io.github.queritylib.querity.spring.web.jackson;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import io.github.queritylib.querity.api.FunctionArgument;
 import io.github.queritylib.querity.api.FunctionCall;
 import io.github.queritylib.querity.api.Literal;
 import io.github.queritylib.querity.api.PropertyReference;
-
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
 import static io.github.queritylib.querity.spring.web.jackson.JsonFields.*;
 
@@ -31,12 +30,12 @@ public class FunctionArgumentDeserializer extends StdDeserializer<FunctionArgume
   }
 
   @Override
-  public FunctionArgument deserialize(JsonParser jsonParser, DeserializationContext context) throws IOException {
+  public FunctionArgument deserialize(JsonParser jsonParser, DeserializationContext context) throws JacksonException {
     JsonNode root = jsonParser.readValueAsTree();
     return parseFunctionArgument(root, context);
   }
 
-  private static FunctionArgument parseFunctionArgument(JsonNode jsonNode, DeserializationContext context) throws IOException {
+  private static FunctionArgument parseFunctionArgument(JsonNode jsonNode, DeserializationContext context) {
     if (jsonNode.hasNonNull(FUNCTION)) {
       return context.readTreeAsValue(jsonNode, FunctionCall.class);
     }

@@ -1,16 +1,16 @@
 package io.github.queritylib.querity.spring.web.jackson;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import io.github.queritylib.querity.api.GroupBy;
 import io.github.queritylib.querity.api.PropertyExpression;
 import io.github.queritylib.querity.api.SimpleGroupBy;
 import lombok.SneakyThrows;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -26,7 +26,7 @@ public class GroupByDeserializer extends StdDeserializer<GroupBy> {
   }
 
   @Override
-  public GroupBy deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+  public GroupBy deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws JacksonException {
     JsonNode root = jsonParser.readValueAsTree();
     return parseGroupBy(root, deserializationContext);
   }
@@ -44,9 +44,9 @@ public class GroupByDeserializer extends StdDeserializer<GroupBy> {
   private static SimpleGroupBy parseSimpleGroupBy(JsonNode jsonNode) {
     JsonNode propertyNamesNode = jsonNode.get(PROPERTY_NAMES);
     List<String> propertyNames = StreamSupport.stream(
-            Spliterators.spliteratorUnknownSize(propertyNamesNode.elements(), Spliterator.ORDERED),
+            Spliterators.spliteratorUnknownSize(propertyNamesNode.iterator(), Spliterator.ORDERED),
             false)
-        .map(JsonNode::asText)
+        .map(JsonNode::asString)
         .toList();
     return SimpleGroupBy.builder()
         .propertyNames(propertyNames)
@@ -57,7 +57,7 @@ public class GroupByDeserializer extends StdDeserializer<GroupBy> {
   private static SimpleGroupBy parseGroupByWithExpressions(JsonNode jsonNode, DeserializationContext context) {
     JsonNode expressionsNode = jsonNode.get(EXPRESSIONS);
     List<PropertyExpression> expressions = StreamSupport.stream(
-            Spliterators.spliteratorUnknownSize(expressionsNode.elements(), Spliterator.ORDERED),
+            Spliterators.spliteratorUnknownSize(expressionsNode.iterator(), Spliterator.ORDERED),
             false)
         .map(node -> deserializeExpression(node, context))
         .toList();
