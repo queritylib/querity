@@ -1,14 +1,13 @@
 package io.github.queritylib.querity.spring.web.jackson;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import io.github.queritylib.querity.api.SimpleSort;
 import io.github.queritylib.querity.api.Sort;
-
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
 import static io.github.queritylib.querity.spring.web.jackson.JsonFields.DIRECTION;
 import static io.github.queritylib.querity.spring.web.jackson.JsonFields.PROPERTY_NAME;
@@ -20,7 +19,7 @@ public class SortDeserializer extends StdDeserializer<Sort> {
   }
 
   @Override
-  public Sort deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+  public Sort deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws JacksonException {
     JsonNode root = jsonParser.readValueAsTree();
     return parseSort(root);
   }
@@ -39,10 +38,10 @@ public class SortDeserializer extends StdDeserializer<Sort> {
   private static SimpleSort parseSimpleSort(JsonNode jsonNode) {
     SimpleSort.SimpleSortBuilder builder = SimpleSort.builder();
 
-    builder.propertyName(jsonNode.get(PROPERTY_NAME).asText());
+    builder.propertyName(jsonNode.get(PROPERTY_NAME).asString());
 
     if (jsonNode.hasNonNull(DIRECTION)) {
-      builder.direction(SimpleSort.Direction.valueOf(jsonNode.get(DIRECTION).asText()));
+      builder.direction(SimpleSort.Direction.valueOf(jsonNode.get(DIRECTION).asString()));
     }
 
     return builder.build();

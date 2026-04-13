@@ -4,7 +4,7 @@
   <parent>
     <artifactId>querity-parent</artifactId>
     <groupId>io.github.queritylib</groupId>
-    <version>3.6.3-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>querity-api</artifactId>
@@ -13,7 +13,6 @@
   <description>Core module of Querity containing the public API</description>
 
   <properties>
-    <jackson.version>2.21.1</jackson.version>
     <junit-jupiter.version>6.0.3</junit-jupiter.version>
     <assertj.version>3.27.7</assertj.version>
     <mockito.version>5.22.0</mockito.version>
@@ -22,9 +21,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
+      <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>

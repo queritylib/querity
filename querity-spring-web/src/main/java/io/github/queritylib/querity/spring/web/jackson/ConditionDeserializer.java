@@ -1,14 +1,14 @@
 package io.github.queritylib.querity.spring.web.jackson;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import io.github.queritylib.querity.api.*;
 import lombok.SneakyThrows;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -33,7 +33,7 @@ public class ConditionDeserializer extends StdDeserializer<Condition> {
   }
 
   @Override
-  public Condition deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+  public Condition deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws JacksonException {
     JsonNode root = jsonParser.readValueAsTree();
     return parseCondition(root, jsonParser, deserializationContext);
   }
@@ -68,7 +68,7 @@ public class ConditionDeserializer extends StdDeserializer<Condition> {
 
   private static List<Condition> parseConditions(JsonParser jsonParser, JsonNode conditionsJsonNode, DeserializationContext context) {
     return StreamSupport.stream(
-            Spliterators.spliteratorUnknownSize(conditionsJsonNode.elements(), Spliterator.ORDERED),
+            Spliterators.spliteratorUnknownSize(conditionsJsonNode.iterator(), Spliterator.ORDERED),
             false)
         .map(n -> parseCondition(n, jsonParser, context))
         .collect(Collectors.toList());
@@ -93,17 +93,17 @@ public class ConditionDeserializer extends StdDeserializer<Condition> {
       PropertyExpression leftExpr = context.readTreeAsValue(jsonNode.get(LEFT_EXPRESSION), PropertyExpression.class);
       builder = builder.leftExpression(leftExpr);
     } else {
-      builder = setIfNotNull(jsonNode, builder, FIELD_SIMPLE_CONDITION_PROPERTY_NAME, JsonNode::asText, builder::propertyName);
+      builder = setIfNotNull(jsonNode, builder, FIELD_SIMPLE_CONDITION_PROPERTY_NAME, JsonNode::asString, builder::propertyName);
     }
     
-    builder = setIfNotNull(jsonNode, builder, FIELD_SIMPLE_CONDITION_OPERATOR, node -> Operator.valueOf(node.asText()), builder::operator);
+    builder = setIfNotNull(jsonNode, builder, FIELD_SIMPLE_CONDITION_OPERATOR, node -> Operator.valueOf(node.asString()), builder::operator);
 
     // Check if this is a field reference
     if (jsonNode.hasNonNull(FIELD_SIMPLE_CONDITION_FIELD_REF)) {
-      String fieldName = jsonNode.get(FIELD_SIMPLE_CONDITION_FIELD_REF).asText();
+      String fieldName = jsonNode.get(FIELD_SIMPLE_CONDITION_FIELD_REF).asString();
       builder = builder.value(FieldReference.of(fieldName));
     } else if (isArray(jsonNode, FIELD_SIMPLE_CONDITION_VALUE)) {
-      builder = setArrayIfNotNull(jsonNode, builder, FIELD_SIMPLE_CONDITION_VALUE, JsonNode::asText, builder::value);
+      builder = setArrayIfNotNull(jsonNode, builder, FIELD_SIMPLE_CONDITION_VALUE, JsonNode::asString, builder::value);
     } else {
       builder = setIfNotNull(jsonNode, builder, FIELD_SIMPLE_CONDITION_VALUE, ConditionDeserializer::extractValue, builder::value);
     }
@@ -121,7 +121,7 @@ public class ConditionDeserializer extends StdDeserializer<Condition> {
       if (node.isLong()) return node.asLong();
       return node.asDouble();
     }
-    return node.asText();
+    return node.asString();
   }
 
   private static boolean isArray(JsonNode jsonNode, String fieldName) {
@@ -139,7 +139,7 @@ public class ConditionDeserializer extends StdDeserializer<Condition> {
     if (jsonNode.hasNonNull(fieldName)) {
       JsonNode valueNode = jsonNode.get(fieldName);
       T[] values = (T[]) StreamSupport.stream(
-              Spliterators.spliteratorUnknownSize(valueNode.elements(), Spliterator.ORDERED),
+              Spliterators.spliteratorUnknownSize(valueNode.iterator(), Spliterator.ORDERED),
               false)
           .map(valueProvider)
           .toArray();

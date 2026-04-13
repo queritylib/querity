@@ -7,6 +7,7 @@ import io.github.queritylib.querity.test.domain.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.junit.jupiter.SpringExtensionConfig;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -20,6 +21,7 @@ import static io.github.queritylib.querity.api.SimpleSort.Direction.DESC;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
+@SpringExtensionConfig(useTestClassScopedExtensionContext = true)
 public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extends Order<? extends OrderItem>, ?>, K extends Comparable<K>> {
   protected DatabaseSeeder<T> databaseSeeder;
   protected Querity querity;

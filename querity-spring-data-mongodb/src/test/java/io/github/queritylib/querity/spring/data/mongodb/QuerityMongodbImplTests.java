@@ -37,7 +37,7 @@ class QuerityMongodbImplTests extends QuerityGenericSpringTestSuite<Person, Stri
 
   @DynamicPropertySource
   static void setProperties(DynamicPropertyRegistry registry) {
-    registry.add("spring.data.mongodb.uri", MONGO_DB_CONTAINER::getReplicaSetUrl);
+    registry.add("spring.mongodb.uri", MONGO_DB_CONTAINER::getReplicaSetUrl);
   }
 
   @Override
