@@ -36,7 +36,7 @@ which fits into your project.
 
 ## Documentation
 
-**Read the full documentation at [queritylib.github.io/querity](https://queritylib.github.io/querity)**
+**Read the full documentation at [queritylib.github.io](https://queritylib.github.io)**
 
 ## Demo
 
@@ -123,7 +123,7 @@ Query query = QuerityParser.parseQuery(
 );
 ```
 
-See the [full documentation](https://queritylib.github.io/querity) for more examples and advanced features.
+See the [full documentation](https://queritylib.github.io) for more examples and advanced features.
 
 ## Access to SNAPSHOT builds
 

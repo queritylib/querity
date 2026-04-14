@@ -69,7 +69,7 @@ database technologies via dedicated modules.
 
 ## References
 
-- [Querity Documentation](https://queritylib.github.io/querity)
+- [Querity Documentation](https://queritylib.github.io)
 
 ---
 This file is intended for Copilot and other automation tools to understand the structure, tech stack, and integration
