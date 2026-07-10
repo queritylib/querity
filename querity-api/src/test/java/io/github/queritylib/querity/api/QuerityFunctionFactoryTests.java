@@ -49,6 +49,46 @@ class QuerityFunctionFactoryTests {
     assertThat(fc.getArguments()).hasSize(2);
   }
 
+  @Test
+  void givenExpressions_whenAdd_thenReturnFunctionCall() {
+    FunctionCall fc = add(prop("a"), prop("b"), lit(2));
+
+    assertThat(fc.getFunction()).isEqualTo(Function.ADD);
+    assertThat(fc.getArguments()).hasSize(3);
+  }
+
+  @Test
+  void givenTwoExpressions_whenSubtract_thenReturnFunctionCall() {
+    FunctionCall fc = subtract(prop("qty"), prop("reserved"));
+
+    assertThat(fc.getFunction()).isEqualTo(Function.SUBTRACT);
+    assertThat(fc.getArguments()).hasSize(2);
+  }
+
+  @Test
+  void givenExpressions_whenMultiply_thenReturnFunctionCall() {
+    FunctionCall fc = multiply(prop("price"), lit(1.22));
+
+    assertThat(fc.getFunction()).isEqualTo(Function.MULTIPLY);
+    assertThat(fc.getArguments()).hasSize(2);
+  }
+
+  @Test
+  void givenTwoExpressions_whenDivide_thenReturnFunctionCall() {
+    FunctionCall fc = divide(prop("total"), prop("count"));
+
+    assertThat(fc.getFunction()).isEqualTo(Function.DIVIDE);
+    assertThat(fc.getArguments()).hasSize(2);
+  }
+
+  @Test
+  void givenExpression_whenNegate_thenReturnFunctionCall() {
+    FunctionCall fc = negate(prop("value"));
+
+    assertThat(fc.getFunction()).isEqualTo(Function.NEGATE);
+    assertThat(fc.getArguments()).hasSize(1);
+  }
+
   // String function tests
 
   @Test

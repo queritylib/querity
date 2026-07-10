@@ -41,6 +41,80 @@ class QueryVisitorTests {
     }
 
     @Test
+    void givenAddFunction_whenParse_thenReturnFunctionCall() {
+      QueryDefinition query = QuerityParser.parseQuery("ADD(a, b) = 5");
+      SimpleCondition condition = (SimpleCondition) query.getFilter();
+      FunctionCall fc = (FunctionCall) condition.getLeftExpression();
+      assertThat(fc.getFunction()).isEqualTo(Function.ADD);
+      assertThat(fc.getArguments()).hasSize(2);
+    }
+
+    @Test
+    void givenVariadicAddFunction_whenParse_thenReturnFunctionCallWithAllArgs() {
+      QueryDefinition query = QuerityParser.parseQuery("ADD(a, b, c) > 0");
+      SimpleCondition condition = (SimpleCondition) query.getFilter();
+      FunctionCall fc = (FunctionCall) condition.getLeftExpression();
+      assertThat(fc.getFunction()).isEqualTo(Function.ADD);
+      assertThat(fc.getArguments()).hasSize(3);
+    }
+
+    @Test
+    void givenSubtractFunction_whenParse_thenReturnFunctionCall() {
+      QueryDefinition query = QuerityParser.parseQuery("SUBTRACT(qty, reserved) > 0");
+      SimpleCondition condition = (SimpleCondition) query.getFilter();
+      FunctionCall fc = (FunctionCall) condition.getLeftExpression();
+      assertThat(fc.getFunction()).isEqualTo(Function.SUBTRACT);
+      assertThat(fc.getArguments()).hasSize(2);
+    }
+
+    @Test
+    void givenMultiplyFunctionWithDecimalLiteral_whenParse_thenReturnFunctionCall() {
+      QueryDefinition query = QuerityParser.parseQuery("MULTIPLY(price, 1.22) > 100");
+      SimpleCondition condition = (SimpleCondition) query.getFilter();
+      FunctionCall fc = (FunctionCall) condition.getLeftExpression();
+      assertThat(fc.getFunction()).isEqualTo(Function.MULTIPLY);
+      assertThat(fc.getArguments()).hasSize(2);
+    }
+
+    @Test
+    void givenDivideFunction_whenParse_thenReturnFunctionCall() {
+      QueryDefinition query = QuerityParser.parseQuery("DIVIDE(total, divisor) >= 1");
+      SimpleCondition condition = (SimpleCondition) query.getFilter();
+      FunctionCall fc = (FunctionCall) condition.getLeftExpression();
+      assertThat(fc.getFunction()).isEqualTo(Function.DIVIDE);
+      assertThat(fc.getArguments()).hasSize(2);
+    }
+
+    @Test
+    void givenNegateFunction_whenParse_thenReturnFunctionCall() {
+      QueryDefinition query = QuerityParser.parseQuery("NEGATE(value) < 0");
+      SimpleCondition condition = (SimpleCondition) query.getFilter();
+      FunctionCall fc = (FunctionCall) condition.getLeftExpression();
+      assertThat(fc.getFunction()).isEqualTo(Function.NEGATE);
+      assertThat(fc.getArguments()).hasSize(1);
+    }
+
+    @Test
+    void givenNestedArithmeticFunctions_whenParse_thenReturnNestedFunctionCall() {
+      QueryDefinition query = QuerityParser.parseQuery("ADD(MULTIPLY(price, 1.22), fee) > 0");
+      SimpleCondition condition = (SimpleCondition) query.getFilter();
+      FunctionCall outer = (FunctionCall) condition.getLeftExpression();
+      assertThat(outer.getFunction()).isEqualTo(Function.ADD);
+      assertThat(outer.getArguments()).hasSize(2);
+      assertThat(outer.getArguments().get(0)).isInstanceOf(FunctionCall.class);
+      FunctionCall inner = (FunctionCall) outer.getArguments().get(0);
+      assertThat(inner.getFunction()).isEqualTo(Function.MULTIPLY);
+    }
+
+    @Test
+    void givenLowercaseArithmeticFunction_whenParse_thenResolvedCaseInsensitive() {
+      QueryDefinition query = QuerityParser.parseQuery("add(a, b) = 5");
+      SimpleCondition condition = (SimpleCondition) query.getFilter();
+      FunctionCall fc = (FunctionCall) condition.getLeftExpression();
+      assertThat(fc.getFunction()).isEqualTo(Function.ADD);
+    }
+
+    @Test
     void givenConcatFunction_whenParse_thenReturnFunctionCall() {
       QueryDefinition query = QuerityParser.parseQuery("CONCAT(firstName, lastName) STARTS WITH \"Jo\"");
       SimpleCondition condition = (SimpleCondition) query.getFilter();

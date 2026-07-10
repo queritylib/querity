@@ -48,6 +48,11 @@ nullaryFunction  : CURRENT_DATE_FUNC
 functionName     : ABS_FUNC
                  | SQRT_FUNC
                  | MOD_FUNC
+                 | ADD_FUNC
+                 | SUBTRACT_FUNC
+                 | MULTIPLY_FUNC
+                 | DIVIDE_FUNC
+                 | NEGATE_FUNC
                  | CONCAT_FUNC
                  | SUBSTRING_FUNC
                  | TRIM_FUNC

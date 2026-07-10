@@ -43,6 +43,46 @@ public enum Function {
      */
     MOD(2, FunctionCategory.ARITHMETIC),
 
+    /**
+     * Addition. Returns the sum of its numeric arguments.
+     * <p>Usage: {@code ADD(a, b)} or {@code ADD(a, b, c, ...)}
+     * <p>Variadic (2+ arguments); associative, so operand order is irrelevant.
+     */
+    ADD(-1, FunctionCategory.ARITHMETIC),  // -1 = variadic (2+ arguments)
+
+    /**
+     * Subtraction. Returns {@code a - b}.
+     * <p>Usage: {@code SUBTRACT(a, b)}
+     * <p>Strictly binary: subtraction is only left-associative and the target
+     * backends ({@code $subtract}, {@code CriteriaBuilder.diff}) are binary-only.
+     * Chains are expressed by nesting.
+     */
+    SUBTRACT(2, FunctionCategory.ARITHMETIC),
+
+    /**
+     * Multiplication. Returns the product of its numeric arguments.
+     * <p>Usage: {@code MULTIPLY(a, b)} or {@code MULTIPLY(a, b, c, ...)}
+     * <p>Variadic (2+ arguments); associative, so operand order is irrelevant.
+     */
+    MULTIPLY(-1, FunctionCategory.ARITHMETIC),  // -1 = variadic (2+ arguments)
+
+    /**
+     * Division. Returns {@code a / b}.
+     * <p>Usage: {@code DIVIDE(a, b)}
+     * <p>Strictly binary: division is only left-associative and the target
+     * backends ({@code $divide}, {@code CriteriaBuilder.quot}) are binary-only.
+     * Chains are expressed by nesting.
+     * <p><b>Note:</b> integer operands follow the backend's integer-division
+     * semantics (e.g. {@code DIVIDE(7, 2)} may yield {@code 3}).
+     */
+    DIVIDE(2, FunctionCategory.ARITHMETIC),
+
+    /**
+     * Negation. Returns {@code -a}.
+     * <p>Usage: {@code NEGATE(a)}
+     */
+    NEGATE(1, FunctionCategory.ARITHMETIC),
+
     // String functions
     /**
      * Concatenation. Joins two or more strings together.
@@ -219,7 +259,8 @@ public enum Function {
     /**
      * Returns the minimum number of arguments required for this function.
      * <p>For fixed-arity functions, this equals the argument count.
-     * For variadic functions, this returns the minimum required (e.g., 2 for CONCAT, 1 for COALESCE).
+     * For variadic functions, this returns the minimum required
+     * (e.g., 2 for CONCAT, ADD and MULTIPLY, 1 for COALESCE).
      *
      * @return the minimum number of arguments required
      */
@@ -227,8 +268,8 @@ public enum Function {
         if (!isVariadic()) {
             return argumentCount;
         }
-        // Variadic functions: CONCAT needs at least 2, others need at least 1
-        return this == CONCAT ? 2 : 1;
+        // Variadic functions: CONCAT/ADD/MULTIPLY need at least 2, others need at least 1
+        return (this == CONCAT || this == ADD || this == MULTIPLY) ? 2 : 1;
     }
 
     /**

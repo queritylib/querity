@@ -48,6 +48,11 @@ COMMA       : ',';
 ABS_FUNC       : A B S;
 SQRT_FUNC      : S Q R T;
 MOD_FUNC       : M O D;
+ADD_FUNC       : A D D;
+SUBTRACT_FUNC  : S U B T R A C T;
+MULTIPLY_FUNC  : M U L T I P L Y;
+DIVIDE_FUNC    : D I V I D E;
+NEGATE_FUNC    : N E G A T E;
 
 // String functions
 CONCAT_FUNC    : C O N C A T;

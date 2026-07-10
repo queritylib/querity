@@ -22,7 +22,7 @@ which fits into your project.
 * **Filtering** with simple and nested conditions (AND, OR, NOT)
 * **Sorting** and **pagination**
 * **Projections** (select specific fields)
-* **Function expressions** (UPPER, LOWER, LENGTH, CONCAT, etc.)
+* **Function expressions** (UPPER, LOWER, LENGTH, CONCAT, arithmetic ADD/SUBTRACT/MULTIPLY/DIVIDE/NEGATE, etc.)
 * **GROUP BY and HAVING** clauses for aggregate queries
 * **Textual query language** for REST APIs
 * **Native expressions** for advanced database-specific queries

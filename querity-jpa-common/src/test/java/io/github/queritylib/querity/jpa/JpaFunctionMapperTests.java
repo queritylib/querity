@@ -27,6 +27,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -133,6 +135,71 @@ class JpaFunctionMapperTests {
       FunctionCall fc = FunctionCall.of(Function.MOD, PropertyReference.of("value"), Literal.of(10));
       Expression<?> result = JpaFunctionMapper.toExpression(fc, root, cb, metamodel);
       assertThat(result).isEqualTo(intExpr);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void givenAddFunction_whenToExpression_thenReturnSumExpression() {
+      Expression<Number> numberExpr = mock(Expression.class);
+      doReturn(numberExpr).when(cb).literal(any(Integer.class));
+      doReturn(numberExpr).when(cb).sum(any(Expression.class), any(Expression.class));
+      FunctionCall fc = FunctionCall.of(Function.ADD, PropertyReference.of("value"), Literal.of(5));
+      Expression<?> result = JpaFunctionMapper.toExpression(fc, root, cb, metamodel);
+      assertThat(result).isEqualTo(numberExpr);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void givenVariadicAddFunction_whenToExpression_thenFoldsWithSum() {
+      Expression<Number> numberExpr = mock(Expression.class);
+      doReturn(numberExpr).when(cb).sum(any(Expression.class), any(Expression.class));
+      FunctionCall fc = FunctionCall.of(Function.ADD,
+          PropertyReference.of("a"), PropertyReference.of("b"), PropertyReference.of("c"));
+      Expression<?> result = JpaFunctionMapper.toExpression(fc, root, cb, metamodel);
+      // 3 operands -> 2 sum() calls (fold)
+      verify(cb, times(2)).sum(any(Expression.class), any(Expression.class));
+      assertThat(result).isEqualTo(numberExpr);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void givenSubtractFunction_whenToExpression_thenReturnDiffExpression() {
+      Expression<Number> numberExpr = mock(Expression.class);
+      doReturn(numberExpr).when(cb).diff(any(Expression.class), any(Expression.class));
+      FunctionCall fc = FunctionCall.of(Function.SUBTRACT, PropertyReference.of("qty"), PropertyReference.of("reserved"));
+      Expression<?> result = JpaFunctionMapper.toExpression(fc, root, cb, metamodel);
+      assertThat(result).isEqualTo(numberExpr);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void givenMultiplyFunction_whenToExpression_thenReturnProdExpression() {
+      Expression<Number> numberExpr = mock(Expression.class);
+      doReturn(numberExpr).when(cb).literal(any());
+      doReturn(numberExpr).when(cb).prod(any(Expression.class), any(Expression.class));
+      FunctionCall fc = FunctionCall.of(Function.MULTIPLY, PropertyReference.of("price"), Literal.of(1.22));
+      Expression<?> result = JpaFunctionMapper.toExpression(fc, root, cb, metamodel);
+      assertThat(result).isEqualTo(numberExpr);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void givenDivideFunction_whenToExpression_thenReturnQuotExpression() {
+      Expression<Number> numberExpr = mock(Expression.class);
+      doReturn(numberExpr).when(cb).quot(any(Expression.class), any(Expression.class));
+      FunctionCall fc = FunctionCall.of(Function.DIVIDE, PropertyReference.of("total"), PropertyReference.of("count"));
+      Expression<?> result = JpaFunctionMapper.toExpression(fc, root, cb, metamodel);
+      assertThat(result).isEqualTo(numberExpr);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void givenNegateFunction_whenToExpression_thenReturnNegExpression() {
+      Expression<Number> numberExpr = mock(Expression.class);
+      doReturn(numberExpr).when(cb).neg(any(Expression.class));
+      FunctionCall fc = FunctionCall.of(Function.NEGATE, PropertyReference.of("value"));
+      Expression<?> result = JpaFunctionMapper.toExpression(fc, root, cb, metamodel);
+      assertThat(result).isEqualTo(numberExpr);
     }
   }
 

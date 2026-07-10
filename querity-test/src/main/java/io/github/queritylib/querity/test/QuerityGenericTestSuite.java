@@ -1323,6 +1323,51 @@ public abstract class QuerityGenericTestSuite<T extends Person<K, ?, ?, ? extend
     }
 
     @Test
+    void givenAddFunctionInFilter_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFunctionExpressionsInFilters()) return;
+      // Filter where ADD(children, 1) = entity1's children + 1
+      int target = entity1.getChildren() + 1;
+      Query query = Querity.query()
+          .filter(filterBy(add(property(PROPERTY_CHILDREN), lit(1)), EQUALS, target))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getChildren() != null && p.getChildren() + 1 == target)
+          .toList());
+    }
+
+    @Test
+    void givenMultiplyFunctionInFilter_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFunctionExpressionsInFilters()) return;
+      // Filter where MULTIPLY(children, 2) = entity1's children * 2
+      int target = entity1.getChildren() * 2;
+      Query query = Querity.query()
+          .filter(filterBy(multiply(property(PROPERTY_CHILDREN), lit(2)), EQUALS, target))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getChildren() != null && p.getChildren() * 2 == target)
+          .toList());
+    }
+
+    @Test
+    void givenSubtractFunctionInFilter_whenFindAll_thenReturnOnlyFilteredElements() {
+      if (!supportsFunctionExpressionsInFilters()) return;
+      // Filter where SUBTRACT(children, 1) = entity1's children - 1
+      int target = entity1.getChildren() - 1;
+      Query query = Querity.query()
+          .filter(filterBy(subtract(property(PROPERTY_CHILDREN), lit(1)), EQUALS, target))
+          .build();
+      List<T> result = querity.findAll(getEntityClass(), query);
+      assertThat(result).isNotEmpty();
+      assertThat(result).containsExactlyInAnyOrderElementsOf(entities.stream()
+          .filter(p -> p.getChildren() != null && p.getChildren() - 1 == target)
+          .toList());
+    }
+
+    @Test
     void givenFunctionInFilterWithAndLogic_whenFindAll_thenReturnOnlyFilteredElements() {
       if (!supportsFunctionExpressionsInFilters()) return;
       // Filter where UPPER(lastName) = entity1's lastName AND married = true

@@ -113,6 +113,56 @@ class MongodbFunctionMapperTests {
       assertThat(result).isInstanceOf(Document.class);
       assertThat(((Document) result).get("$mod")).isInstanceOf(List.class);
     }
+
+    @Test
+    void givenAddFunction_whenToExpression_thenReturnAddDocument() {
+      FunctionCall fc = FunctionCall.of(Function.ADD, PropertyReference.of("a"), PropertyReference.of("b"), Literal.of(2));
+
+      Object result = MongodbFunctionMapper.toExpression(fc);
+
+      assertThat(result).isInstanceOf(Document.class);
+      assertThat(((Document) result).get("$add")).isEqualTo(List.of("$a", "$b", 2));
+    }
+
+    @Test
+    void givenSubtractFunction_whenToExpression_thenReturnSubtractDocument() {
+      FunctionCall fc = FunctionCall.of(Function.SUBTRACT, PropertyReference.of("qty"), PropertyReference.of("reserved"));
+
+      Object result = MongodbFunctionMapper.toExpression(fc);
+
+      assertThat(result).isInstanceOf(Document.class);
+      assertThat(((Document) result).get("$subtract")).isEqualTo(List.of("$qty", "$reserved"));
+    }
+
+    @Test
+    void givenMultiplyFunction_whenToExpression_thenReturnMultiplyDocument() {
+      FunctionCall fc = FunctionCall.of(Function.MULTIPLY, PropertyReference.of("price"), Literal.of(1.22));
+
+      Object result = MongodbFunctionMapper.toExpression(fc);
+
+      assertThat(result).isInstanceOf(Document.class);
+      assertThat(((Document) result).get("$multiply")).isEqualTo(List.of("$price", 1.22));
+    }
+
+    @Test
+    void givenDivideFunction_whenToExpression_thenReturnDivideDocument() {
+      FunctionCall fc = FunctionCall.of(Function.DIVIDE, PropertyReference.of("total"), PropertyReference.of("count"));
+
+      Object result = MongodbFunctionMapper.toExpression(fc);
+
+      assertThat(result).isInstanceOf(Document.class);
+      assertThat(((Document) result).get("$divide")).isEqualTo(List.of("$total", "$count"));
+    }
+
+    @Test
+    void givenNegateFunction_whenToExpression_thenReturnMultiplyByMinusOne() {
+      FunctionCall fc = FunctionCall.of(Function.NEGATE, PropertyReference.of("value"));
+
+      Object result = MongodbFunctionMapper.toExpression(fc);
+
+      assertThat(result).isInstanceOf(Document.class);
+      assertThat(((Document) result).get("$multiply")).isEqualTo(List.of(-1, "$value"));
+    }
   }
 
   @Nested
