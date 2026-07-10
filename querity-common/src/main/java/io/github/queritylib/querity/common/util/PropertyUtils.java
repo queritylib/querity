@@ -50,16 +50,32 @@ public class PropertyUtils {
   public static <T> Object getActualPropertyValue(Class<T> beanClass, String propertyPath, Object value) {
     if (value == null) return null;
     Class<?> propertyType = getPropertyType(beanClass, propertyPath);
+    return getActualValue(propertyType, value);
+  }
+
+  /**
+   * Converts a raw value (typically a {@code String} literal) to the given target type,
+   * using the same {@link PropertyValueExtractorFactory} pipeline as property-path conversion.
+   *
+   * <p>Handles single values, {@link Iterable}s and arrays. Useful when the target type is known
+   * directly (e.g. from a function expression's result type) rather than from a bean property path.
+   *
+   * @param targetType the type to convert the value to
+   * @param value      the raw value (single, iterable or array)
+   * @return the converted value, or {@code null} if {@code value} is {@code null}
+   */
+  public static Object getActualValue(Class<?> targetType, Object value) {
+    if (value == null) return null;
     if (value instanceof Iterable<?> it) {
       return StreamSupport.stream(it.spliterator(), false)
-          .map(v -> PropertyValueExtractorFactory.getPropertyValueExtractor(propertyType).extractValue(propertyType, v))
+          .map(v -> PropertyValueExtractorFactory.getPropertyValueExtractor(targetType).extractValue(targetType, v))
           .toArray();
     } else if (value.getClass().isArray()) {
       return Arrays.stream((Object[]) value)
-          .map(v -> PropertyValueExtractorFactory.getPropertyValueExtractor(propertyType).extractValue(propertyType, v))
+          .map(v -> PropertyValueExtractorFactory.getPropertyValueExtractor(targetType).extractValue(targetType, v))
           .toArray();
     } else {
-      return PropertyValueExtractorFactory.getPropertyValueExtractor(propertyType).extractValue(propertyType, value);
+      return PropertyValueExtractorFactory.getPropertyValueExtractor(targetType).extractValue(targetType, value);
     }
   }
 }
