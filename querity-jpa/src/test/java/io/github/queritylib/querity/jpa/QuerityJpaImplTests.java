@@ -14,10 +14,12 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import static io.github.queritylib.querity.api.Operator.EQUALS;
 import static io.github.queritylib.querity.api.Querity.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -60,6 +62,34 @@ public abstract class QuerityJpaImplTests extends QuerityGenericTestSuite<Person
   @Override
   protected Class<Person> getEntityClass() {
     return Person.class;
+  }
+
+  @Test
+  void givenCurrentDateFunctionEqualsStringLiteral_whenFindAll_thenLiteralConvertedAndReturnAll() {
+    // Issue #187: the String literal must be converted to the function's result type
+    // (java.sql.Date); otherwise the raw String reaches the DB and the query fails.
+    Query query = Querity.query()
+        .filter(filterBy(currentDate(), EQUALS, LocalDate.now().toString()))
+        .build();
+    List<Person> result = querity.findAll(getEntityClass(), query);
+    // CURRENT_DATE is identical for every row, so all rows match
+    assertThat(result).containsExactlyInAnyOrderElementsOf(entities);
+  }
+
+  @Test
+  void givenCoalesceOverDateFieldEqualsStringLiteral_whenFindAll_thenReturnOnlyFilteredElements() {
+    // Issue #187: COALESCE over a date field returns a date-typed expression; the String literal
+    // must be converted to that type.
+    String birthDate = entity1.getBirthDate().toString();
+    Query query = Querity.query()
+        .filter(filterBy(coalesce(property("birthDate")), EQUALS, birthDate))
+        .build();
+    List<Person> result = querity.findAll(getEntityClass(), query);
+    assertThat(result)
+        .isNotEmpty()
+        .containsExactlyInAnyOrderElementsOf(entities.stream()
+            .filter(p -> entity1.getBirthDate().equals(p.getBirthDate()))
+            .toList());
   }
 
   @Test
