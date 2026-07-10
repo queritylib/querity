@@ -11,7 +11,8 @@ class FunctionTests {
     for (Function function : Function.values()) {
       int count = function.getArgumentCount();
       // Variadic functions return -1
-      if (function == Function.COALESCE || function == Function.CONCAT) {
+      if (function == Function.COALESCE || function == Function.CONCAT
+          || function == Function.ADD || function == Function.MULTIPLY) {
         assertThat(count).isEqualTo(-1);
       } else {
         assertThat(count).isGreaterThanOrEqualTo(0);
@@ -31,6 +32,11 @@ class FunctionTests {
     assertThat(Function.ABS.getCategory()).isEqualTo(Function.FunctionCategory.ARITHMETIC);
     assertThat(Function.SQRT.getCategory()).isEqualTo(Function.FunctionCategory.ARITHMETIC);
     assertThat(Function.MOD.getCategory()).isEqualTo(Function.FunctionCategory.ARITHMETIC);
+    assertThat(Function.ADD.getCategory()).isEqualTo(Function.FunctionCategory.ARITHMETIC);
+    assertThat(Function.SUBTRACT.getCategory()).isEqualTo(Function.FunctionCategory.ARITHMETIC);
+    assertThat(Function.MULTIPLY.getCategory()).isEqualTo(Function.FunctionCategory.ARITHMETIC);
+    assertThat(Function.DIVIDE.getCategory()).isEqualTo(Function.FunctionCategory.ARITHMETIC);
+    assertThat(Function.NEGATE.getCategory()).isEqualTo(Function.FunctionCategory.ARITHMETIC);
   }
 
   @Test
@@ -90,6 +96,14 @@ class FunctionTests {
   void givenVariadicFunction_whenIsVariadic_thenReturnTrue() {
     assertThat(Function.COALESCE.isVariadic()).isTrue();
     assertThat(Function.CONCAT.isVariadic()).isTrue();
+    assertThat(Function.ADD.isVariadic()).isTrue();
+    assertThat(Function.MULTIPLY.isVariadic()).isTrue();
+  }
+
+  @Test
+  void givenVariadicArithmeticFunctions_whenGetMinimumArguments_thenReturnTwo() {
+    assertThat(Function.ADD.getMinimumArguments()).isEqualTo(2);
+    assertThat(Function.MULTIPLY.getMinimumArguments()).isEqualTo(2);
   }
 
   @Test
@@ -97,6 +111,9 @@ class FunctionTests {
     assertThat(Function.ABS.isVariadic()).isFalse();
     assertThat(Function.UPPER.isVariadic()).isFalse();
     assertThat(Function.MOD.isVariadic()).isFalse();
+    assertThat(Function.SUBTRACT.isVariadic()).isFalse();
+    assertThat(Function.DIVIDE.isVariadic()).isFalse();
+    assertThat(Function.NEGATE.isVariadic()).isFalse();
   }
 
   @Test
@@ -109,6 +126,7 @@ class FunctionTests {
     // 1-argument functions
     assertThat(Function.ABS.getArgumentCount()).isEqualTo(1);
     assertThat(Function.SQRT.getArgumentCount()).isEqualTo(1);
+    assertThat(Function.NEGATE.getArgumentCount()).isEqualTo(1);
     assertThat(Function.TRIM.getArgumentCount()).isEqualTo(1);
     assertThat(Function.LTRIM.getArgumentCount()).isEqualTo(1);
     assertThat(Function.RTRIM.getArgumentCount()).isEqualTo(1);
@@ -125,6 +143,8 @@ class FunctionTests {
     assertThat(Function.MOD.getArgumentCount()).isEqualTo(2);
     assertThat(Function.LOCATE.getArgumentCount()).isEqualTo(2);
     assertThat(Function.NULLIF.getArgumentCount()).isEqualTo(2);
+    assertThat(Function.SUBTRACT.getArgumentCount()).isEqualTo(2);
+    assertThat(Function.DIVIDE.getArgumentCount()).isEqualTo(2);
 
     // 3-argument functions
     assertThat(Function.SUBSTRING.getArgumentCount()).isEqualTo(3);

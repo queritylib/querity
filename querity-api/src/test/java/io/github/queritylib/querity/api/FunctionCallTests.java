@@ -171,6 +171,48 @@ class FunctionCallTests {
   }
 
   @Test
+  void givenAddWithOneArgument_whenBuild_thenThrowException() {
+    // ADD requires at least 2 arguments
+    PropertyReference ref = PropertyReference.of("value");
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        () -> FunctionCall.of(Function.ADD, ref));
+
+    assertThat(exception.getMessage()).contains("requires at least 2 argument(s)");
+  }
+
+  @Test
+  void givenMultiplyWithOneArgument_whenBuild_thenThrowException() {
+    // MULTIPLY requires at least 2 arguments
+    PropertyReference ref = PropertyReference.of("value");
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        () -> FunctionCall.of(Function.MULTIPLY, ref));
+
+    assertThat(exception.getMessage()).contains("requires at least 2 argument(s)");
+  }
+
+  @Test
+  void givenSubtractWithOneArgument_whenBuild_thenThrowException() {
+    // SUBTRACT requires exactly 2 arguments
+    PropertyReference ref = PropertyReference.of("value");
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        () -> FunctionCall.of(Function.SUBTRACT, ref));
+
+    assertThat(exception.getMessage()).contains("requires 2 argument(s)");
+  }
+
+  @Test
+  void givenDivideWithThreeArguments_whenBuild_thenThrowException() {
+    // DIVIDE requires exactly 2 arguments
+    PropertyReference a = PropertyReference.of("a");
+    PropertyReference b = PropertyReference.of("b");
+    PropertyReference c = PropertyReference.of("c");
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        () -> FunctionCall.of(Function.DIVIDE, a, b, c));
+
+    assertThat(exception.getMessage()).contains("requires 2 argument(s)");
+  }
+
+  @Test
   void givenNullaryFunction_whenToExpressionString_thenReturnFunctionNameOnly() {
     FunctionCall fc = FunctionCall.of(Function.CURRENT_DATE);
 

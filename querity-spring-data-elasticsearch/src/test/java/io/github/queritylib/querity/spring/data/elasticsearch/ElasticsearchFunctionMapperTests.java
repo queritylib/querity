@@ -49,6 +49,15 @@ class ElasticsearchFunctionMapperTests {
   }
 
   @Test
+  void givenArithmeticFunctionCall_whenGetFieldName_thenThrowUnsupportedOperationException() {
+    FunctionCall functionCall = FunctionCall.of(Function.ADD, PropertyReference.of("a"), PropertyReference.of("b"));
+
+    assertThatThrownBy(() -> ElasticsearchFunctionMapper.getFieldName(functionCall))
+        .isInstanceOf(UnsupportedOperationException.class)
+        .hasMessageContaining("Function ADD is not supported in Elasticsearch");
+  }
+
+  @Test
   void givenUnsupportedExpressionType_whenGetFieldName_thenThrowIllegalArgumentException() {
     PropertyExpression unsupported = new UnsupportedPropertyExpression();
 
