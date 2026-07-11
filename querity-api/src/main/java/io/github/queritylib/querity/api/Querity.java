@@ -447,6 +447,58 @@ public interface Querity {
     return FunctionCall.of(Function.MOD, dividend, divisor);
   }
 
+  /**
+   * ADD function - returns the sum of its arguments (variadic, 2+ arguments).
+   *
+   * @param arguments the addends (use {@link #prop(String)} for properties, {@link #lit} for literals)
+   * @return a FunctionCall for ADD
+   */
+  static FunctionCall add(FunctionArgument... arguments) {
+    return FunctionCall.of(Function.ADD, arguments);
+  }
+
+  /**
+   * SUBTRACT function - returns {@code a - b}.
+   *
+   * @param a the minuend (use {@link #prop(String)} for properties, {@link #lit} for literals)
+   * @param b the subtrahend (use {@link #prop(String)} for properties, {@link #lit} for literals)
+   * @return a FunctionCall for SUBTRACT
+   */
+  static FunctionCall subtract(FunctionArgument a, FunctionArgument b) {
+    return FunctionCall.of(Function.SUBTRACT, a, b);
+  }
+
+  /**
+   * MULTIPLY function - returns the product of its arguments (variadic, 2+ arguments).
+   *
+   * @param arguments the factors (use {@link #prop(String)} for properties, {@link #lit} for literals)
+   * @return a FunctionCall for MULTIPLY
+   */
+  static FunctionCall multiply(FunctionArgument... arguments) {
+    return FunctionCall.of(Function.MULTIPLY, arguments);
+  }
+
+  /**
+   * DIVIDE function - returns {@code dividend / divisor}.
+   *
+   * @param dividend the dividend (use {@link #prop(String)} for properties, {@link #lit} for literals)
+   * @param divisor the divisor (use {@link #prop(String)} for properties, {@link #lit} for literals)
+   * @return a FunctionCall for DIVIDE
+   */
+  static FunctionCall divide(FunctionArgument dividend, FunctionArgument divisor) {
+    return FunctionCall.of(Function.DIVIDE, dividend, divisor);
+  }
+
+  /**
+   * NEGATE function - returns {@code -a}.
+   *
+   * @param argument the value to negate (use {@link #prop(String)} for properties, {@link #lit} for literals)
+   * @return a FunctionCall for NEGATE
+   */
+  static FunctionCall negate(FunctionArgument argument) {
+    return FunctionCall.of(Function.NEGATE, argument);
+  }
+
   // --- String Functions ---
 
   /**

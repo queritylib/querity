@@ -30,6 +30,11 @@ public class MongodbFunctionMapper {
     FUNCTION_MAP.put(Function.ABS, MongodbFunctionMapper::abs);
     FUNCTION_MAP.put(Function.SQRT, MongodbFunctionMapper::sqrt);
     FUNCTION_MAP.put(Function.MOD, MongodbFunctionMapper::mod);
+    FUNCTION_MAP.put(Function.ADD, MongodbFunctionMapper::add);
+    FUNCTION_MAP.put(Function.SUBTRACT, MongodbFunctionMapper::subtract);
+    FUNCTION_MAP.put(Function.MULTIPLY, MongodbFunctionMapper::multiply);
+    FUNCTION_MAP.put(Function.DIVIDE, MongodbFunctionMapper::divide);
+    FUNCTION_MAP.put(Function.NEGATE, MongodbFunctionMapper::negate);
 
     // String functions
     FUNCTION_MAP.put(Function.CONCAT, MongodbFunctionMapper::concat);
@@ -132,6 +137,38 @@ public class MongodbFunctionMapper {
         toExpressionOrLiteral(args.get(0)),
         toExpressionOrLiteral(args.get(1))
     ));
+  }
+
+  private static Object add(List<FunctionArgument> args) {
+    List<Object> mongoArgs = args.stream()
+        .map(MongodbFunctionMapper::toExpressionOrLiteral)
+        .toList();
+    return new Document("$add", mongoArgs);
+  }
+
+  private static Object subtract(List<FunctionArgument> args) {
+    return new Document("$subtract", List.of(
+        toExpressionOrLiteral(args.get(0)),
+        toExpressionOrLiteral(args.get(1))
+    ));
+  }
+
+  private static Object multiply(List<FunctionArgument> args) {
+    List<Object> mongoArgs = args.stream()
+        .map(MongodbFunctionMapper::toExpressionOrLiteral)
+        .toList();
+    return new Document("$multiply", mongoArgs);
+  }
+
+  private static Object divide(List<FunctionArgument> args) {
+    return new Document("$divide", List.of(
+        toExpressionOrLiteral(args.get(0)),
+        toExpressionOrLiteral(args.get(1))
+    ));
+  }
+
+  private static Object negate(List<FunctionArgument> args) {
+    return new Document("$multiply", List.of(-1, toExpressionOrLiteral(args.get(0))));
   }
 
   // --- String functions ---

@@ -30,6 +30,11 @@ public class JpaFunctionMapper {
     FUNCTION_MAP.put(Function.ABS, JpaFunctionMapper::abs);
     FUNCTION_MAP.put(Function.SQRT, JpaFunctionMapper::sqrt);
     FUNCTION_MAP.put(Function.MOD, JpaFunctionMapper::mod);
+    FUNCTION_MAP.put(Function.ADD, JpaFunctionMapper::add);
+    FUNCTION_MAP.put(Function.SUBTRACT, JpaFunctionMapper::subtract);
+    FUNCTION_MAP.put(Function.MULTIPLY, JpaFunctionMapper::multiply);
+    FUNCTION_MAP.put(Function.DIVIDE, JpaFunctionMapper::divide);
+    FUNCTION_MAP.put(Function.NEGATE, JpaFunctionMapper::negate);
 
     // String functions
     FUNCTION_MAP.put(Function.CONCAT, JpaFunctionMapper::concat);
@@ -112,6 +117,41 @@ public class JpaFunctionMapper {
     Expression<Integer> dividend = toIntExpression(args.get(0), root, cb, metamodel);
     Expression<Integer> divisor = toIntExpression(args.get(1), root, cb, metamodel);
     return cb.mod(dividend, divisor);
+  }
+
+  private static Expression<?> add(List<FunctionArgument> args, Root<?> root, CriteriaBuilder cb, Metamodel metamodel) {
+    Expression<Number> result = castExpression(toExpressionOrLiteral(args.get(0), root, cb, metamodel));
+    for (int i = 1; i < args.size(); i++) {
+      Expression<Number> next = castExpression(toExpressionOrLiteral(args.get(i), root, cb, metamodel));
+      result = cb.sum(result, next);
+    }
+    return result;
+  }
+
+  private static Expression<?> subtract(List<FunctionArgument> args, Root<?> root, CriteriaBuilder cb, Metamodel metamodel) {
+    Expression<Number> minuend = castExpression(toExpressionOrLiteral(args.get(0), root, cb, metamodel));
+    Expression<Number> subtrahend = castExpression(toExpressionOrLiteral(args.get(1), root, cb, metamodel));
+    return cb.diff(minuend, subtrahend);
+  }
+
+  private static Expression<?> multiply(List<FunctionArgument> args, Root<?> root, CriteriaBuilder cb, Metamodel metamodel) {
+    Expression<Number> result = castExpression(toExpressionOrLiteral(args.get(0), root, cb, metamodel));
+    for (int i = 1; i < args.size(); i++) {
+      Expression<Number> next = castExpression(toExpressionOrLiteral(args.get(i), root, cb, metamodel));
+      result = cb.prod(result, next);
+    }
+    return result;
+  }
+
+  private static Expression<?> divide(List<FunctionArgument> args, Root<?> root, CriteriaBuilder cb, Metamodel metamodel) {
+    Expression<Number> dividend = castExpression(toExpressionOrLiteral(args.get(0), root, cb, metamodel));
+    Expression<Number> divisor = castExpression(toExpressionOrLiteral(args.get(1), root, cb, metamodel));
+    return cb.quot(dividend, divisor);
+  }
+
+  private static Expression<?> negate(List<FunctionArgument> args, Root<?> root, CriteriaBuilder cb, Metamodel metamodel) {
+    Expression<Number> arg = castExpression(toExpressionOrLiteral(args.get(0), root, cb, metamodel));
+    return cb.neg(arg);
   }
 
   // --- String functions ---
