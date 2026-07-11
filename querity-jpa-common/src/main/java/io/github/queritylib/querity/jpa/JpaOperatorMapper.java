@@ -1,6 +1,8 @@
 package io.github.queritylib.querity.jpa;
 
 import io.github.queritylib.querity.api.FieldReference;
+import io.github.queritylib.querity.api.FunctionArgument;
+import io.github.queritylib.querity.api.FunctionCall;
 import io.github.queritylib.querity.api.Operator;
 import io.github.queritylib.querity.api.PropertyExpression;
 import io.github.queritylib.querity.api.PropertyReference;
@@ -179,10 +181,43 @@ class JpaOperatorMapper {
     if (propertyPath != null) {
       value = PropertyUtils.getActualPropertyValue(entityClass, propertyPath, condition.getValue());
     } else {
-      // For function expressions, use the raw value
-      value = condition.getValue();
+      value = convertFunctionExpressionValue(entityClass, condition, leftExpression);
     }
     return OPERATOR_PREDICATE_MAP.get(condition.getOperator())
         .getPredicate(leftExpression, value, cb);
+  }
+
+  /**
+   * Converts a condition's literal to the result type of a function-expression left side, so that
+   * e.g. {@code CURRENT_DATE = "2026-06-22"} or {@code COALESCE(dateField) = "2026-06-22"} bind
+   * correctly instead of passing a raw {@code String} to the database (issue #187).
+   *
+   * <p>The type is taken from the JPA expression ({@link Expression#getJavaType()}); when that is
+   * {@code null} (e.g. {@code COALESCE}/{@code NULLIF}, whose type JPA does not always infer), it
+   * falls back to the first property argument's type. If no type can be resolved, the raw value is
+   * kept.
+   */
+  private static <T> Object convertFunctionExpressionValue(Class<T> entityClass, SimpleCondition condition,
+      Expression<?> leftExpression) {
+    Class<?> targetType = leftExpression.getJavaType();
+    if (targetType == null && condition.hasLeftExpression())
+      targetType = resolvePropertyExpressionType(entityClass, condition.getLeftExpression());
+    return targetType != null
+        ? PropertyUtils.getActualValue(targetType, condition.getValue())
+        : condition.getValue();
+  }
+
+  private static <T> Class<?> resolvePropertyExpressionType(Class<T> entityClass, PropertyExpression expr) {
+    if (expr instanceof PropertyReference pr)
+      return PropertyUtils.getPropertyType(entityClass, pr.getPropertyName());
+    if (expr instanceof FunctionCall fc) {
+      for (FunctionArgument arg : fc.getArguments()) {
+        if (arg instanceof PropertyExpression pe) {
+          Class<?> type = resolvePropertyExpressionType(entityClass, pe);
+          if (type != null) return type;
+        }
+      }
+    }
+    return null;
   }
 }

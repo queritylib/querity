@@ -27,7 +27,9 @@ class DateValueExtractorTests extends AbstractPropertyValueExtractorTests {
         Arguments.of(LocalDateTime.class, false),
         Arguments.of(ZonedDateTime.class, false),
         Arguments.of(Date.class, true),
-        Arguments.of(java.sql.Date.class, true)
+        Arguments.of(java.sql.Date.class, true),
+        Arguments.of(java.sql.Time.class, true),
+        Arguments.of(java.sql.Timestamp.class, true)
     );
   }
 
@@ -36,7 +38,11 @@ class DateValueExtractorTests extends AbstractPropertyValueExtractorTests {
     return Stream.of(
         Arguments.of(Date.class, null, null),
         Arguments.of(Date.class, "2021-06-09T12:30:00Z", Date.from(Instant.parse("2021-06-09T12:30:00Z"))),
-        Arguments.of(Date.class, testValue, testValue)
+        Arguments.of(Date.class, testValue, testValue),
+        // java.sql.* subtypes parse their ISO-8601 forms (issue #187)
+        Arguments.of(java.sql.Date.class, "2026-06-22", java.sql.Date.valueOf("2026-06-22")),
+        Arguments.of(java.sql.Time.class, "10:15:30", java.sql.Time.valueOf("10:15:30")),
+        Arguments.of(java.sql.Timestamp.class, "2026-06-22T10:15:30", java.sql.Timestamp.valueOf("2026-06-22 10:15:30"))
     );
   }
 }

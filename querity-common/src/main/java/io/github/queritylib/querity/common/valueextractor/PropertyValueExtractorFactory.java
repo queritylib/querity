@@ -24,6 +24,8 @@ public class PropertyValueExtractorFactory {
 
   @SuppressWarnings("java:S1452")
   public static PropertyValueExtractor<?> getPropertyValueExtractor(Class<?> propertyType) {
+    if (propertyType == null)
+      return NO_OP_VALUE_EXTRACTOR;
     return extractors.stream()
         .filter(e -> e.canHandle(propertyType))
         .findAny()
