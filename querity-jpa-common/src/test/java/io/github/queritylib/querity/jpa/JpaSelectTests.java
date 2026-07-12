@@ -58,6 +58,18 @@ class JpaSelectTests {
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageContaining("No JpaSelect implementation found");
     }
+
+    @Test
+    void givenNativeSelectWrapperWithNoMatchingImplementation_whenJpaNativeSelectWrapperOf_thenThrowExceptionWithTypeName() {
+      NativeSelectWrapper<Double> wrapper = NativeSelectWrapper.<Double>builder()
+          .nativeSelection(3.14)
+          .build();
+
+      assertThatThrownBy(() -> JpaNativeSelectWrapper.of(wrapper))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessageContaining("No JpaSelect implementation found")
+          .hasMessageContaining("java.lang.Double");
+    }
   }
 
   @Nested

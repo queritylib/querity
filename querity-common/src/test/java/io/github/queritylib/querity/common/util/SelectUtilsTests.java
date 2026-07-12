@@ -60,6 +60,54 @@ class SelectUtilsTests {
     assertThat(result.get()).isInstanceOf(IntegerTestSelect.class);
   }
 
+  @Test
+  void givenImplementationWithNoArgConstructorOnly_whenGetSelectImplementation_thenReturnEmpty() {
+    NativeSelectWrapper<String> wrapper = NativeSelectWrapper.<String>builder()
+        .nativeSelection("field1")
+        .build();
+    Set<Class<? extends TestSelect>> implementationClasses = Set.of(NoArgConstructorTestSelect.class);
+
+    Optional<TestSelect> result = SelectUtils.getSelectImplementation(implementationClasses, wrapper);
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  void givenImplementationWithNonWrapperConstructor_whenGetSelectImplementation_thenReturnEmpty() {
+    NativeSelectWrapper<String> wrapper = NativeSelectWrapper.<String>builder()
+        .nativeSelection("field1")
+        .build();
+    Set<Class<? extends TestSelect>> implementationClasses = Set.of(NonWrapperConstructorTestSelect.class);
+
+    Optional<TestSelect> result = SelectUtils.getSelectImplementation(implementationClasses, wrapper);
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  void givenImplementationWithParameterizedNonWrapperConstructor_whenGetSelectImplementation_thenReturnEmpty() {
+    NativeSelectWrapper<String> wrapper = NativeSelectWrapper.<String>builder()
+        .nativeSelection("field1")
+        .build();
+    Set<Class<? extends TestSelect>> implementationClasses = Set.of(ParameterizedNonWrapperConstructorTestSelect.class);
+
+    Optional<TestSelect> result = SelectUtils.getSelectImplementation(implementationClasses, wrapper);
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  void givenImplementationWithTypeVariableInWrapper_whenGetSelectImplementation_thenReturnEmpty() {
+    NativeSelectWrapper<String> wrapper = NativeSelectWrapper.<String>builder()
+        .nativeSelection("field1")
+        .build();
+    Set<Class<? extends TestSelect>> implementationClasses = Set.of(GenericTestSelect.class);
+
+    Optional<TestSelect> result = SelectUtils.getSelectImplementation(implementationClasses, wrapper);
+
+    assertThat(result).isEmpty();
+  }
+
   // Test interfaces and implementations
   interface TestSelect {
     List<String> getPropertyNames();
@@ -88,6 +136,50 @@ class SelectUtilsTests {
     @Override
     public List<String> getPropertyNames() {
       return wrapper.getNativeSelections().stream().map(Object::toString).toList();
+    }
+  }
+
+  // Test implementation with only a no-arg constructor
+  public static class NoArgConstructorTestSelect implements TestSelect {
+    public NoArgConstructorTestSelect() {
+    }
+
+    @Override
+    public List<String> getPropertyNames() {
+      return List.of();
+    }
+  }
+
+  // Test implementation with a non-NativeSelectWrapper constructor
+  public static class NonWrapperConstructorTestSelect implements TestSelect {
+    public NonWrapperConstructorTestSelect(String value) {
+    }
+
+    @Override
+    public List<String> getPropertyNames() {
+      return List.of();
+    }
+  }
+
+  // Test implementation with a parameterized constructor parameter that is not a NativeSelectWrapper
+  public static class ParameterizedNonWrapperConstructorTestSelect implements TestSelect {
+    public ParameterizedNonWrapperConstructorTestSelect(List<String> values) {
+    }
+
+    @Override
+    public List<String> getPropertyNames() {
+      return List.of();
+    }
+  }
+
+  // Test implementation with a type variable in the wrapper (raw type cannot be extracted)
+  public static class GenericTestSelect<T> implements TestSelect {
+    public GenericTestSelect(NativeSelectWrapper<T> wrapper) {
+    }
+
+    @Override
+    public List<String> getPropertyNames() {
+      return List.of();
     }
   }
 }

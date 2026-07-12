@@ -84,6 +84,14 @@ class DeserializerTests {
     }
 
     @Test
+    void givenAdvancedQueryWithUnknownGroupByType_whenDeserialize_thenThrowException() {
+      String json = "{\"groupBy\":{\"unknownField\":[\"category\"]}}";
+
+      assertThatThrownBy(() -> objectMapper.readValue(json, AdvancedQuery.class))
+          .hasStackTraceContaining("Unknown groupBy type");
+    }
+
+    @Test
     void givenAdvancedQueryWithHaving_whenDeserialize_thenReturnAdvancedQueryWithHaving() throws Exception {
       String json = "{\"groupBy\":{\"propertyNames\":[\"category\"]},\"having\":{\"propertyName\":\"count\",\"operator\":\"GREATER_THAN\",\"value\":5}}";
 

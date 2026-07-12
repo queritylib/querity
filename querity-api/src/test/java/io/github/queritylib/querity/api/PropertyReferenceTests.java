@@ -38,6 +38,20 @@ class PropertyReferenceTests {
   }
 
   @Test
+  void givenPropertyReferenceWithoutAlias_whenHasAlias_thenReturnFalse() {
+    PropertyReference ref = PropertyReference.of("name");
+
+    assertThat(ref.hasAlias()).isFalse();
+  }
+
+  @Test
+  void givenPropertyReferenceWithEmptyAlias_whenHasAlias_thenReturnFalse() {
+    PropertyReference ref = PropertyReference.of("name").as("");
+
+    assertThat(ref.hasAlias()).isFalse();
+  }
+
+  @Test
   void givenTwoEqualPropertyReferences_whenEquals_thenReturnTrue() {
     PropertyReference ref1 = PropertyReference.of("name");
     PropertyReference ref2 = PropertyReference.of("name");

@@ -139,6 +139,30 @@ class SortUtilsTests {
   }
 
   @Test
+  void givenImplementationWithParameterizedNonWrapperConstructor_whenGetSortImplementation_thenReturnEmpty() {
+    String nativeSort = "test";
+    NativeSortWrapper<String> wrapper = sortByNative(nativeSort);
+    Set<Class<? extends SortImplementation>> classes = new HashSet<>();
+    classes.add(ParameterizedNonWrapperConstructorSortImplementation.class);
+
+    Optional<SortImplementation> result = SortUtils.getSortImplementation(classes, wrapper);
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  void givenImplementationWithTypeVariableInWrapper_whenGetSortImplementation_thenReturnEmpty() {
+    String nativeSort = "test";
+    NativeSortWrapper<String> wrapper = sortByNative(nativeSort);
+    Set<Class<? extends SortImplementation>> classes = new HashSet<>();
+    classes.add(GenericSortImplementation.class);
+
+    Optional<SortImplementation> result = SortUtils.getSortImplementation(classes, wrapper);
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
   void givenImplementationWithParameterizedTypeInWrapper_whenGetSortImplementation_thenReturnMatchingImplementation() {
     java.util.List<String> nativeSort = java.util.Arrays.asList("a", "b");
     NativeSortWrapper<java.util.List<String>> wrapper = sortByNative(nativeSort);
@@ -219,6 +243,18 @@ class SortUtilsTests {
   // Test implementation with non-NativeSortWrapper constructor
   public static class NonWrapperConstructorSortImplementation implements SortImplementation {
     public NonWrapperConstructorSortImplementation(String value) {
+    }
+  }
+
+  // Test implementation with a parameterized constructor parameter that is not a NativeSortWrapper
+  public static class ParameterizedNonWrapperConstructorSortImplementation implements SortImplementation {
+    public ParameterizedNonWrapperConstructorSortImplementation(java.util.List<String> values) {
+    }
+  }
+
+  // Test implementation with a type variable in the wrapper (raw type cannot be extracted)
+  public static class GenericSortImplementation<T> implements SortImplementation {
+    public GenericSortImplementation(NativeSortWrapper<T> wrapper) {
     }
   }
 
