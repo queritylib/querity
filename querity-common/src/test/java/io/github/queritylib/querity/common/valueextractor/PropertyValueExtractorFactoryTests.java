@@ -29,7 +29,9 @@ class PropertyValueExtractorFactoryTests {
         Arguments.of(LocalDate.class, LocalDateValueExtractor.class),
         Arguments.of(LocalDateTime.class, LocalDateTimeValueExtractor.class),
         Arguments.of(ZonedDateTime.class, ZonedDateTimeValueExtractor.class),
-        Arguments.of(UUID.class, UUIDValueExtractor.class)
+      Arguments.of(UUID.class, UUIDValueExtractor.class),
+      Arguments.of(null, NoOpValueExtractor.class),
+      Arguments.of(Object.class, NoOpValueExtractor.class)
     );
   }
 
