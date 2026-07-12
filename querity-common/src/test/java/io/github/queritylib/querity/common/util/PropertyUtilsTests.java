@@ -6,6 +6,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -65,6 +66,44 @@ class PropertyUtilsTests {
   @MethodSource("provideValuesAndTypes")
   void givenValue_whenGetActualPropertyValue_thenReturnValueWithCorrectType(Class<?> beanClass, String propertyPath, Object value, Class<?> expectedType) {
     assertThat(PropertyUtils.getActualPropertyValue(beanClass, propertyPath, value).getClass()).isEqualTo(expectedType);
+  }
+
+  @Test
+  void givenNull_whenGetActualValue_thenReturnNull() {
+    assertThat(PropertyUtils.getActualValue(String.class, null)).isNull();
+  }
+
+  @Test
+  void givenNullTargetType_whenGetActualValue_thenReturnRawValue() {
+    assertThat(PropertyUtils.getActualValue(null, "raw")).isEqualTo("raw");
+  }
+
+  public static Stream<Arguments> provideTargetTypesAndValues() {
+    return Stream.of(
+      Arguments.of(String.class, "test", "test"),
+      Arguments.of(Integer.class, "42", 42L),
+      Arguments.of(BigDecimal.class, "42.00", new BigDecimal("42.00")),
+      Arguments.of(LocalDate.class, "2026-06-22", LocalDate.of(2026, 6, 22)),
+      Arguments.of(java.sql.Date.class, "2026-06-22", java.sql.Date.valueOf(LocalDate.of(2026, 6, 22)))
+    );
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideTargetTypesAndValues")
+  void givenValue_whenGetActualValue_thenReturnConvertedValue(Class<?> targetType, Object value, Object expectedValue) {
+    assertThat(PropertyUtils.getActualValue(targetType, value)).isEqualTo(expectedValue);
+  }
+
+  @Test
+  void givenIterable_whenGetActualValue_thenReturnArrayOfConvertedValues() {
+    assertThat(PropertyUtils.getActualValue(LocalDate.class, List.of("2026-06-22", "2026-06-23")))
+      .isEqualTo(new Object[]{LocalDate.of(2026, 6, 22), LocalDate.of(2026, 6, 23)});
+  }
+
+  @Test
+  void givenArray_whenGetActualValue_thenReturnArrayOfConvertedValues() {
+    assertThat(PropertyUtils.getActualValue(LocalDate.class, new Object[]{"2026-06-22", "2026-06-23"}))
+      .isEqualTo(new Object[]{LocalDate.of(2026, 6, 22), LocalDate.of(2026, 6, 23)});
   }
 
   public static class MyClass {
