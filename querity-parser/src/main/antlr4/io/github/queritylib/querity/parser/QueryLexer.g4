@@ -82,8 +82,8 @@ MIN_FUNC      : M I N;
 MAX_FUNC      : M A X;
 
 // Literals
-INT_VALUE     : [0-9]+;
-DECIMAL_VALUE : [0-9]+'.'[0-9]+;
+INT_VALUE     : '-'? [0-9]+;
+DECIMAL_VALUE : '-'? [0-9]+'.'[0-9]+;
 BOOLEAN_VALUE : T R U E | F A L S E;
 STRING_VALUE  : '"' (~["\\] | '\\' .)* '"';
 

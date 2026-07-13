@@ -361,6 +361,37 @@ class QueryVisitorTests {
     }
 
     @Test
+    void givenNegativeIntValue_whenParse_thenReturnNegativeInteger() {
+      QueryDefinition query = QuerityParser.parseQuery("value = -42");
+      SimpleCondition condition = (SimpleCondition) query.getFilter();
+      assertThat(condition.getValue()).isEqualTo(-42);
+    }
+
+    @Test
+    void givenNegativeDecimalValue_whenParse_thenReturnNegativeBigDecimal() {
+      QueryDefinition query = QuerityParser.parseQuery("price = -19.99");
+      SimpleCondition condition = (SimpleCondition) query.getFilter();
+      assertThat(condition.getValue()).isEqualTo(new BigDecimal("-19.99"));
+    }
+
+    @Test
+    void givenNegativeValuesInArray_whenParse_thenReturnNegativeNumbers() {
+      QueryDefinition query = QuerityParser.parseQuery("value IN (-1, 2, -3.5)");
+      SimpleCondition condition = (SimpleCondition) query.getFilter();
+      assertThat((Object[]) condition.getValue())
+          .containsExactly(-1, 2, new BigDecimal("-3.5"));
+    }
+
+    @Test
+    void givenNegativeLiteralFunctionArgument_whenParse_thenReturnNegativeNumber() {
+      QueryDefinition query = QuerityParser.parseQuery("MULTIPLY(price, -2) > 0");
+      SimpleCondition condition = (SimpleCondition) query.getFilter();
+      FunctionCall fc = (FunctionCall) condition.getLeftExpression();
+      assertThat(fc.getArguments()).hasSize(2);
+      assertThat(((Literal) fc.getArguments().get(1)).getValue()).isEqualTo(-2);
+    }
+
+    @Test
     void givenBooleanTrueValue_whenParse_thenReturnBoolean() {
       QueryDefinition query = QuerityParser.parseQuery("active = true");
       SimpleCondition condition = (SimpleCondition) query.getFilter();
