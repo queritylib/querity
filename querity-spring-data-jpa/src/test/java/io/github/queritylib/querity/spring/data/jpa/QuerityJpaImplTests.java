@@ -6,6 +6,7 @@ import io.github.queritylib.querity.api.Querity;
 import io.github.queritylib.querity.api.Query;
 import io.github.queritylib.querity.api.QueryCustomizer;
 import io.github.queritylib.querity.jpa.AliasedSelectionSpecification;
+import io.github.queritylib.querity.jpa.GroupBySpecification;
 import io.github.queritylib.querity.jpa.JPAHints;
 import io.github.queritylib.querity.jpa.JpaQueryContext;
 import io.github.queritylib.querity.jpa.OrderSpecification;
@@ -228,6 +229,41 @@ public abstract class QuerityJpaImplTests extends QuerityGenericSpringTestSuite<
           String fullName = (String) map.get("fullName");
           assertThat(fullName).endsWith(entity1.getLastName());
         });
+  }
+
+  @Test
+  void givenNativeGroupByWithNativeSelectAndAggregate_whenFindAllProjected_thenReturnGroupedResults() {
+    // Group by a native expression (UPPER(lastName)) while counting rows per group: a query with
+    // a native select is all-native (a single Select per query), so the aggregate is native too
+    // and the native grouping makes it compute per group (issue #198).
+    SelectionSpecification<Person> upperLastNameSpec = AliasedSelectionSpecification.of(
+        (root, cb) -> cb.upper(root.get("lastName")),
+        "upperLastName"
+    );
+    SelectionSpecification<Person> countSpec = AliasedSelectionSpecification.of(
+        (root, cb) -> cb.count(root.get("id")),
+        "total"
+    );
+    GroupBySpecification<Person> upperLastNameGrouping =
+        (root, cb) -> cb.upper(root.get("lastName"));
+    AdvancedQuery query = Querity.advancedQuery()
+        .filter(filterBy("lastName", Operator.IS_NOT_NULL))
+        .select(selectByNative(upperLastNameSpec, countSpec))
+        .groupBy(groupByNative(upperLastNameGrouping))
+        .build();
+
+    List<Map<String, Object>> result = querity.findAllProjected(Person.class, query);
+
+    Map<String, Long> expectedCounts = entities.stream()
+        .filter(p -> p.getLastName() != null)
+        .collect(java.util.stream.Collectors.groupingBy(
+            p -> p.getLastName().toUpperCase(),
+            java.util.stream.Collectors.counting()));
+    assertThat(result).hasSize(expectedCounts.size());
+    assertThat(result).allSatisfy(map -> {
+      String group = (String) map.get("upperLastName");
+      assertThat(((Number) map.get("total")).longValue()).isEqualTo(expectedCounts.get(group));
+    });
   }
 
   @Test

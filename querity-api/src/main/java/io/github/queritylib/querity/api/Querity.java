@@ -157,6 +157,44 @@ public interface Querity {
     return SimpleGroupBy.ofExpressions(expressions);
   }
 
+  /**
+   * Create a GROUP BY clause with the given native groupings.
+   *
+   * <p>Mirrors {@link #selectByNative(Object...)} and {@link #sortByNative(Object)}: use it to
+   * group by expressions the querity model cannot express (e.g. a JSON-extraction over a jsonb
+   * column). The element type is backend-specific — for the JPA modules use
+   * {@code GroupBySpecification} for deferred grouping expressions built from the query
+   * {@code Root} and {@code CriteriaBuilder} at execution time.
+   *
+   * <p>Example (JPA) — a query with a native select is all-native, so the aggregate is a native
+   * selection too and the native grouping makes it compute per group:
+   * <pre>{@code
+   * SelectionSpecification<MyEntity> categorySelection = AliasedSelectionSpecification.of(
+   *     (root, cb) -> cb.function("jsonb_extract_path_text", String.class,
+   *         root.get("attributes"), cb.literal("category")),
+   *     "category");
+   * SelectionSpecification<MyEntity> totalSelection = AliasedSelectionSpecification.of(
+   *     (root, cb) -> cb.count(root.get("id")), "total");
+   * GroupBySpecification<MyEntity> categoryGrouping =
+   *     (root, cb) -> cb.function("jsonb_extract_path_text", String.class,
+   *         root.get("attributes"), cb.literal("category"));
+   * AdvancedQuery query = Querity.advancedQuery()
+   *     .select(selectByNative(categorySelection, totalSelection))
+   *     .groupBy(groupByNative(categoryGrouping))
+   *     .build();
+   * }</pre>
+   *
+   * @param nativeGroupings the native groupings to group by
+   * @param <T>             the backend-specific native grouping type
+   * @return a NativeGroupByWrapper
+   */
+  @SafeVarargs
+  static <T> NativeGroupByWrapper<T> groupByNative(T... nativeGroupings) {
+    return NativeGroupByWrapper.<T>builder()
+        .nativeGroupings(Arrays.asList(nativeGroupings))
+        .build();
+  }
+
   static Query wrapConditionInQuery(Condition condition) {
     return Querity.query()
         .filter(condition)
