@@ -1,6 +1,7 @@
 package io.github.queritylib.querity.jpa;
 
 import io.github.queritylib.querity.api.GroupBy;
+import io.github.queritylib.querity.api.NativeGroupByWrapper;
 import io.github.queritylib.querity.api.Query;
 import io.github.queritylib.querity.api.SimpleGroupBy;
 import jakarta.persistence.EntityManager;
@@ -48,6 +49,78 @@ class JpaGroupByTests {
       assertThatThrownBy(() -> JpaGroupBy.of(unsupportedGroupBy))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageContaining("Unsupported GroupBy type");
+    }
+
+    @Test
+    void givenNativeGroupByWithGroupBySpecification_whenOf_thenReturnJpaNativeGroupByWrapper() {
+      GroupBySpecification<Object> spec = (root, cb) -> root.get("category");
+      NativeGroupByWrapper<GroupBySpecification<Object>> nativeGroupBy = groupByNative(spec);
+
+      JpaGroupBy jpaGroupBy = JpaGroupBy.of(nativeGroupBy);
+
+      assertThat(jpaGroupBy).isInstanceOf(JpaNativeGroupByWrapper.class);
+    }
+
+    @Test
+    void givenNativeGroupByWithUnsupportedType_whenOf_thenThrowException() {
+      NativeGroupByWrapper<String> nativeGroupBy = groupByNative("not a specification");
+
+      assertThatThrownBy(() -> JpaGroupBy.of(nativeGroupBy))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessageContaining("NativeGroupByWrapper with type String is not supported")
+          .hasMessageContaining("GroupBySpecification");
+    }
+
+    @Test
+    void givenNativeGroupByMixingSpecificationAndUnsupportedType_whenOf_thenNamesTheUnsupportedType() {
+      GroupBySpecification<Object> spec = (root, cb) -> root.get("category");
+      NativeGroupByWrapper<Object> nativeGroupBy = groupByNative(spec, 42L);
+
+      assertThatThrownBy(() -> JpaGroupBy.of(nativeGroupBy))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessageContaining("NativeGroupByWrapper with type Long is not supported");
+    }
+  }
+
+  @Nested
+  @ExtendWith(MockitoExtension.class)
+  class JpaNativeGroupByWrapperTests {
+    @Mock Root<?> root;
+    @Mock CriteriaBuilder cb;
+    @Mock Metamodel metamodel;
+    @Mock Expression<String> nativeExpr;
+    @Mock Expression<Object> otherExpr;
+
+    @Test
+    void givenSingleGroupBySpecification_whenToExpressions_thenReturnSpecificationExpression() {
+      GroupBySpecification<Object> spec = (r, c) -> nativeExpr;
+      JpaGroupBy jpaGroupBy = JpaGroupBy.of(groupByNative(spec));
+
+      List<Expression<?>> expressions = jpaGroupBy.toExpressions(metamodel, root, cb);
+
+      assertThat(expressions).containsExactly(nativeExpr);
+    }
+
+    @Test
+    void givenMultipleGroupBySpecifications_whenToExpressions_thenReturnAllExpressionsInOrder() {
+      GroupBySpecification<Object> spec1 = (r, c) -> nativeExpr;
+      GroupBySpecification<Object> spec2 = (r, c) -> otherExpr;
+      JpaGroupBy jpaGroupBy = JpaGroupBy.of(groupByNative(spec1, spec2));
+
+      List<Expression<?>> expressions = jpaGroupBy.toExpressions(metamodel, root, cb);
+
+      assertThat(expressions).containsExactly(nativeExpr, otherExpr);
+    }
+
+    @Test
+    void givenGroupBySpecification_whenToExpressions_thenReceivesRootAndCriteriaBuilder() {
+      GroupBySpecification<Object> spec = (r, c) -> {
+        assertThat(r).isSameAs(root);
+        assertThat(c).isSameAs(cb);
+        return nativeExpr;
+      };
+
+      JpaGroupBy.of(groupByNative(spec)).toExpressions(metamodel, root, cb);
     }
   }
 
